@@ -1,0 +1,34 @@
+# Java class files
+*.class
+# Generated files
+bin/
+gen/
+out/
+release/
+client/yarn.lock
+
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+# Github account
+github.properties
+# Gitlab account
+gitlab.properties
+
+# Log Files
+*.log
+
+# IntelliJ
+*.iml
+.idea
+
+#venv
+migration/venv/
+.venv/
+__pycache__
+*.pyc
+
+*.env
