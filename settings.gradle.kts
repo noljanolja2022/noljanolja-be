@@ -1,7 +1,11 @@
-rootProject.name = "Noljanolja"
+rootProject.name = "noljanolja"
 
 include(
-    ":server",
+    ":server:common",
+    ":server:auth",
+    ":server:core",
+    ":server:admin",
+    ":server:consumer",
 )
 
 

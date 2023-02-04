@@ -2,5 +2,5 @@
  * Configuration of build modules
  */
 object BuildModules {
-    const val SERVER = ":server"
+    const val SERVER_COMMON = ":server:common"
 }

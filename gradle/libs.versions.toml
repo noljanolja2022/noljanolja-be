@@ -1,0 +1,255 @@
+[versions]
+
+# Dependencies
+kotlin = "1.7.20"
+
+kotlinx-coroutines = "1.6.4"
+kotlinx-serialization = "1.4.1"
+kotlinx-datetime = "0.4.0"
+kotlinx-atomicfu = "0.18.5"
+
+shedlock = "4.42.0"
+testcontainers = "1.17.5"
+
+ktor = "2.1.3"
+sql-delight = "2.0.0-alpha04"
+multiplatform-settings = "1.0.0-RC"
+koin = "3.2.2"
+
+korge = "3.3.0"
+
+compose = "1.3.0"
+compose-compiler = "1.3.2"
+compose-material3 = "1.0.0"
+
+decompose = "1.0.0-beta-01-native-compose"
+
+accompanist = "0.27.0"
+
+lifecycle = "2.6.0-alpha03"
+activity = "1.7.0-alpha02"
+camerax = "1.2.0-rc01"
+camerax-mlkit = "1.2.0-beta02"
+
+spring-sleuth = "3.1.5"
+
+[libraries]
+
+gradle-plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+gradle-plugin-kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
+gradle-plugin-kotlin-allopen = { module = "org.jetbrains.kotlin:kotlin-allopen", version.ref = "kotlin" }
+gradle-plugin-android = { module = "com.android.tools.build:gradle", version = "7.3.1" }
+gradle-plugin-spring-boot = { module = "org.springframework.boot:spring-boot-gradle-plugin", version = "2.7.5" }
+gradle-plugin-spring-dm = { module = "io.spring.gradle:dependency-management-plugin", version = "1.0.15.RELEASE" }
+gradle-plugin-sql-delight = { module = "app.cash.sqldelight:gradle-plugin", version.ref = "sql-delight" }
+gradle-plugin-nativecoroutines = { module = "com.rickclephas.kmp:kmp-nativecoroutines-gradle-plugin", version = "0.13.1" }
+gradle-plugin-spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version = "6.11.0" }
+gradle-plugin-detekt = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version = "1.22.0-RC2" }
+gradle-plugin-compose = { module = "org.jetbrains.compose:compose-gradle-plugin", version = "1.3.0-beta03" }
+
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlinx-atomicfu" }
+
+spring-boot-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
+spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-rsocket = { module = "org.springframework.boot:spring-boot-starter-rsocket" }
+spring-boot-r2dbc = { module = "org.springframework.boot:spring-boot-starter-data-r2dbc" }
+spring-boot-reactive-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis-reactive" }
+spring-boot-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
+
+spring-cloud-sleuth = { module = "org.springframework.cloud:spring-cloud-starter-sleuth", version.ref = "spring-sleuth" }
+spring-cloud-sleuth-zipkin = { module = "org.springframework.cloud:spring-cloud-sleuth-zipkin", version.ref = "spring-sleuth" }
+
+reactor-kotlin = { module = "io.projectreactor.kotlin:reactor-kotlin-extensions" }
+reactor-test = { module = "io.projectreactor:reactor-test" }
+jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8" }
+
+jasync-r2dbc-mysql = { module = "com.github.jasync-sql:jasync-r2dbc-mysql", version = "2.1.7" }
+r2dbc-proxy = { module = "io.r2dbc:r2dbc-proxy", version = "1.1.0.RELEASE" }
+
+shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
+shedlock-provider-redis = { module = "net.javacrumbs.shedlock:shedlock-provider-redis-spring", version.ref = "shedlock" }
+
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
+testcontainers-r2dbc = { module = "org.testcontainers:r2dbc", version.ref = "testcontainers" }
+
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor" }
+
+sql-delight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sql-delight" }
+sql-delight-coroutines-ext = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sql-delight" }
+sql-delight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sql-delight" }
+sql-delight-native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sql-delight" }
+sql-delight-jvm-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sql-delight" }
+
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatform-settings" }
+multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "multiplatform-settings" }
+multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-test", version.ref = "multiplatform-settings" }
+
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+
+kbignum = { module = "com.soywiz.korlibs.kbignum:kbignum", version.ref = "korge" }
+cache4k = { module = "io.github.reactivecircus.cache4k:cache4k", version = "0.8.0" }
+
+android-desugaring = { module = "com.android.tools:desugar_jdk_libs", version = "1.2.2" }
+
+compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose-compiler" }
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
+compose-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
+compose-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
+compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
+compose-material = { module = "androidx.compose.material:material", version.ref = "compose" }
+compose-material3 = { module = "androidx.compose.material:material", version.ref = "compose-material3" }
+
+decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
+decompose-ext-compose = { module = "com.arkivanov.decompose:extensions-compose-jetbrains", version.ref = "decompose" }
+
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
+
+coil-compose = { module = "io.coil-kt:coil-compose", version = "2.2.2" }
+
+activity = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
+
+androidx-core = { module = "androidx.core:core-ktx", version = "1.9.0" }
+androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidx-test-junit = { module = "androidx.test.ext:junit-ktx", version = "1.1.4-beta01" }
+
+camerax-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+camerax-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+camerax-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+camerax-mlkit-vision = { module = "androidx.camera:camera-mlkit-vision", version.ref = "camerax-mlkit" }
+mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version = "17.0.2" }
+
+junit4 = { module = "junit:junit", version = "4.13.2" }
+
+roboelectric = { module = "org.robolectric:robolectric", version = "4.9" }
+
+kermit = { module = "co.touchlab:kermit", version = "1.2.2" }
+
+turbine = { module = "app.cash.turbine:turbine", version = "0.12.0" }
+
+okio = { module = "com.squareup.okio:okio", version = "3.2.0" }
+
+mockwebserver = { module = "com.squareup.okhttp3:mockwebserver" }
+
+mockk = { module = "io.mockk:mockk", version = "1.13.2" }
+
+embedded-redis = { module = "it.ozimov:embedded-redis", version = "0.7.2" }
+
+prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version = "1.10.2" }
+
+google-api-client = { module = "com.google.api-client:google-api-client", version = "1.34.0"}
+google-api-services-sheet = { module = "com.google.apis:google-api-services-sheets", version = "v4-rev612-1.25.0"}
+google-http-client-jackson2 = { module = "com.google.http-client:google-http-client-jackson2", version = "1.42.3"}
+
+[bundles]
+
+gradlePlugins = [
+    "gradle-plugin-kotlin",
+    "gradle-plugin-kotlin-serialization",
+    "gradle-plugin-kotlin-allopen",
+    "gradle-plugin-android",
+    "gradle-plugin-spring-boot",
+    "gradle-plugin-spring-dm",
+    "gradle-plugin-sql-delight",
+    "gradle-plugin-nativecoroutines",
+    "gradle-plugin-spotless",
+    "gradle-plugin-detekt",
+    "gradle-plugin-compose",
+]
+
+
+serverCommon = [
+    "spring-boot-webflux",
+    "spring-boot-actuator",
+    "spring-cloud-sleuth",
+    "spring-cloud-sleuth-zipkin",
+    "jackson-kotlin",
+    "jackson-datatype-jdk8",
+    "reactor-kotlin",
+    "kotlin-stdlib",
+    "kotlin-reflect",
+    "kotlinx-coroutines-reactor",
+]
+
+serverCommonRuntime = [
+    "prometheus",
+]
+
+serverCommonTest = [
+    "spring-boot-test",
+    "reactor-test",
+]
+
+serverCore = [
+]
+
+serverCoreProcessor = [
+]
+
+serverCoreRuntime = [
+]
+
+serverCoreTest = [
+]
+
+serverAdmin = [
+]
+
+serverAdminProcessor = [
+]
+
+serverAdminRuntime = [
+]
+
+serverAdminTest = [
+]
+
+serverConsumer = [
+]
+
+serverConsumerProcessor = [
+]
+
+serverConsumerRuntime = [
+]
+
+serverConsumerTest = [
+]
+
+serverAuth = [
+]
+
+serverAuthProcessor = [
+]
+
+serverAuthRuntime = [
+]
+
+serverAuthTest = [
+]
