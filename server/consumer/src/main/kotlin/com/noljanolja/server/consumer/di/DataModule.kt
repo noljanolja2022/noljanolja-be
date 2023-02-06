@@ -1,6 +1,6 @@
-package com.noljanolja.server.core.di
+package com.noljanolja.server.consumer.di
 
-import com.noljanolja.server.core.config.service.ServiceConfig
+import com.noljanolja.server.consumer.config.service.ServiceConfig
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler

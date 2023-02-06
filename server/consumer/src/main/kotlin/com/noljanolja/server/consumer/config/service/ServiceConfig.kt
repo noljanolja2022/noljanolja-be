@@ -1,4 +1,4 @@
-package com.noljanolja.server.core.config
+package com.noljanolja.server.consumer.config.service
 
 import com.noljanolja.server.common.config.YmlPropertySourceFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -18,6 +18,7 @@ data class ServiceConfig(val configs: List<Config>) {
         val extra: Map<String, String> = mutableMapOf(),
     ) {
         enum class ServiceID {
+            CORE,
         }
     }
 }
