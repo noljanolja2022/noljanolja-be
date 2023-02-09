@@ -1,5 +1,6 @@
 plugins {
     id(BuildPlugins.COMMON_SERVER)
+    id(BuildPlugins.KOTLIN_PLUGIN_SERIALIZATION)
 }
 
 dependencies {

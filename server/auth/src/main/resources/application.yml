@@ -1,0 +1,6 @@
+server:
+  port: 10083
+
+spring:
+  application:
+    name: noljanolja-auth

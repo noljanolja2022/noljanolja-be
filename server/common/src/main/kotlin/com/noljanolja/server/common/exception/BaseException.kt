@@ -1,9 +1,9 @@
 package com.noljanolja.server.common.exception
 
 open class BaseException(
-    override val cause: Throwable?,
+    open val code: Int,
     override val message: String,
-    open val code: Int
+    override val cause: Throwable?,
 ) : Exception(message, cause)
 
 data class DefaultBadRequestException(
@@ -45,3 +45,21 @@ data class ExternalServiceException(
     message = "Internal Server Error",
     cause = cause,
 )
+
+sealed class FirebaseException(
+    code: Int,
+    message: String,
+    cause: Throwable?,
+) : BaseException(code, message, cause) {
+    companion object {
+        const val FAILED_TO_VERIFY_TOKEN = 401_001
+    }
+
+    class FailedToVerifyToken(
+        cause: Throwable? = null,
+    ) : FirebaseException(
+        FAILED_TO_VERIFY_TOKEN,
+        "[Firebase] Failed to verify id token",
+        cause,
+    )
+}
