@@ -14,10 +14,11 @@ data class User(
 ) {
     @Serializable
     data class CustomClaim(
-        val role: Role? = null,
+        val role: Role,
     ) {
         enum class Role {
             ADMIN,
+            STAFF,
             CONSUMER,
         }
     }

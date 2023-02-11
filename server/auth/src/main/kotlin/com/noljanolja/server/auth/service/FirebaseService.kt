@@ -11,6 +11,7 @@ class FirebaseService(
     companion object {
         const val CUSTOM_CLAIM_KEY_ROLE = "role"
     }
+
     suspend fun getUserInfo(
         uid: String,
     ): User {
@@ -27,7 +28,7 @@ class FirebaseService(
                         role = try {
                             User.CustomClaim.Role.valueOf(it[CUSTOM_CLAIM_KEY_ROLE].toString())
                         } catch (e: Exception) {
-                            null
+                            User.CustomClaim.Role.CONSUMER
                         }
                     )
                 }
