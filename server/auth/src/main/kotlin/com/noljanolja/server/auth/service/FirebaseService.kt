@@ -17,21 +17,18 @@ class FirebaseService(
     ): User {
         return firebaseAuth.getUser(uid).let { userRecord ->
             User(
-                uid = userRecord.uid,
-                phone = userRecord.phoneNumber.orEmpty(),
-                email = userRecord.email.orEmpty(),
-                isEmailVerified = userRecord.isEmailVerified,
+                id = userRecord.uid,
                 name = userRecord.displayName.orEmpty(),
-                photoUrl = userRecord.photoUrl.orEmpty(),
-                customClaims = userRecord.customClaims.let {
-                    User.CustomClaim(
-                        role = try {
-                            User.CustomClaim.Role.valueOf(it[CUSTOM_CLAIM_KEY_ROLE].toString())
-                        } catch (e: Exception) {
-                            User.CustomClaim.Role.CONSUMER
-                        }
-                    )
-                }
+                profileImage = userRecord.photoUrl.orEmpty(),
+                roles = listOf(
+                    try {
+                        User.CustomClaim.Role.valueOf(
+                            userRecord.customClaims[CUSTOM_CLAIM_KEY_ROLE].toString().uppercase()
+                        )
+                    } catch (e: Exception) {
+                        User.CustomClaim.Role.CONSUMER
+                    }
+                )
             )
         }
     }

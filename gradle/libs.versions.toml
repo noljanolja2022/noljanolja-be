@@ -174,22 +174,15 @@ gradlePlugins = [
     "gradle-plugin-kotlin",
     "gradle-plugin-kotlin-serialization",
     "gradle-plugin-kotlin-allopen",
-    "gradle-plugin-android",
     "gradle-plugin-spring-boot",
     "gradle-plugin-spring-dm",
-    "gradle-plugin-sql-delight",
     "gradle-plugin-nativecoroutines",
-    "gradle-plugin-spotless",
-    "gradle-plugin-detekt",
-    "gradle-plugin-compose",
 ]
 
 
 serverCommon = [
     "spring-boot-webflux",
     "spring-boot-actuator",
-    "spring-cloud-sleuth",
-    "spring-cloud-sleuth-zipkin",
     "jackson-kotlin",
     "jackson-datatype-jdk8",
     "reactor-kotlin",
@@ -200,7 +193,6 @@ serverCommon = [
 ]
 
 serverCommonRuntime = [
-    "prometheus",
 ]
 
 serverCommonTest = [

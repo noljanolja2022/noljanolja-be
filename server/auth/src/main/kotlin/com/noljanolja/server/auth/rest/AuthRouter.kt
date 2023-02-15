@@ -10,13 +10,13 @@ class AuthRouter(
     private val authHandler: AuthHandler,
 ) {
     companion object {
-        const val AUTH_ROUTE = "/api/v1/"
+        const val AUTH_ROUTE = "/api/v1/oauth"
     }
 
     @Bean
     fun routes() = coRouter {
         (AUTH_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
-            GET("user-info", authHandler::getUserInfo)
+            GET("userinfo", authHandler::getUserInfo)
         }
     }
 }
