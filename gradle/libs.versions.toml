@@ -77,6 +77,7 @@ jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin"
 jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8" }
 
 jasync-r2dbc-mysql = { module = "com.github.jasync-sql:jasync-r2dbc-mysql", version = "2.1.7" }
+miku-r2dbc-mysql = { module = "dev.miku:r2dbc-mysql", version = "0.8.2.RELEASE" }
 r2dbc-proxy = { module = "io.r2dbc:r2dbc-proxy", version = "1.1.0.RELEASE" }
 
 shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
@@ -201,13 +202,17 @@ serverCommonTest = [
 ]
 
 serverCore = [
+    "spring-boot-r2dbc",
+    "r2dbc-proxy",
+    "miku-r2dbc-mysql",
 ]
 
 serverCoreProcessor = [
+    "spring-boot-configuration-processor"
 ]
 
 serverCoreRuntime = [
-    "spring-boot-r2dbc"
+
 ]
 
 serverCoreTest = [
