@@ -1,4 +1,4 @@
-package com.noljanolja.server.core.rest.request
+package com.noljanolja.server.common.model.request
 
 import com.noljanolja.server.common.validator.StringValidator
 import com.noljanolja.server.common.validator.Validator
@@ -33,7 +33,7 @@ data class UpsertUserRequest (
             add(StringValidator(
                 obj = pushToken,
                 fieldName = "pushToken",
-                required = true,
+                required = false,
             ))
         }.validate()
     }

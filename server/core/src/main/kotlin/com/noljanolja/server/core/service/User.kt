@@ -8,7 +8,7 @@ import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
-import com.noljanolja.server.core.model.User as UserModel
+import com.noljanolja.server.common.model.CoreUser as UserModel
 import java.util.*
 
 @Table("users")

@@ -7,8 +7,14 @@ import kotlinx.serialization.Serializable
 data class Response<T>(
     val code: Int = 0,
     val message: String = "Success",
-    val data: T? = null,
+    val data: T,
     val paging: Paging? = null,
+)
+
+@Serializable
+data class EmptyResponse(
+    val code: Int = 0,
+    val message: String = "Success",
 )
 
 @Serializable

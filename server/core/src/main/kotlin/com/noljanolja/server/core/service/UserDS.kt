@@ -1,10 +1,8 @@
 package com.noljanolja.server.core.service
 
-import com.noljanolja.server.core.rest.request.UpsertUserRequest
-import com.noljanolja.server.core.model.User as UserModel
+import com.noljanolja.server.common.model.request.UpsertUserRequest
+import com.noljanolja.server.common.model.CoreUser as UserModel
 import org.springframework.stereotype.Component
-import reactor.util.function.Tuple2
-import reactor.util.function.Tuples
 
 @Component
 class UserDS(

@@ -1,7 +1,7 @@
 package com.noljanolja.server.auth.service
 
 import com.google.firebase.auth.FirebaseAuth
-import com.noljanolja.server.auth.model.User
+import com.noljanolja.server.common.model.AuthUser as UserModel
 import org.springframework.stereotype.Component
 
 @Component
@@ -14,19 +14,19 @@ class FirebaseService(
 
     suspend fun getUserInfo(
         uid: String,
-    ): User {
+    ): UserModel {
         return firebaseAuth.getUser(uid).let { userRecord ->
-            User(
+            UserModel(
                 id = userRecord.uid,
                 name = userRecord.displayName.orEmpty(),
                 profileImage = userRecord.photoUrl.orEmpty(),
                 roles = listOf(
                     try {
-                        User.CustomClaim.Role.valueOf(
+                        UserModel.CustomClaim.Role.valueOf(
                             userRecord.customClaims[CUSTOM_CLAIM_KEY_ROLE].toString().uppercase()
                         )
                     } catch (e: Exception) {
-                        User.CustomClaim.Role.CONSUMER
+                        UserModel.CustomClaim.Role.CONSUMER
                     }
                 )
             )

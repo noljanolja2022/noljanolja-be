@@ -1,4 +1,4 @@
-package com.noljanolja.server.auth.rest
+package com.noljanolja.server.consumer.rest
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -6,18 +6,17 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.server.coRouter
 
 @Configuration
-class AuthRouter(
-    private val authHandler: AuthHandler,
+class ConsumerRouter(
+    private val consumerHandler: ConsumerHandler,
 ) {
     companion object {
-        const val AUTH_ROUTE = "/api/v1/oauth"
+        const val CONSUMER_ROUTER = "/api/v1"
     }
 
     @Bean
     fun routes() = coRouter {
-        (AUTH_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
-            GET("userinfo", authHandler::getUserInfo)
-            GET("verify", authHandler::verifyToken)
+        (CONSUMER_ROUTER and accept(MediaType.APPLICATION_JSON)).nest {
+            GET("/users/me", consumerHandler::getMyInfo)
         }
     }
 }

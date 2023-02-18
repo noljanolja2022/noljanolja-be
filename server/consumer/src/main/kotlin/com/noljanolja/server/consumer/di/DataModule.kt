@@ -1,14 +1,16 @@
 package com.noljanolja.server.consumer.di
 
-import com.noljanolja.server.consumer.config.service.ServiceConfig
+import com.noljanolja.server.consumer.config.service.Services
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClient.Builder
 import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
 import java.time.Duration
@@ -23,30 +25,48 @@ class DataModule {
         const val MAX_CONNECTION_IDLE_TIME_SECONDS = 15L
     }
 
+    @Bean
+    fun authWebClient(
+        webClientBuilder: Builder,
+        services: Services,
+    ): WebClient {
+        val serviceProperty = services.properties.first { it.id == Services.ServiceProperty.ServiceID.AUTH }
+        return buildWebClient(webClientBuilder, serviceProperty)
+    }
+
+    @Bean
+    fun coreWebClient(
+        webClientBuilder: Builder,
+        services: Services,
+    ): WebClient {
+        val serviceProperty = services.properties.first { it.id == Services.ServiceProperty.ServiceID.CORE }
+        return buildWebClient(webClientBuilder, serviceProperty)
+    }
+
     private fun buildWebClient(
-        webClientBuilder: WebClient.Builder,
-        config: ServiceConfig.Config,
+        webClientBuilder: Builder,
+        serviceProperty: Services.ServiceProperty,
         filters: List<ExchangeFilterFunction> = listOf(),
     ): WebClient {
-        val connectionProvider = ConnectionProvider.builder(config.id.name)
+        val connectionProvider = ConnectionProvider.builder(serviceProperty.id.name)
             .maxConnections(MAX_CONNECTIONS)
             .maxLifeTime(Duration.ofSeconds(MAX_CONNECTION_LIFE_TIME_SECONDS))
             .maxIdleTime(Duration.ofSeconds(MAX_CONNECTION_IDLE_TIME_SECONDS))
             .build()
 
         val httpClient = HttpClient.create(connectionProvider)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.timeoutMillis.toInt())
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, serviceProperty.timeoutMillis.toInt())
             .doOnConnected { connection ->
                 connection.addHandlerLast(
-                    ReadTimeoutHandler(config.timeoutMillis, TimeUnit.MILLISECONDS)
+                    ReadTimeoutHandler(serviceProperty.timeoutMillis, TimeUnit.MILLISECONDS)
                 )
                 connection.addHandlerLast(
-                    WriteTimeoutHandler(config.timeoutMillis, TimeUnit.MILLISECONDS)
+                    WriteTimeoutHandler(serviceProperty.timeoutMillis, TimeUnit.MILLISECONDS)
                 )
             }
 
         return webClientBuilder
-            .baseUrl(config.baseUrl)
+            .baseUrl(serviceProperty.baseUrl)
             .clientConnector(ReactorClientHttpConnector(httpClient))
             .exchangeStrategies(
                 ExchangeStrategies

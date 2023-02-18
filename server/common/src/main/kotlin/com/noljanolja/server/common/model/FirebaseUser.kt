@@ -1,9 +1,9 @@
-package com.noljanolja.server.auth.model
+package com.noljanolja.server.common.model
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class User(
+data class AuthUser(
     val id: String,
     val name: String,
     val profileImage: String,

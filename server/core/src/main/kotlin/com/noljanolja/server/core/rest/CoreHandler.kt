@@ -6,7 +6,7 @@ import com.noljanolja.server.common.exception.UserNotFound
 import com.noljanolja.server.common.rest.Paging
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.service.UserDS
-import com.noljanolja.server.core.rest.request.UpsertUserRequest
+import com.noljanolja.server.common.model.request.UpsertUserRequest
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
