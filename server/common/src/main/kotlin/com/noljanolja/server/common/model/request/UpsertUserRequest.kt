@@ -23,12 +23,12 @@ data class UpsertUserRequest (
             add(StringValidator(
                 obj = name,
                 fieldName = "name",
-                required = true,
+                required = false,
             ))
             add(StringValidator(
                 obj = profileImage,
                 fieldName = "profileImage",
-                required = true,
+                required = false,
             ))
             add(StringValidator(
                 obj = pushToken,
