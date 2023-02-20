@@ -24,18 +24,16 @@ class AuthFilter(
 
     override fun filterApi(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
         val token = exchange.request.headers.getFirst(HttpHeaders.AUTHORIZATION).orEmpty().trim()
-        if (token.startsWith(BEARER_PREFIX)) {
-            return mono {
-                val firebaseToken = try {
-                    firebaseAuth.verifyIdToken(token.substring(BEARER_PREFIX.length))
-                } catch (e: Exception) {
-                    throw FirebaseException.FailedToVerifyToken(e)
-                }
-                chain.filter(exchange)
-                    .contextWrite(TokenHolder.withToken(firebaseToken))
-                    .awaitFirstOrNull()
+        return mono {
+            if (!token.startsWith(BEARER_PREFIX)) throw FirebaseException.FailedToVerifyToken(null)
+            val firebaseToken = try {
+                firebaseAuth.verifyIdToken(token.substring(BEARER_PREFIX.length))
+            } catch (e: Exception) {
+                throw FirebaseException.FailedToVerifyToken(e)
             }
+            chain.filter(exchange)
+                .contextWrite(TokenHolder.withToken(firebaseToken))
+                .awaitFirstOrNull()
         }
-        return chain.filter(exchange)
     }
 }

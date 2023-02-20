@@ -20,8 +20,8 @@ class AuthApi(
     @Qualifier("authWebClient") private val webClient: WebClient,
 ) {
     companion object {
-        const val GET_USER_INFO_ENDPOINT = "/oauth/userinfo"
-        const val VERIFY_TOKEN_ENDPOINT = "/oauth/verify"
+        const val GET_USER_INFO_ENDPOINT = "/api/v1/oauth/userinfo"
+        const val VERIFY_TOKEN_ENDPOINT = "/api/v1/oauth/verify"
     }
 
     suspend fun getUserInfo(

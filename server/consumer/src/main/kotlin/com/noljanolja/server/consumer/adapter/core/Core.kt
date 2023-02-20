@@ -20,8 +20,8 @@ class CoreApi(
     @Qualifier("coreWebClient") private val webClient: WebClient,
 ) {
     companion object {
-        const val GET_USER_INFO_ENDPOINT = "/users/{userId}"
-        const val UPSERT_USER_ENDPOINT = "/users"
+        const val GET_USER_INFO_ENDPOINT = "/api/v1/users/{userId}"
+        const val UPSERT_USER_ENDPOINT = "/api/v1/users"
 
         val errorsMapper = mapOf<Int, CoreServiceError>(
             404_001 to CoreServiceError.UserNotFound
