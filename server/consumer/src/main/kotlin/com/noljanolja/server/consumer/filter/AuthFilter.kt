@@ -1,6 +1,5 @@
 package com.noljanolja.server.consumer.filter
 
-import com.noljanolja.server.common.exception.FirebaseException
 import com.noljanolja.server.common.rest.BaseWebFilter
 import com.noljanolja.server.consumer.adapter.auth.AuthApi
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -27,9 +26,11 @@ class AuthFilter(
             return mono {
                 val tokenData = authApi.verifyToken(token).data
                 chain.filter(exchange)
-                    .contextWrite(TokenHolder.withToken(tokenData.apply {
-                        bearerToken = token
-                    }))
+                    .contextWrite(TokenHolder.withToken(
+                        tokenData.apply {
+                            bearerToken = token
+                        }
+                    ))
                     .awaitFirstOrNull()
             }
         }

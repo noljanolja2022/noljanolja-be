@@ -8,7 +8,6 @@ import org.springframework.boot.runApplication
 @ConfigurationPropertiesScan
 class Admin
 
-@Suppress("SpreadOperator")
 fun main(args: Array<String>) {
     runApplication<Admin>(*args)
 }

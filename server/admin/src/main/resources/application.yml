@@ -4,5 +4,3 @@ server:
 spring:
   application:
     name: noljanolja-admin
-  profiles:
-    include: cache

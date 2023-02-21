@@ -219,8 +219,6 @@ serverCoreTest = [
 ]
 
 serverAdmin = [
-    "spring-boot-r2dbc",
-    "spring-boot-reactive-redis"
 ]
 
 serverAdminProcessor = [

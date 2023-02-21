@@ -10,8 +10,8 @@ data class UpsertUserRequest (
     val firebaseUserId: String,
     val name: String,
     val profileImage: String,
-    val pushToken: String,
-    val pushNotiEnabled: Boolean,
+    val pushToken: String = "",
+    val pushNotiEnabled: Boolean = false,
 ) {
     init {
         mutableListOf<Validator>().apply {
