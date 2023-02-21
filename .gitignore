@@ -26,11 +26,9 @@ gitlab.properties
 .idea
 
 #venv
-migration/venv/
+migrations/venv/
 .venv/
 __pycache__
 *.pyc
 
 *.env
-
-credential.json

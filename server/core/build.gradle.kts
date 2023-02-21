@@ -7,7 +7,6 @@ dependencies {
     implementation(project(BuildModules.SERVER_COMMON))
     implementation(libs.bundles.serverCore)
     runtimeOnly(libs.bundles.serverCoreRuntime)
-    implementation("dev.miku:r2dbc-mysql:0.8.2.RELEASE")
     testImplementation(libs.bundles.serverCoreTest)
     annotationProcessor(libs.bundles.serverCoreProcessor)
 }
