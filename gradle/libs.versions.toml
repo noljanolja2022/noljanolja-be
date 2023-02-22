@@ -65,6 +65,7 @@ spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-
 spring-boot-rsocket = { module = "org.springframework.boot:spring-boot-starter-rsocket" }
 spring-boot-r2dbc = { module = "org.springframework.boot:spring-boot-starter-data-r2dbc" }
 spring-boot-reactive-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis-reactive" }
+spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 
@@ -219,6 +220,7 @@ serverCoreTest = [
 ]
 
 serverAdmin = [
+    "spring-boot-security"
 ]
 
 serverAdminProcessor = [
@@ -243,7 +245,7 @@ serverConsumerTest = [
 ]
 
 serverAuth = [
-    "firebase-admin"
+    "firebase-admin",
 ]
 
 serverAuthProcessor = [
