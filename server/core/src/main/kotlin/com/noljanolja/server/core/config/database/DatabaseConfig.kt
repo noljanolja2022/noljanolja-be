@@ -1,6 +1,8 @@
 package com.noljanolja.server.core.config.database
 
 import com.noljanolja.server.core.config.database.converter.ByteArrayToUUIDConverter
+import com.noljanolja.server.core.config.database.converter.InstantToLocalDateTimeConverter
+import com.noljanolja.server.core.config.database.converter.LocalDateTimeToInstantConverter
 import com.noljanolja.server.core.config.database.converter.UUIDToByteArrayConverter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,6 +18,8 @@ class DatabaseConfig {
             MySqlDialect.INSTANCE, mutableListOf(
                 ByteArrayToUUIDConverter,
                 UUIDToByteArrayConverter,
+                LocalDateTimeToInstantConverter,
+                InstantToLocalDateTimeConverter,
             )
         )
     }

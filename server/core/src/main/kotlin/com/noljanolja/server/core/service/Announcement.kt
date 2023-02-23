@@ -1,7 +1,7 @@
 package com.noljanolja.server.core.service
 
+import com.noljanolja.server.common.model.CoreAnnouncement
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
@@ -9,29 +9,23 @@ import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
-import com.noljanolja.server.common.model.CoreUser as UserModel
-import java.util.*
+import kotlinx.datetime.Instant
+import java.util.UUID
 
-@Table("users")
-data class User(
+@Table("announcements")
+data class Announcement(
     @Id
     @Column("id")
     val uid: UUID = UUID.randomUUID(),
 
-    @Column("firebase_user_id")
-    var firebaseUserId: String = "",
+    @Column("title")
+    val title: String,
 
-    @Column("name")
-    var name: String = "",
+    @Column("content")
+    val content: String,
 
-    @Column("profile_image")
-    var profileImage: String = "",
-
-    @Column("push_token")
-    var pushToken: String = "",
-
-    @Column("push_noti_enabled")
-    var pushNotiEnabled: Boolean = false,
+    @Column("priority")
+    val priority: CoreAnnouncement.Priority,
 
     @Column("created_at")
     @CreatedDate
@@ -48,11 +42,10 @@ data class User(
     override fun isNew(): Boolean = isNewRecord
 }
 
-fun User.toUserModel() = UserModel(
+fun Announcement.toAnnouncementModel() = CoreAnnouncement(
     id = uid.toString(),
-    firebaseUserId = firebaseUserId,
-    name = name,
-    profileImage = profileImage,
-    pushToken = pushToken,
-    pushNotiEnabled = pushNotiEnabled,
+    title = title,
+    content = content,
+    priority = priority,
+    date = createdAt,
 )

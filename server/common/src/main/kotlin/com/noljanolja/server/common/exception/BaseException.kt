@@ -34,6 +34,14 @@ object RequestBodyRequired : BaseException(
     cause = null,
 )
 
+class SerializationException(
+    override val message: String
+) : BaseException(
+    code = 400_003,
+    message = message,
+    cause = null,
+)
+
 data class DefaultNotFoundException(
     override val cause: Throwable?,
 ) : BaseException(

@@ -4,7 +4,8 @@ import com.noljanolja.server.auth.filter.TokenHolder
 import com.noljanolja.server.auth.service.FirebaseService
 import com.noljanolja.server.common.model.AuthUser
 import com.noljanolja.server.common.model.TokenData
-import com.noljanolja.server.common.rest.Response
+import com.noljanolja.server.common.rest.GetAuthUserResponse
+import com.noljanolja.server.common.rest.GetTokenDataResponse
 import com.noljanolja.server.common.util.enumByNameIgnoreCase
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -22,7 +23,7 @@ class AuthHandler(
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                Response(
+                GetAuthUserResponse(
                     data = user,
                 )
             )
@@ -32,7 +33,7 @@ class AuthHandler(
         val token = TokenHolder.awaitToken()
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                Response(
+                GetTokenDataResponse(
                     data = TokenData(
                         userId = token.uid,
                         roles = listOf(

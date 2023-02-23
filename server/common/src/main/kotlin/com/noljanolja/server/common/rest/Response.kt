@@ -1,15 +1,17 @@
 package com.noljanolja.server.common.rest
 
-import com.fasterxml.jackson.annotation.JsonInclude
+import com.noljanolja.server.common.model.AuthUser
+import com.noljanolja.server.common.model.CoreAnnouncement
+import com.noljanolja.server.common.model.CoreUser
+import com.noljanolja.server.common.model.TokenData
 import kotlinx.serialization.Serializable
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-data class Response<T>(
-    val code: Int = 0,
-    val message: String = "Success",
-    val data: T,
-    val paging: Paging? = null,
-)
+abstract class Response<T> {
+    abstract val code: Int
+    abstract val message: String
+    open val data: T? = null
+    open val paging: Paging? = null
+}
 
 @Serializable
 data class EmptyResponse(
@@ -23,3 +25,40 @@ data class Paging(
     val page: Long,
     val pageSize: Long,
 )
+
+@Serializable
+data class GetAnnouncementsResponse(
+    override val code: Int = 0,
+    override val message: String = "Success",
+    override val data: List<CoreAnnouncement>,
+    override val paging: Paging?,
+) : Response<List<CoreAnnouncement>>()
+
+@Serializable
+data class GetUserResponse(
+    override val code: Int = 0,
+    override val message: String = "Success",
+    override val data: CoreUser,
+) : Response<CoreUser>()
+
+@Serializable
+data class GetUsersResponse(
+    override val code: Int = 0,
+    override val message: String = "Success",
+    override val data: List<CoreUser>,
+    override val paging: Paging,
+) : Response<List<CoreUser>>()
+
+@Serializable
+data class GetAuthUserResponse(
+    override val code: Int = 0,
+    override val message: String = "Success",
+    override val data: AuthUser,
+) : Response<AuthUser>()
+
+@Serializable
+data class GetTokenDataResponse(
+    override val code: Int = 0,
+    override val message: String = "Success",
+    override val data: TokenData,
+) : Response<TokenData>()

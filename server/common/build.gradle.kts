@@ -2,6 +2,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id(BuildPlugins.COMMON_SERVER)
+    id(BuildPlugins.KOTLIN_PLUGIN_SERIALIZATION)
 }
 
 dependencies {

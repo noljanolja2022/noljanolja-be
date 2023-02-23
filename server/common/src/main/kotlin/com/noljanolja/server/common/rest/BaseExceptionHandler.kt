@@ -61,10 +61,9 @@ abstract class BaseExceptionsHandler(
 
         return ServerResponse.status(status)
             .bodyValueAndAwait(
-                Response(
+                EmptyResponse(
                     code = exception.code,
                     message = exception.message,
-                    data = null,
                 )
             )
     }

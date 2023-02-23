@@ -2,6 +2,7 @@ package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.TokenHolder
+import com.noljanolja.server.consumer.model.response.GetMyInfoResponse
 import com.noljanolja.server.consumer.service.UserService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -16,7 +17,7 @@ class ConsumerHandler(
         val tokenData = TokenHolder.awaitToken() ?: throw ConsumerError.UnauthorizedError
         val user = userService.getMyInfo(tokenData)
         return ServerResponse.ok().bodyValueAndAwait(
-            Response(
+            GetMyInfoResponse(
                 data = user
             )
         )

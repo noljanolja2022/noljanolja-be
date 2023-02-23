@@ -1,8 +1,8 @@
 package com.noljanolja.server.admin.rest
 
 import com.noljanolja.server.admin.filter.TokenHolder
+import com.noljanolja.server.admin.model.response.GetMyInfoResponse
 import com.noljanolja.server.admin.service.UserService
-import com.noljanolja.server.common.rest.Response
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
@@ -16,7 +16,7 @@ class AdminHandler(
         val tokenData = TokenHolder.awaitToken() ?: throw AdminError.UnauthorizedError
         val user = userService.getMyInfo(tokenData)
         return ServerResponse.ok().bodyValueAndAwait(
-            Response(
+            GetMyInfoResponse(
                 data = user
             )
         )

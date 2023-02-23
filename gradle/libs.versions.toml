@@ -191,7 +191,8 @@ serverCommon = [
     "kotlin-stdlib",
     "kotlin-reflect",
     "kotlinx-coroutines-reactor",
-    "kotlinx-serialization-json"
+    "kotlinx-serialization-json",
+    "kotlinx-datetime",
 ]
 
 serverCommonRuntime = [
