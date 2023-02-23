@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 abstract class Response<T> {
     abstract val code: Int
     abstract val message: String
-    open val data: T? = null
+    abstract val data: T
     open val paging: Paging? = null
 }
 

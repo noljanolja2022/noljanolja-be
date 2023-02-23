@@ -17,6 +17,7 @@ class ConsumerRouter(
     fun routes() = coRouter {
         (CONSUMER_ROUTER and accept(MediaType.APPLICATION_JSON)).nest {
             GET("/users/me", consumerHandler::getMyInfo)
+            GET("/announcements", consumerHandler::getAnnouncements)
         }
     }
 }
