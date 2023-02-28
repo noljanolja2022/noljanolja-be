@@ -3,6 +3,8 @@ package com.noljanolja.server.consumer.adapter.auth
 import com.noljanolja.server.common.model.AuthUser
 import com.noljanolja.server.common.model.TokenData
 import com.noljanolja.server.common.rest.EmptyResponse
+import com.noljanolja.server.common.rest.GetAuthUserResponse
+import com.noljanolja.server.common.rest.GetTokenDataResponse
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.rest.AuthServiceError
 import com.noljanolja.server.consumer.rest.ConsumerError
@@ -26,7 +28,7 @@ class AuthApi(
 
     suspend fun getUserInfo(
         userToken: String? = null,
-    ): Response<AuthUser> = webClient.get()
+    ): GetAuthUserResponse = webClient.get()
         .uri { builder ->
             builder.path(GET_USER_INFO_ENDPOINT)
                 .build()
@@ -49,7 +51,7 @@ class AuthApi(
 
     suspend fun verifyToken(
         bearerToken: String,
-    ): Response<TokenData> = webClient.get()
+    ): GetTokenDataResponse = webClient.get()
         .uri { builder ->
             builder.path(VERIFY_TOKEN_ENDPOINT)
                 .build()

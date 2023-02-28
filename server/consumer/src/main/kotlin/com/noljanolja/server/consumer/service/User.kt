@@ -15,10 +15,10 @@ class UserService(
     private val coreApi: CoreApi,
 ) {
     internal suspend fun getMyInfo(tokenData: TokenData): UserInfo {
+        val firebaseUser = authApi.getUserInfo(tokenData.bearerToken).data
         return try {
             coreApi.getUserInfo(tokenData.userId).data
         } catch (e: CoreServiceError.UserNotFound) {
-            val firebaseUser = authApi.getUserInfo(tokenData.bearerToken).data
             coreApi.upsertUser(
                 UpsertUserRequest(
                     firebaseUserId = tokenData.userId,
@@ -28,6 +28,6 @@ class UserService(
                     pushNotiEnabled = false,
                 )
             ).data
-        }.toUserInfo()
+        }.toUserInfo(firebaseUser)
     }
 }

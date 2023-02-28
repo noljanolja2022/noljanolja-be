@@ -22,6 +22,9 @@ class FirebaseService(
                 id = userRecord.uid,
                 name = userRecord.displayName.orEmpty(),
                 profileImage = userRecord.photoUrl.orEmpty(),
+                phone = userRecord.phoneNumber.orEmpty(),
+                email = userRecord.email.orEmpty(),
+                isEmailVerified = userRecord.isEmailVerified,
                 roles = listOf(
                     enumByNameIgnoreCase(
                         userRecord.customClaims[CUSTOM_CLAIM_KEY_ROLE].toString(),

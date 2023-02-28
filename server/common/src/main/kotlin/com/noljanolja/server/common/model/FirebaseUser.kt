@@ -8,6 +8,9 @@ data class AuthUser(
     val name: String,
     val profileImage: String,
     val roles: List<CustomClaim.Role>,
+    val phone: String,
+    val email: String,
+    val isEmailVerified: Boolean,
 ) {
     @Serializable
     data class CustomClaim(

@@ -5,6 +5,7 @@ import com.noljanolja.server.common.model.CoreUser
 import com.noljanolja.server.common.model.request.UpsertUserRequest
 import com.noljanolja.server.common.rest.EmptyResponse
 import com.noljanolja.server.common.rest.GetAnnouncementsResponse
+import com.noljanolja.server.common.rest.GetUserResponse
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.rest.CoreServiceError
 import org.springframework.beans.factory.annotation.Qualifier
@@ -32,7 +33,7 @@ class CoreApi(
 
     suspend fun getUserInfo(
         userId: String,
-    ): Response<CoreUser> = webClient.get()
+    ): GetUserResponse = webClient.get()
         .uri { builder ->
             builder.path(GET_USER_INFO_ENDPOINT)
                 .build(userId)
@@ -54,7 +55,7 @@ class CoreApi(
 
     suspend fun upsertUser(
         userRequest: UpsertUserRequest
-    ): Response<CoreUser> = webClient.post()
+    ): GetUserResponse = webClient.post()
         .uri { builder ->
             builder.path(UPSERT_USER_ENDPOINT)
                 .build()
