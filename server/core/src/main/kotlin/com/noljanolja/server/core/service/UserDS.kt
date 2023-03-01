@@ -1,30 +1,32 @@
 package com.noljanolja.server.core.service
 
 import com.noljanolja.server.common.model.request.UpsertUserRequest
-import com.noljanolja.server.common.model.CoreUser as UserModel
+import com.noljanolja.server.core.repo.user.UserRepo
+import com.noljanolja.server.core.repo.user.toUser
+import com.noljanolja.server.common.model.CoreUser
 import org.springframework.stereotype.Component
 
 @Component
 class UserDS(
     private val userRepo: UserRepo,
 ) {
-    suspend fun getUserByFirebaseUserId(firebaseUserId: String): UserModel? {
-        return userRepo.findByFirebaseUserId(firebaseUserId)?.toUserModel()
+    suspend fun getUserByFirebaseUserId(firebaseUserId: String): CoreUser? {
+        return userRepo.findByFirebaseUserId(firebaseUserId)?.toUser()
     }
 
-    suspend fun getUsers(page: Long, pageSize: Long): Pair<List<UserModel>, Long> {
+    suspend fun getUsers(page: Long, pageSize: Long): Pair<List<CoreUser>, Long> {
         val totalRecords = userRepo.count()
         return Pair(
             userRepo.findAllUsers(
                 offset = (page - 1) * pageSize,
                 limit = pageSize,
-            ).map { it.toUserModel() },
+            ).map { it.toUser() },
             totalRecords
         )
     }
 
-    suspend fun upsertUser(request: UpsertUserRequest): UserModel {
-        val user = (userRepo.findByFirebaseUserId(request.firebaseUserId) ?: User(
+    suspend fun upsertUser(request: UpsertUserRequest): CoreUser {
+        val user = (userRepo.findByFirebaseUserId(request.firebaseUserId) ?: com.noljanolja.server.core.repo.user.UserModel(
             firebaseUserId = request.firebaseUserId,
         ).apply { isNewRecord = true }).apply {
             name = request.name
@@ -33,6 +35,6 @@ class UserDS(
             pushNotiEnabled = request.pushNotiEnabled
         }
         userRepo.save(user)
-        return user.toUserModel()
+        return user.toUser()
     }
 }

@@ -1,4 +1,4 @@
-package com.noljanolja.server.core.service
+package com.noljanolja.server.core.repo.announcement
 
 import com.noljanolja.server.common.model.CoreAnnouncement
 import kotlinx.datetime.Clock
@@ -13,7 +13,7 @@ import kotlinx.datetime.Instant
 import java.util.UUID
 
 @Table("announcements")
-data class Announcement(
+data class AnnouncementModel(
     @Id
     @Column("id")
     val uid: UUID = UUID.randomUUID(),
@@ -42,7 +42,7 @@ data class Announcement(
     override fun isNew(): Boolean = isNewRecord
 }
 
-fun Announcement.toAnnouncementModel() = CoreAnnouncement(
+fun AnnouncementModel.toAnnouncementModel() = CoreAnnouncement(
     id = uid.toString(),
     title = title,
     content = content,

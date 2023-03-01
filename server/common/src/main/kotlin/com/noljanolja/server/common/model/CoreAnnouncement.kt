@@ -22,3 +22,4 @@ data class CoreAnnouncement(
         LOW
     }
 }
+//TODO: move this to core

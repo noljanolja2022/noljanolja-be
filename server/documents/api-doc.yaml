@@ -1,0 +1,214 @@
+swagger: "2.0"
+info:
+  description: "Nolja API"
+  version: "1.0.0"
+  title: "Swagger Nolja"
+  contact:
+    email: "nguyenbrother9x@gmail.com"
+tags:
+  - name: "user"
+    description: "Everything about your User"
+  - name: "conversation"
+    description: "Everything about conversation"
+schemes:
+  - "https"
+  - "http"
+
+paths:
+  /api/v1/conversations:
+    post:
+      tags:
+        - "conversation"
+      summary: "create conversation"
+      description: "Create Conversation"
+      operationId: "createConversation"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          required: true
+        - in: "body"
+          name: "body"
+          description: "conversation data"
+          required: true
+          schema:
+            type: object
+            required:
+              - "title"
+              - "type"
+              - "participantIds"
+            properties:
+              title:
+                type: "string"
+              type:
+                type: "string"
+                enum: ["Single", "Group"]
+              participantIds:
+                type: "array"
+                items:
+                  type: "integer"
+                  format: "int64"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "object"
+            required:
+              - code
+              - message
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 0
+              message:
+                type: string
+                example: success
+              data:
+                $ref: "#/definitions/Conversation"
+    get:
+      tags:
+        - "conversation"
+      summary: "get conversation list"
+      description: "get Conversation list"
+      operationId: "getConversationList"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          required: true
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "object"
+            required:
+              - "code"
+              - "message"
+            properties:
+              code:
+                type: "integer"
+                format: int32
+                example: 0
+              message:
+                type: string
+                example: success
+              data:
+                type: array
+                items:
+                  $ref: "#/definitions/Conversation"
+
+definitions:
+  Conversation:
+    type: "object"
+    required:
+      - "id"
+      - "title"
+      - "type"
+      - "participants"
+      - "messages"
+      - "creator"
+      - "createdAt"
+      - "updatedAt"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      title:
+        type: "string"
+      type:
+        type: "string"
+      participants:
+        type: "array"
+        items:
+          $ref: "#/definitions/User"
+      messages:
+        type: "array"
+        items:
+          $ref: "#/definitions/Message"
+      creator:
+        $ref: "#/definitions/User"
+      createdAt:
+        type: "string"
+        example: "2021-12-22T08:35:08Z"
+      updatedAt:
+        type: "string"
+        example: "2021-12-22T08:35:08Z"
+  Message:
+    type: "object"
+    required:
+      - "id"
+      - "message"
+      - "sender"
+      - "type"
+      - "createdAt"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      message:
+        type: "string"
+      attachments:
+        type: array
+        items:
+          $ref: "#/definitions/Attachment"
+      sender:
+        $ref: "#/definitions/User"
+      type:
+        type: "string"
+        enum: [ "PlainText", "Sticker", "Photo", "Document", "Gif" ]
+      createdAt:
+        type: "string"
+        example: "2021-12-22T08:35:08Z"
+  Attachment:
+    type: "object"
+    required:
+      - "id"
+      - "type"
+      - "originalName"
+      - "name"
+      - "size"
+      - "md5"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+      type:
+        type: "string"
+        description: "Content type of the attachment"
+        example: "video/mp4"
+      originalName:
+        type: "string"
+        example: "01.png"
+      name:
+        type: "string"
+        example: "1642266515_1_01.png"
+      size:
+        type: "integer"
+        format: "int64"
+        example: 3745
+      md5:
+        type: "string"
+        example: "8849491cc98cecb4a915dbb773edd253"
+  Gif:
+    type: "object"
+    required:
+      - "src"
+      - "dataSource"
+    properties:
+      url:
+        type: "string"
+        description: "url of the gif"
+      dataSource:
+        type: "string"
+        description: "where the gif comes from"
+        example: "giphy"

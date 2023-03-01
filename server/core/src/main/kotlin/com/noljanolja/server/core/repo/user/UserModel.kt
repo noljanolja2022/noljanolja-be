@@ -1,4 +1,4 @@
-package com.noljanolja.server.core.service
+package com.noljanolja.server.core.repo.user
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -9,11 +9,11 @@ import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
-import com.noljanolja.server.common.model.CoreUser as UserModel
+import com.noljanolja.server.common.model.CoreUser
 import java.util.*
 
 @Table("users")
-data class User(
+data class UserModel(
     @Id
     @Column("id")
     val uid: UUID = UUID.randomUUID(),
@@ -48,7 +48,7 @@ data class User(
     override fun isNew(): Boolean = isNewRecord
 }
 
-fun User.toUserModel() = UserModel(
+fun UserModel.toUser() = CoreUser(
     id = uid.toString(),
     firebaseUserId = firebaseUserId,
     name = name,

@@ -11,3 +11,4 @@ data class CoreUser(
     var pushToken: String,
     var pushNotiEnabled: Boolean,
 )
+//TODO: move this to core

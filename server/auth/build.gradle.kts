@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(BuildModules.SERVER_COMMON))
+    implementation(project(BuildModules.SERVER_CORE))
     implementation(libs.bundles.serverAuth)
     runtimeOnly(libs.bundles.serverAuthRuntime)
     testImplementation(libs.bundles.serverAuthTest)

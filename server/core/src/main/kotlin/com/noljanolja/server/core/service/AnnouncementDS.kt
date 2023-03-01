@@ -2,6 +2,9 @@ package com.noljanolja.server.core.service
 
 import com.noljanolja.server.common.model.CoreAnnouncement
 import com.noljanolja.server.common.model.request.CreateAnnouncementRequest
+import com.noljanolja.server.core.repo.announcement.AnnouncementModel
+import com.noljanolja.server.core.repo.announcement.AnnouncementRepo
+import com.noljanolja.server.core.repo.announcement.toAnnouncementModel
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -25,7 +28,7 @@ class AnnouncementDS(
 
     suspend fun createAnnouncement(announcementReq: CreateAnnouncementRequest) {
         announcementRepo.save(
-            Announcement(
+            AnnouncementModel(
                 title = announcementReq.title,
                 content = announcementReq.content,
                 priority = announcementReq.priority,
