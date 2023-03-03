@@ -1,9 +1,9 @@
 package com.noljanolja.server.core.service
 
+import com.noljanolja.server.core.model.CoreUser
 import com.noljanolja.server.core.model.request.UpsertUserRequest
 import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.core.repo.user.toUser
-import com.noljanolja.server.core.model.CoreUser
 import org.springframework.stereotype.Component
 
 @Component
@@ -30,9 +30,8 @@ class UserDS(
             firebaseUserId = request.firebaseUserId,
         ).apply { isNewRecord = true }).apply {
             name = request.name
-            profileImage = request.profileImage
+            avatar = request.profileImage
             pushToken = request.pushToken
-            pushNotiEnabled = request.pushNotiEnabled
         }
         userRepo.save(user)
         return user.toUser()

@@ -1,0 +1,13 @@
+spring:
+  r2dbc:
+    url: r2dbc:proxy:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    pool:
+      initial-size: 10
+      max-size: 20
+      max-create-connection-time: PT3S
+      max-acquire-time: PT8S
+      max-idle-time: PT60S
+      max-life-time: PT120S
+      validation-query: SELECT 1

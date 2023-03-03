@@ -13,5 +13,5 @@ internal data class UserInfo(
 internal fun CoreUser.toUserInfo() = UserInfo(
     id = firebaseUserId,
     name = name,
-    profileImage = profileImage,
+    profileImage = avatar,
 )

@@ -1,5 +1,7 @@
 package com.noljanolja.server.core.repo.user
 
+import com.noljanolja.server.core.model.CoreUser
+import com.noljanolja.server.core.model.Gender
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.springframework.data.annotation.CreatedDate
@@ -9,7 +11,6 @@ import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
-import com.noljanolja.server.core.model.CoreUser
 import java.util.*
 
 @Table("users")
@@ -25,13 +26,25 @@ data class UserModel(
     var name: String = "",
 
     @Column("profile_image")
-    var profileImage: String = "",
+    var avatar: String = "",
+
+    @Column("email")
+    val email: String = "",
+
+    @Column("phone")
+    val phone: String = "",
+
+    @Column("is_email_verified")
+    val isEmailVerified: Boolean = false,
+
+    @Column("dob")
+    val dob: Instant? = null,
+
+    @Column("gender")
+    val gender: Gender? = null,
 
     @Column("push_token")
     var pushToken: String = "",
-
-    @Column("push_noti_enabled")
-    var pushNotiEnabled: Boolean = false,
 
     @Column("created_at")
     @CreatedDate
@@ -40,6 +53,13 @@ data class UserModel(
     @Column("updated_at")
     @LastModifiedDate
     val updatedAt: Instant = Clock.System.now(),
+
+    // SETTINGS
+    @Column("collect_and_user_personal_info")
+    val collectAndUsePersonalInfo: Boolean = false,
+
+    @Column("push_noti_enabled")
+    val pushNotiEnabled: Boolean = false,
 ) : Persistable<UUID> {
     @Transient
     var isNewRecord: Boolean = false
@@ -52,7 +72,15 @@ fun UserModel.toUser() = CoreUser(
     id = uid.toString(),
     firebaseUserId = firebaseUserId,
     name = name,
-    profileImage = profileImage,
+    email= email,
+    avatar = avatar,
+    dob = dob,
+    gender = gender ?: Gender.Other,
+    phone = phone,
+    isEmailVerified = isEmailVerified,
     pushToken = pushToken,
-    pushNotiEnabled = pushNotiEnabled,
+    preferences = CoreUser.Preference(
+        pushNotiEnabled = pushNotiEnabled,
+        collectAndUsePersonalInfo = collectAndUsePersonalInfo
+    )
 )
