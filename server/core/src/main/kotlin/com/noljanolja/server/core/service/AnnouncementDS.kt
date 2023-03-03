@@ -1,7 +1,7 @@
 package com.noljanolja.server.core.service
 
-import com.noljanolja.server.common.model.CoreAnnouncement
-import com.noljanolja.server.common.model.request.CreateAnnouncementRequest
+import com.noljanolja.server.core.model.CoreAnnouncement
+import com.noljanolja.server.core.model.request.CreateAnnouncementRequest
 import com.noljanolja.server.core.repo.announcement.AnnouncementModel
 import com.noljanolja.server.core.repo.announcement.AnnouncementRepo
 import com.noljanolja.server.core.repo.announcement.toAnnouncementModel

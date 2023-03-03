@@ -16,7 +16,7 @@ import java.time.Instant
 import java.util.UUID
 
 @Table("conversations")
-data class ConversationModel(
+internal data class ConversationModel(
     @Id
     @Column("id")
     var id: Long = 0,

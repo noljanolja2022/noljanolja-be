@@ -1,4 +1,4 @@
-package com.noljanolja.server.common.model
+package com.noljanolja.server.core.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

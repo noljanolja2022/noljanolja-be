@@ -2,8 +2,8 @@ package com.noljanolja.server.admin.adapter.core
 
 
 import com.noljanolja.server.admin.rest.CoreServiceError
-import com.noljanolja.server.common.model.CoreUser
-import com.noljanolja.server.common.model.request.UpsertUserRequest
+import com.noljanolja.server.core.model.CoreUser
+import com.noljanolja.server.core.model.request.UpsertUserRequest
 import com.noljanolja.server.common.rest.EmptyResponse
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier

@@ -1,6 +1,6 @@
 package com.noljanolja.server.core.model
 
-import com.noljanolja.server.common.model.CoreUser
+import com.noljanolja.server.core.model.CoreUser
 import java.time.Instant
 
 data class Message(

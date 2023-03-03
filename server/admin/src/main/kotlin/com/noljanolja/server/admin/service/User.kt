@@ -1,7 +1,7 @@
 package com.noljanolja.server.admin.service
 
-import com.noljanolja.server.common.model.TokenData
-import com.noljanolja.server.common.model.request.UpsertUserRequest
+import com.noljanolja.server.core.model.TokenData
+import com.noljanolja.server.core.model.request.UpsertUserRequest
 import com.noljanolja.server.admin.adapter.auth.AuthApi
 import com.noljanolja.server.admin.adapter.core.CoreApi
 import com.noljanolja.server.admin.model.UserInfo

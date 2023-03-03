@@ -1,6 +1,7 @@
-package com.noljanolja.server.common.util
+package com.noljanolja.server.core.util
 
-import com.noljanolja.server.common.model.CoreAnnouncement
+import com.noljanolja.server.common.util.enumByNameIgnoreCase
+import com.noljanolja.server.core.model.CoreAnnouncement
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor

@@ -3,7 +3,7 @@ package com.noljanolja.server.admin.filter
 import com.noljanolja.server.common.rest.BaseWebFilter
 import com.noljanolja.server.admin.adapter.auth.AuthApi
 import com.noljanolja.server.admin.rest.AdminError
-import com.noljanolja.server.common.model.AuthUser
+import com.noljanolja.server.core.model.AuthUser
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.mono
 import org.springframework.core.annotation.Order

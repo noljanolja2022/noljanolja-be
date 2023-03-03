@@ -1,9 +1,9 @@
 package com.noljanolja.server.auth.service
 
 import com.google.firebase.auth.FirebaseAuth
-import com.noljanolja.server.common.model.AuthUser
+import com.noljanolja.server.core.model.AuthUser
 import com.noljanolja.server.common.util.enumByNameIgnoreCase
-import com.noljanolja.server.common.model.AuthUser as UserModel
+import com.noljanolja.server.core.model.AuthUser as UserModel
 import org.springframework.stereotype.Component
 
 @Component

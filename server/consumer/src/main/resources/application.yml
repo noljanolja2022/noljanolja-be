@@ -4,3 +4,7 @@ server:
 spring:
   application:
     name: noljanolja-consumer
+  rsocket:
+    server:
+      transport: websocket
+      mapping-path: /rsocket

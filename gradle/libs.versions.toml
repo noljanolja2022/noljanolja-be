@@ -207,6 +207,7 @@ serverCore = [
     "spring-boot-r2dbc",
     "r2dbc-proxy",
     "miku-r2dbc-mysql",
+    "spring-boot-rsocket"
 ]
 
 serverCoreProcessor = [
@@ -234,6 +235,7 @@ serverAdminTest = [
 ]
 
 serverConsumer = [
+    "spring-boot-rsocket"
 ]
 
 serverConsumerProcessor = [

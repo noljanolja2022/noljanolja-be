@@ -1,6 +1,5 @@
 package com.noljanolja.server.core.model
 
-import com.noljanolja.server.common.model.CoreUser
 import java.time.Instant
 
 data class Conversation(

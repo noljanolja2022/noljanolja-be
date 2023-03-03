@@ -1,6 +1,6 @@
 package com.noljanolja.server.core.repo.announcement
 
-import com.noljanolja.server.common.model.CoreAnnouncement
+import com.noljanolja.server.core.model.CoreAnnouncement
 import kotlinx.datetime.Clock
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id

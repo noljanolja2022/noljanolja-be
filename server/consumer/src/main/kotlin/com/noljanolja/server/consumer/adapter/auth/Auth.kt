@@ -1,13 +1,10 @@
 package com.noljanolja.server.consumer.adapter.auth
 
-import com.noljanolja.server.common.model.AuthUser
-import com.noljanolja.server.common.model.TokenData
 import com.noljanolja.server.common.rest.EmptyResponse
-import com.noljanolja.server.common.rest.GetAuthUserResponse
-import com.noljanolja.server.common.rest.GetTokenDataResponse
-import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.rest.AuthServiceError
 import com.noljanolja.server.consumer.rest.ConsumerError
+import com.noljanolja.server.core.model.response.GetAuthUserResponse
+import com.noljanolja.server.core.model.response.GetTokenDataResponse
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus

@@ -1,8 +1,8 @@
 package com.noljanolja.server.consumer.model
 
-import com.noljanolja.server.common.model.CoreAnnouncement
+import com.noljanolja.server.core.model.CoreAnnouncement
 import com.noljanolja.server.common.util.InstantSerializer
-import com.noljanolja.server.common.util.PrioritySerializer
+import com.noljanolja.server.core.util.PrioritySerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 

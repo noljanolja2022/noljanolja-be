@@ -1,7 +1,7 @@
-package com.noljanolja.server.common.model
+package com.noljanolja.server.core.model
 
 import com.noljanolja.server.common.util.InstantSerializer
-import com.noljanolja.server.common.util.PrioritySerializer
+import com.noljanolja.server.core.util.PrioritySerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 

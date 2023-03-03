@@ -1,7 +1,7 @@
-package com.noljanolja.server.common.model.request
+package com.noljanolja.server.core.model.request
 
-import com.noljanolja.server.common.model.CoreAnnouncement
-import com.noljanolja.server.common.util.PrioritySerializer
+import com.noljanolja.server.core.model.CoreAnnouncement
+import com.noljanolja.server.core.util.PrioritySerializer
 import com.noljanolja.server.common.validator.StringValidator
 import com.noljanolja.server.common.validator.Validator
 import com.noljanolja.server.common.validator.validate

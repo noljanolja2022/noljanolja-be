@@ -1,6 +1,6 @@
 package com.noljanolja.server.core.repo.message
 
-import com.noljanolja.server.common.model.CoreUser
+import com.noljanolja.server.core.model.CoreUser
 import com.noljanolja.server.core.model.Message
 import com.noljanolja.server.core.model.MessageType
 import com.noljanolja.server.core.repo.attachment.AttachmentModel

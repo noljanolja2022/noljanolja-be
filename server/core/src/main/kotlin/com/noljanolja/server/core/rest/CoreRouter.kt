@@ -12,7 +12,6 @@ class CoreRouter(
     companion object {
         const val CORE_USERS_ROUTE = "/api/v1/users"
         const val CORE_ANNOUNCEMENTS_ROUTE = "/api/v1/announcements"
-        const val CORE_CONVERSATION_ROUTE = "/api/v1/conversations"
     }
 
     @Bean
@@ -26,9 +25,6 @@ class CoreRouter(
             GET("", coreHandler::getAnnouncements)
             DELETE("{announcementId}", coreHandler::deleteAnnouncement)
             POST("", coreHandler::createAnnouncement)
-        }
-        (CORE_CONVERSATION_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
-            
         }
     }
 }

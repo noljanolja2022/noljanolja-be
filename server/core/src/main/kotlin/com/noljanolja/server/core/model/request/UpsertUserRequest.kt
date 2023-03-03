@@ -1,4 +1,4 @@
-package com.noljanolja.server.common.model.request
+package com.noljanolja.server.core.model.request
 
 import com.noljanolja.server.common.validator.StringValidator
 import com.noljanolja.server.common.validator.Validator

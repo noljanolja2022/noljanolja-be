@@ -2,8 +2,8 @@ package com.noljanolja.server.admin.adapter.auth
 
 import com.noljanolja.server.admin.rest.AdminError
 import com.noljanolja.server.admin.rest.AuthServiceError
-import com.noljanolja.server.common.model.AuthUser
-import com.noljanolja.server.common.model.TokenData
+import com.noljanolja.server.core.model.AuthUser
+import com.noljanolja.server.core.model.TokenData
 import com.noljanolja.server.common.rest.EmptyResponse
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier

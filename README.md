@@ -1,97 +1,53 @@
-# Swagger Nolja
-Nolja API
+# Prerequisite
 
-## Version: 1.0.0
+- Redis
+- Mysql
+- Python
+- Docker (recommended)
 
-**Contact information:**  
-nguyenbrother9x@gmail.com
+# Start Db service
 
-### /api/v1/conversations
+Either use docker or local instance. Prefer docker for lightweight
 
-#### POST
-##### Summary:
+1. Pull [Mysql image](https://hub.docker.com/_/mysql) from Docker hub
+2. Run the image with these environment variable. These can be found in `migration/cli.py` 
+   ```agsl
+   MYSQL_ROOT_PASSWORD=
+   MYSQL_DATABASE=
+   MYSQL_USER=
+   MYSQL_PASSWORD=
+   ```
+   And expose port `3306`
 
-create conversation
+# Create migration/populate Database
+1. Navigate to `migrations` folder
+2. Run this to install dependencies
+    ```
+    pip3 install -r ./requirements.txt
+    ```
+3. To populate database
 
-##### Description:
+   - Mac
+    ```agsl
+    python3 cli.py upgrade
+    ```
+   - Window
+   ```agsl
+   py cli.py upgrade
+   ```
 
-Create Conversation
+4. To create a new migration/table
 
-##### Parameters
+   - Mac
+    ```agsl
+    python3 cli.py revision -m "revision name"
+    ```
+   - Window
+   ```agsl
+   py cli.py revision -m "revision name"
+   ```
+   Populate the revision file, then run step 3 again
 
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| Authorization | header |  | Yes | string |
-| body | body | conversation data | Yes | object |
+# Start local server
 
-##### Responses
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 200 | successful operation | object |
-
-#### GET
-##### Summary:
-
-get conversation list
-
-##### Description:
-
-get Conversation list
-
-##### Parameters
-
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| Authorization | header |  | Yes | string |
-
-##### Responses
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 200 | successful operation | object |
-
-### Models
-
-
-#### Conversation
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| id | long |  | Yes |
-| title | string |  | Yes |
-| type | string |  | Yes |
-| participants | [ [User](#User) ] |  | Yes |
-| messages | [ [Message](#Message) ] |  | Yes |
-| creator | [User](#User) |  | Yes |
-| createdAt | string |  | Yes |
-| updatedAt | string |  | Yes |
-
-#### Message
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| id | long |  | Yes |
-| message | string |  | Yes |
-| attachments | [ [Attachment](#Attachment) ] |  | No |
-| sender | [User](#User) |  | Yes |
-| type | string |  | Yes |
-| createdAt | string |  | Yes |
-
-#### Attachment
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| id | long |  | Yes |
-| type | string | Content type of the attachment | Yes |
-| originalName | string |  | Yes |
-| name | string |  | Yes |
-| size | long |  | Yes |
-| md5 | string |  | Yes |
-
-#### Gif
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| url | string | url of the gif | No |
-| dataSource | string | where the gif comes from | Yes |
+# Debug local db

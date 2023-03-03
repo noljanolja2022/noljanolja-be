@@ -9,7 +9,7 @@ import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
-import com.noljanolja.server.common.model.CoreUser
+import com.noljanolja.server.core.model.CoreUser
 import java.util.*
 
 @Table("users")

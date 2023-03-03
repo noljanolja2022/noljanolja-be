@@ -1,7 +1,7 @@
 package com.noljanolja.server.consumer.model
 
-import com.noljanolja.server.common.model.AuthUser
-import com.noljanolja.server.common.model.CoreUser
+import com.noljanolja.server.core.model.AuthUser
+import com.noljanolja.server.core.model.CoreUser
 import kotlinx.serialization.Serializable
 
 @Serializable

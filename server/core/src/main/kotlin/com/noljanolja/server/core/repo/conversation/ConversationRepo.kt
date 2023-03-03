@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface ConversationRepo : CoroutineCrudRepository<ConversationModel, Long> {
+internal interface ConversationRepo : CoroutineCrudRepository<ConversationModel, Long> {
     @Query("SELECT * FROM conversations WHERE id IN (SELECT conversation_id FROM participants WHERE user_id = :userId) ORDER BY updated_at DESC")
     suspend fun findAllByUserId(userId: UUID): List<ConversationModel>
 }
