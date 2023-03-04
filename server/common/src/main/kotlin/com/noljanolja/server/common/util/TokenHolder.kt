@@ -1,7 +1,6 @@
-package com.noljanolja.server.consumer.filter
+package com.noljanolja.server.common.util
 
-import com.noljanolja.server.core.model.TokenData
-import kotlinx.coroutines.reactive.awaitFirst
+import com.noljanolja.server.common.model.TokenData
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import reactor.core.publisher.Mono
 import reactor.util.context.Context

@@ -3,20 +3,16 @@ package com.noljanolja.server.consumer.model.response
 import com.noljanolja.server.common.rest.Paging
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.model.Announcement
-import com.noljanolja.server.consumer.model.UserInfo
+import com.noljanolja.server.consumer.model.User
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class GetMyInfoResponse(
-    override val code: Int = 0,
-    override val message: String = "Success",
-    override val data: UserInfo,
-) : Response<UserInfo>()
+data class GetUserResponse(
+    override val data: User,
+) : Response<User>()
 
 @Serializable
-internal data class GetAnnouncementsResponse(
-    override val code: Int = 0,
-    override val message: String = "Success",
+data class GetAnnouncementsResponse(
     override val data: List<Announcement>,
     override val paging: Paging,
 ) : Response<List<Announcement>>()

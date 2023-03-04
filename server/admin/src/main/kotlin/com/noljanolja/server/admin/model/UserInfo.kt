@@ -4,13 +4,13 @@ import com.noljanolja.server.core.model.CoreUser
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class UserInfo(
+data class UserInfo(
     val id: String,
     val name: String,
     val profileImage: String,
 )
 
-internal fun CoreUser.toUserInfo() = UserInfo(
+fun CoreUser.toUserInfo() = UserInfo(
     id = firebaseUserId,
     name = name,
     profileImage = avatar,

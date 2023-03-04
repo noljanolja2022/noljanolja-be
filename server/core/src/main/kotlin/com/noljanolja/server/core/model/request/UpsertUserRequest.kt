@@ -6,7 +6,6 @@ import com.noljanolja.server.common.validator.validate
 import com.noljanolja.server.core.model.CoreUser
 import com.noljanolja.server.core.model.Gender
 import kotlinx.datetime.Instant
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,7 +13,6 @@ data class UpsertUserRequest (
     val firebaseUserId: String,
     val name: String? = null,
     val gender: Gender? = null,
-    @SerialName("email")
     val email: String? = null,
     val dob: Instant? = null,
     val avatar: String? = null,
@@ -22,7 +20,7 @@ data class UpsertUserRequest (
     var preferences: CoreUser.Preference? = null,
     val profileImage: String? = null,
     val pushToken: String = "",
-    val pushNotiEnabled: Boolean = false,
+    val isEmailVerified: Boolean? = null
 ) {
     init {
         mutableListOf<Validator>().apply {

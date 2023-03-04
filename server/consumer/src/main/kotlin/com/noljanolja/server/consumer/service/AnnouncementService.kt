@@ -2,7 +2,6 @@ package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.model.Announcement
-import com.noljanolja.server.consumer.model.toAnnouncementModel
 import org.springframework.stereotype.Component
 
 @Component
@@ -17,7 +16,7 @@ class AnnouncementService(
             page = page,
             pageSize = pageSize,
         ).let {
-            Pair(it.data.map { it.toAnnouncementModel() }, it.paging!!.totalRecords)
+            Pair(it.data, it.paging.totalRecords)
         }
     }
 }

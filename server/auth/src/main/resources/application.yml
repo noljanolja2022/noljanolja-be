@@ -4,5 +4,3 @@ server:
 spring:
   application:
     name: noljanolja-auth
-  profiles:
-    include: database

@@ -17,6 +17,7 @@ class AuthRouter(
     fun routes() = coRouter {
         (AUTH_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             GET("userinfo", authHandler::getUserInfo)
+            PUT("userinfo", authHandler::updateUser)
             GET("verify", authHandler::verifyToken)
         }
     }

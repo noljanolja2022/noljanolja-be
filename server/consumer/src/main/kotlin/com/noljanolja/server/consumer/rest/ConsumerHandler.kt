@@ -2,10 +2,10 @@ package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Paging
-import com.noljanolja.server.consumer.filter.TokenHolder
+import com.noljanolja.server.common.util.TokenHolder
 import com.noljanolja.server.consumer.model.UpdateUserRequest
 import com.noljanolja.server.consumer.model.response.GetAnnouncementsResponse
-import com.noljanolja.server.consumer.model.response.GetMyInfoResponse
+import com.noljanolja.server.consumer.model.response.GetUserResponse
 import com.noljanolja.server.consumer.service.AnnouncementService
 import com.noljanolja.server.consumer.service.UserService
 import org.springframework.stereotype.Component
@@ -25,7 +25,7 @@ class ConsumerHandler(
         val tokenData = TokenHolder.awaitToken() ?: throw ConsumerError.UnauthorizedError
         val user = userService.getMyInfo(tokenData)
         return ServerResponse.ok().bodyValueAndAwait(
-            GetMyInfoResponse(
+            GetUserResponse(
                 data = user
             )
         )
@@ -36,7 +36,7 @@ class ConsumerHandler(
         val requestBody = request.awaitBodyOrNull<UpdateUserRequest>() ?: throw RequestBodyRequired
         val updatedUser = userService.updateUser(tokenData, requestBody)
         return ServerResponse.ok().bodyValueAndAwait(
-            GetMyInfoResponse(
+            GetUserResponse(
                 data = updatedUser
             )
         )

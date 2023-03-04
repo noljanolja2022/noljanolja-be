@@ -3,7 +3,7 @@ package com.noljanolja.server.admin.filter
 import com.noljanolja.server.common.rest.BaseWebFilter
 import com.noljanolja.server.admin.adapter.auth.AuthApi
 import com.noljanolja.server.admin.rest.AdminError
-import com.noljanolja.server.core.model.AuthUser
+import com.noljanolja.server.common.model.FirebaseUser
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.mono
 import org.springframework.core.annotation.Order
@@ -20,7 +20,7 @@ class AuthFilter(
 ) : BaseWebFilter() {
     companion object {
         private const val BEARER_PREFIX = "Bearer "
-        private val PRIVILEGED_ROLES = listOf(AuthUser.CustomClaim.Role.ADMIN, AuthUser.CustomClaim.Role.STAFF)
+        private val PRIVILEGED_ROLES = listOf(FirebaseUser.CustomClaim.Role.ADMIN, FirebaseUser.CustomClaim.Role.STAFF)
     }
 
     override fun filterApi(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {

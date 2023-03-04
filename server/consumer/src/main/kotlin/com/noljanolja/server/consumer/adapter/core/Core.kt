@@ -1,10 +1,10 @@
 package com.noljanolja.server.consumer.adapter.core
 
 import com.noljanolja.server.common.rest.EmptyResponse
+import com.noljanolja.server.consumer.model.request.UpsertUserRequest
+import com.noljanolja.server.consumer.model.response.GetAnnouncementsResponse
+import com.noljanolja.server.consumer.model.response.GetUserResponse
 import com.noljanolja.server.consumer.rest.CoreServiceError
-import com.noljanolja.server.core.model.request.UpsertUserRequest
-import com.noljanolja.server.core.model.response.GetAnnouncementsResponse
-import com.noljanolja.server.core.model.response.GetUserResponse
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component

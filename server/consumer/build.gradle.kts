@@ -5,7 +5,6 @@ plugins {
 
 dependencies {
     implementation(project(BuildModules.SERVER_COMMON))
-    implementation(project(BuildModules.SERVER_CORE))
     implementation(libs.bundles.serverConsumer)
     runtimeOnly(libs.bundles.serverConsumerRuntime)
     testImplementation(libs.bundles.serverConsumerTest)

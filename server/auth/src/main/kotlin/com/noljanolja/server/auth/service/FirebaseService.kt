@@ -1,9 +1,9 @@
 package com.noljanolja.server.auth.service
 
 import com.google.firebase.auth.FirebaseAuth
-import com.noljanolja.server.core.model.AuthUser
+import com.google.firebase.auth.UserRecord
+import com.noljanolja.server.common.model.FirebaseUser
 import com.noljanolja.server.common.util.enumByNameIgnoreCase
-import com.noljanolja.server.core.model.AuthUser as UserModel
 import org.springframework.stereotype.Component
 
 @Component
@@ -16,9 +16,9 @@ class FirebaseService(
 
     suspend fun getUserInfo(
         uid: String,
-    ): UserModel {
+    ): FirebaseUser {
         return firebaseAuth.getUser(uid).let { userRecord ->
-            UserModel(
+            FirebaseUser(
                 id = userRecord.uid,
                 name = userRecord.displayName.orEmpty(),
                 profileImage = userRecord.photoUrl.orEmpty(),
@@ -28,7 +28,30 @@ class FirebaseService(
                 roles = listOf(
                     enumByNameIgnoreCase(
                         userRecord.customClaims[CUSTOM_CLAIM_KEY_ROLE].toString(),
-                        AuthUser.CustomClaim.Role.CONSUMER,
+                        FirebaseUser.CustomClaim.Role.CONSUMER,
+                    )
+                )
+            )
+        }
+    }
+
+    suspend fun updateUserInfo(uid: String, name: String?, email: String?) : FirebaseUser  {
+        val updateRequest = UserRecord.UpdateRequest(uid).apply {
+            if (name != null) setDisplayName(name)
+            if (email != null) setEmail(email)
+        }
+        return firebaseAuth.updateUser(updateRequest).let {
+            FirebaseUser(
+                id = it.uid,
+                name = it.displayName.orEmpty(),
+                profileImage = it.photoUrl.orEmpty(),
+                phone = it.phoneNumber.orEmpty(),
+                email = it.email.orEmpty(),
+                isEmailVerified = it.isEmailVerified,
+                roles = listOf(
+                    enumByNameIgnoreCase(
+                        it.customClaims[CUSTOM_CLAIM_KEY_ROLE].toString(),
+                        FirebaseUser.CustomClaim.Role.CONSUMER,
                     )
                 )
             )

@@ -1,8 +1,8 @@
 package com.noljanolja.server.core.service
 
 import com.noljanolja.server.core.model.CoreUser
-import com.noljanolja.server.core.model.Gender
 import com.noljanolja.server.core.model.request.UpsertUserRequest
+import com.noljanolja.server.core.repo.user.UserModel
 import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.core.repo.user.toUser
 import org.springframework.stereotype.Component
@@ -27,20 +27,19 @@ class UserDS(
     }
 
     suspend fun upsertUser(request: UpsertUserRequest): CoreUser {
-        var user = userRepo.findByFirebaseUserId(request.firebaseUserId)
-        if (user == null) {
-            user = com.noljanolja.server.core.repo.user.UserModel(
-                firebaseUserId = request.firebaseUserId,
-            )
-            user.isNewRecord = true
-        }
+        val user = userRepo.findByFirebaseUserId(request.firebaseUserId) ?: UserModel(
+            firebaseUserId = request.firebaseUserId,
+        )
         user.apply {
             request.name?.let { name = it }
             request.phone?.let { phone = it }
-            email = request.email
-            gender = request.gender ?: Gender.Other
-            avatar = request.profileImage ?: ""
+            request.email?.let { email = it }
+            gender = request.gender
+            avatar = request.profileImage
             pushToken = request.pushToken
+            request.isEmailVerified?.let { isEmailVerified = it }
+            request.preferences?.pushNotiEnabled?.let { pushNotiEnabled = it }
+            request.preferences?.collectAndUsePersonalInfo?.let { collectAndUsePersonalInfo = it }
         }
         val res = userRepo.save(user)
         return res.toUser()

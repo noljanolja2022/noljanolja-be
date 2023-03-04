@@ -60,6 +60,21 @@ paths:
           name: Authorization
           type: string
           required: true
+        - in: body
+          name: Update User Request
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              email:
+                type: string
+              gender:
+                type: string
+              dob:
+                type: string
+              preferences:
+                $ref: "#/definitions/UserPreference"
       responses:
         "200":
           description: On success
@@ -77,7 +92,7 @@ paths:
                 type: string
                 example: success
               data:
-                $ref: "#/definitions/User"
+                $ref: "#/definitions/UserPreference"
 
 definitions:
   User:
@@ -105,8 +120,8 @@ definitions:
           - Female
           - Other
       preferences:
-        $ref: "#/definitions/Preference"
-  Preference:
+        $ref: "#/definitions/UserPreference"
+  UserPreference:
     type: object
     properties:
       pushNotiEnabled:

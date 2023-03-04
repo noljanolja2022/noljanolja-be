@@ -2,8 +2,8 @@ package com.noljanolja.server.admin.adapter.auth
 
 import com.noljanolja.server.admin.rest.AdminError
 import com.noljanolja.server.admin.rest.AuthServiceError
-import com.noljanolja.server.core.model.AuthUser
-import com.noljanolja.server.core.model.TokenData
+import com.noljanolja.server.common.model.FirebaseUser
+import com.noljanolja.server.common.model.TokenData
 import com.noljanolja.server.common.rest.EmptyResponse
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier
@@ -26,7 +26,7 @@ class AuthApi(
 
     suspend fun getUserInfo(
         bearerToken: String,
-    ): Response<AuthUser> = webClient.get()
+    ): Response<FirebaseUser> = webClient.get()
         .uri { builder ->
             builder.path(GET_USER_INFO_ENDPOINT)
                 .build()

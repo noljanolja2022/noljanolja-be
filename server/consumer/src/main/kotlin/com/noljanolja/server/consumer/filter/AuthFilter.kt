@@ -1,6 +1,7 @@
 package com.noljanolja.server.consumer.filter
 
 import com.noljanolja.server.common.rest.BaseWebFilter
+import com.noljanolja.server.common.util.TokenHolder
 import com.noljanolja.server.consumer.adapter.auth.AuthApi
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.mono
@@ -26,7 +27,8 @@ class AuthFilter(
             return mono {
                 val tokenData = authApi.verifyToken(token).data
                 chain.filter(exchange)
-                    .contextWrite(TokenHolder.withToken(
+                    .contextWrite(
+                        TokenHolder.withToken(
                         tokenData.apply {
                             bearerToken = token
                         }

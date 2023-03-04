@@ -1,10 +1,10 @@
-package com.noljanolja.server.core.model
+package com.noljanolja.server.consumer.model
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CoreUser(
+data class User(
     val id: String,
     val firebaseUserId: String,
     var name: String?,
@@ -22,8 +22,7 @@ data class CoreUser(
         val pushNotiEnabled: Boolean = false,
         val collectAndUsePersonalInfo: Boolean = false,
     )
-}
-
-enum class Gender {
-    Male, Female, Other
+    enum class Gender {
+        Male, Female, Other
+    }
 }

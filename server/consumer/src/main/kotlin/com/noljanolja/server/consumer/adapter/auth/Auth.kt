@@ -1,10 +1,11 @@
 package com.noljanolja.server.consumer.adapter.auth
 
+import com.noljanolja.server.common.model.UpdateFirebaseUserRequest
 import com.noljanolja.server.common.rest.EmptyResponse
+import com.noljanolja.server.common.rest.GetAuthUserResponse
+import com.noljanolja.server.common.rest.GetTokenDataResponse
 import com.noljanolja.server.consumer.rest.AuthServiceError
 import com.noljanolja.server.consumer.rest.ConsumerError
-import com.noljanolja.server.core.model.response.GetAuthUserResponse
-import com.noljanolja.server.core.model.response.GetTokenDataResponse
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -30,6 +31,31 @@ class AuthApi(
             builder.path(GET_USER_INFO_ENDPOINT)
                 .build()
         }
+        .apply { userToken?.let { header(HttpHeaders.AUTHORIZATION, it) } }
+        .retrieve()
+        .onStatus(HttpStatus::is4xxClientError) {
+            it.bodyToMono<EmptyResponse>().map { response ->
+                if (it.statusCode() == HttpStatus.UNAUTHORIZED) {
+                    ConsumerError.UnauthorizedError
+                } else {
+                    AuthServiceError.AuthServiceBadRequest(response.message)
+                }
+            }
+        }
+        .onStatus(HttpStatus::is5xxServerError) {
+            Mono.just(AuthServiceError.AuthServiceInternalError)
+        }
+        .awaitBody()
+
+    suspend fun updateUserInfo(
+        userToken: String? = null,
+        updateRequest: UpdateFirebaseUserRequest
+    ): GetAuthUserResponse = webClient.put()
+        .uri { builder ->
+            builder.path(GET_USER_INFO_ENDPOINT)
+                .build()
+        }
+        .bodyValue(updateRequest)
         .apply { userToken?.let { header(HttpHeaders.AUTHORIZATION, it) } }
         .retrieve()
         .onStatus(HttpStatus::is4xxClientError) {

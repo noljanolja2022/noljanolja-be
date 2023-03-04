@@ -7,7 +7,6 @@ import kotlinx.datetime.Instant
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
-import org.springframework.data.annotation.Transient
 import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -17,7 +16,7 @@ import java.util.*
 data class UserModel(
     @Id
     @Column("id")
-    val uid: UUID = UUID.randomUUID(),
+    val uid: Long? = null,
 
     @Column("firebase_user_id")
     var firebaseUserId: String = "",
@@ -26,7 +25,7 @@ data class UserModel(
     var name: String = "",
 
     @Column("profile_image")
-    var avatar: String = "",
+    var avatar: String? = null,
 
     @Column("email")
     var email: String? = null,
@@ -35,7 +34,7 @@ data class UserModel(
     var phone: String? = null,
 
     @Column("is_email_verified")
-    val isEmailVerified: Boolean = false,
+    var isEmailVerified: Boolean = false,
 
     @Column("dob")
     val dob: Instant? = null,
@@ -56,16 +55,14 @@ data class UserModel(
 
     // SETTINGS
     @Column("collect_and_user_personal_info")
-    val collectAndUsePersonalInfo: Boolean = false,
+    var collectAndUsePersonalInfo: Boolean = false,
 
     @Column("push_noti_enabled")
-    val pushNotiEnabled: Boolean = false,
-) : Persistable<UUID> {
-    @Transient
-    var isNewRecord: Boolean = false
-    override fun getId(): UUID = uid
+    var pushNotiEnabled: Boolean = false,
+) : Persistable<Long> {
+    override fun getId(): Long? = uid
 
-    override fun isNew(): Boolean = isNewRecord
+    override fun isNew() = id?.takeIf { it > 0 } == null
 }
 
 fun UserModel.toUser() = CoreUser(

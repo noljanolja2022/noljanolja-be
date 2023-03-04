@@ -1,15 +1,15 @@
-package com.noljanolja.server.core.model
+package com.noljanolja.server.common.model
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AuthUser(
+data class FirebaseUser(
     val id: String,
-    val name: String,
-    val profileImage: String,
+    val name: String?,
+    val profileImage: String?,
     val roles: List<CustomClaim.Role>,
-    val phone: String,
-    val email: String,
+    val phone: String?,
+    val email: String?,
     val isEmailVerified: Boolean,
 ) {
     @Serializable
@@ -23,3 +23,9 @@ data class AuthUser(
         }
     }
 }
+
+@Serializable
+data class UpdateFirebaseUserRequest(
+    val name: String?,
+    val email: String?,
+)
