@@ -29,10 +29,10 @@ data class UserModel(
     var avatar: String = "",
 
     @Column("email")
-    val email: String = "",
+    var email: String? = null,
 
     @Column("phone")
-    val phone: String = "",
+    var phone: String? = null,
 
     @Column("is_email_verified")
     val isEmailVerified: Boolean = false,
@@ -41,7 +41,7 @@ data class UserModel(
     val dob: Instant? = null,
 
     @Column("gender")
-    val gender: Gender? = null,
+    var gender: Gender? = null,
 
     @Column("push_token")
     var pushToken: String = "",

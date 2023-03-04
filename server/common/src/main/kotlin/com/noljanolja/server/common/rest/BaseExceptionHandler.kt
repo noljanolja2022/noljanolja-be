@@ -53,7 +53,6 @@ abstract class BaseExceptionsHandler(
             }
 
             is BaseException -> error
-
             else -> DefaultInternalErrorException(error.cause)
         }
 

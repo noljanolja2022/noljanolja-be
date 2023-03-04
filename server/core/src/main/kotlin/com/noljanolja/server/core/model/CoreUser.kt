@@ -19,8 +19,8 @@ data class CoreUser(
 ) {
     @Serializable
     data class Preference(
-        val pushNotiEnabled: Boolean,
-        val collectAndUsePersonalInfo: Boolean,
+        val pushNotiEnabled: Boolean = false,
+        val collectAndUsePersonalInfo: Boolean = false,
     )
 }
 

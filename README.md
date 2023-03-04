@@ -20,7 +20,12 @@ Either use docker or local instance. Prefer docker for lightweight
    And expose port `3306`
 
 # Create migration/populate Database
-1. Navigate to `migrations` folder
+1. Navigate to `migrations` 
+   
+   ```agsl
+   cd migrations
+   ```
+
 2. Run this to install dependencies
     ```
     pip3 install -r ./requirements.txt
@@ -44,10 +49,21 @@ Either use docker or local instance. Prefer docker for lightweight
     ```
    - Window
    ```agsl
-   py cli.py revision -m "revision name"
+   py cli.py migrations/revision -m "revision name"
    ```
    Populate the revision file, then run step 3 again
 
+4. To reset a database
+
+   - Mac
+    ```agsl
+    python3 cli.py downgrade
+    ```
+   - Window
+   ```agsl
+   py cli.py downgrade
+   ```
+   
 # Start local server
 
 # Debug local db

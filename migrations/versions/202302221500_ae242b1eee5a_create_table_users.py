@@ -9,13 +9,11 @@ from alembic import op
 import sqlalchemy as sa
 from data_types import BinaryUUID
 
-
 # revision identifiers, used by Alembic.
 revision = 'ae242b1eee5a'
 down_revision = None
 branch_labels = None
 depends_on = None
-
 
 def upgrade():
     op.create_table(
@@ -30,7 +28,7 @@ def upgrade():
         sa.Column('phone', sa.String(length=32)),
         sa.Column('is_email_verified', sa.Boolean, default=False),
         sa.Column('dob', sa.TIMESTAMP()),
-        sa.Column('gender', sa.String(length=8)),
+        sa.Column('gender', Enum('Other', 'Male', 'Female')),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sa.text('now()')),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=sa.text('now()')),
         sa.Column('collect_and_user_personal_info', sa.Boolean, default=False),

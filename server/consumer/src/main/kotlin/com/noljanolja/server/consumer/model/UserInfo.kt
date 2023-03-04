@@ -8,13 +8,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class UserInfo(
     val id: String,
-    val name: String,
-    val avatar: String,
-    val pushToken: String,
-    val phone: String,
-    val email: String,
+    val name: String?,
+    val avatar: String?,
+    val pushToken: String?,
+    val phone: String?,
+    val email: String?,
     val isEmailVerified: Boolean,
-    val gender: Gender,
+    val gender: Gender?,
     val preferences: Preference
 ) {
     @Serializable
@@ -24,17 +24,17 @@ internal data class UserInfo(
     )
 }
 
-internal fun CoreUser.toUserInfo(additionalInfo: AuthUser) = UserInfo(
+internal fun CoreUser.toUserInfo(additionalInfo: AuthUser? = null) = UserInfo(
     id = firebaseUserId,
     name = name,
     avatar = avatar,
     pushToken = pushToken,
-    phone = additionalInfo.phone,
-    email = additionalInfo.email,
+    phone = additionalInfo?.phone ?: phone,
+    email = additionalInfo?.email ?: email,
     gender = gender,
     preferences = UserInfo.Preference(
         pushNotiEnabled = preferences.pushNotiEnabled,
         collectAndUsePersonalInfo = preferences.collectAndUsePersonalInfo
     ),
-    isEmailVerified = additionalInfo.isEmailVerified
+    isEmailVerified = additionalInfo?.isEmailVerified ?: isEmailVerified
 )

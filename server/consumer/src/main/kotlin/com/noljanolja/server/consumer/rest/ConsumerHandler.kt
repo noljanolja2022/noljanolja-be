@@ -1,16 +1,15 @@
 package com.noljanolja.server.consumer.rest
 
+import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Paging
 import com.noljanolja.server.consumer.filter.TokenHolder
+import com.noljanolja.server.consumer.model.UpdateUserRequest
 import com.noljanolja.server.consumer.model.response.GetAnnouncementsResponse
 import com.noljanolja.server.consumer.model.response.GetMyInfoResponse
 import com.noljanolja.server.consumer.service.AnnouncementService
 import com.noljanolja.server.consumer.service.UserService
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.ServerRequest
-import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.bodyValueAndAwait
-import org.springframework.web.reactive.function.server.queryParamOrNull
+import org.springframework.web.reactive.function.server.*
 
 @Component
 class ConsumerHandler(
@@ -28,6 +27,17 @@ class ConsumerHandler(
         return ServerResponse.ok().bodyValueAndAwait(
             GetMyInfoResponse(
                 data = user
+            )
+        )
+    }
+
+    suspend fun updateCurrentUserInfo(request: ServerRequest) : ServerResponse {
+        val tokenData = TokenHolder.awaitToken() ?: throw ConsumerError.UnauthorizedError
+        val requestBody = request.awaitBodyOrNull<UpdateUserRequest>() ?: throw RequestBodyRequired
+        val updatedUser = userService.updateUser(tokenData, requestBody)
+        return ServerResponse.ok().bodyValueAndAwait(
+            GetMyInfoResponse(
+                data = updatedUser
             )
         )
     }

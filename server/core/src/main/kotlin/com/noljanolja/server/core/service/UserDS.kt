@@ -1,6 +1,7 @@
 package com.noljanolja.server.core.service
 
 import com.noljanolja.server.core.model.CoreUser
+import com.noljanolja.server.core.model.Gender
 import com.noljanolja.server.core.model.request.UpsertUserRequest
 import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.core.repo.user.toUser
@@ -26,14 +27,22 @@ class UserDS(
     }
 
     suspend fun upsertUser(request: UpsertUserRequest): CoreUser {
-        val user = (userRepo.findByFirebaseUserId(request.firebaseUserId) ?: com.noljanolja.server.core.repo.user.UserModel(
-            firebaseUserId = request.firebaseUserId,
-        ).apply { isNewRecord = true }).apply {
-            name = request.name
-            avatar = request.profileImage
+        var user = userRepo.findByFirebaseUserId(request.firebaseUserId)
+        if (user == null) {
+            user = com.noljanolja.server.core.repo.user.UserModel(
+                firebaseUserId = request.firebaseUserId,
+            )
+            user.isNewRecord = true
+        }
+        user.apply {
+            request.name?.let { name = it }
+            request.phone?.let { phone = it }
+            email = request.email
+            gender = request.gender ?: Gender.Other
+            avatar = request.profileImage ?: ""
             pushToken = request.pushToken
         }
-        userRepo.save(user)
-        return user.toUser()
+        val res = userRepo.save(user)
+        return res.toUser()
     }
 }
