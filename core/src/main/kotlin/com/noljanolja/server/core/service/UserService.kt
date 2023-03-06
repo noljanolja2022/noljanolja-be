@@ -9,6 +9,7 @@ import com.noljanolja.server.core.repo.user.*
 import com.noljanolja.server.core.repo.user.UserModel.Companion.toUserModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -26,20 +27,47 @@ class UserService(
     suspend fun getUsers(
         page: Int,
         pageSize: Int,
+        friendId: String?,
     ): Pair<List<User>, Int> = coroutineScope {
-        val total = async {
+        // friendId does not exist -> Find all
+        // Count the total
+        var total = async {
             userRepo.count()
         }
-        val users = async {
+        // Get users
+        var users = async {
             userRepo.findAll(
-                offset = ((page - 1) * pageSize),
+                offset = (page - 1) * pageSize,
                 limit = pageSize,
-            ).map { it.toUser(objectMapper) }
+            ).map { it.toUser(objectMapper) }.toList()
         }
-        Pair(
-            users.await(),
-            total.await().toInt(),
-        )
+        // if friendId exists -> Find by contact phones and emails
+        if (!friendId.isNullOrBlank()) {
+            // Get all contacts by friendId -> Collect phone + email
+            val phones = mutableListOf<String>()
+            val emails = mutableListOf<String>()
+            contactsRepo.findAllByUserId(userId = friendId).toList().forEach { contact ->
+                contact.phoneNumber.takeIf { !it.isNullOrBlank() }?.let { phones.add(it) }
+                contact.email.takeIf { !it.isNullOrBlank() }?.let { emails.add(it) }
+            }
+            // Count the total
+            total = async {
+                userRepo.countByPhoneNumberInOrEmailIn(
+                    phones = phones.sorted(),
+                    emails = emails.sorted(),
+                )
+            }
+            // Get users
+            users = async {
+                userRepo.findAllByPhoneNumberInOrEmailIn(
+                    phones = phones.sorted(),
+                    emails = emails.sorted(),
+                    offset = (page - 1) * pageSize,
+                    limit = pageSize,
+                ).map { it.toUser(objectMapper) }.toList()
+            }
+        }
+        Pair(users.await(), total.await().toInt())
     }
 
     suspend fun getUser(
@@ -54,12 +82,6 @@ class UserService(
         userId: String,
     ) {
         userRepo.softDeleteById(userId)
-    }
-
-    suspend fun getUserContacts(
-        userId: String,
-    ): List<UserContact> {
-        // TODO get and map user contact
     }
 
     suspend fun upsertUserContacts(

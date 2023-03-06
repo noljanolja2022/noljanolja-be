@@ -28,10 +28,10 @@ class UserHandler(
         val page = request.queryParamOrNull("page")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_PAGE_SIZE
         val friendId = request.queryParamOrNull("friendId")
-        // TODO get users by friend id -> get all users who are friend with this friendId
         val (users, total) = userService.getUsers(
             page = page,
             pageSize = pageSize,
+            friendId = friendId,
         )
         return ServerResponse
             .ok()
