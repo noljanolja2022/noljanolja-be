@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - include:
+      file: changeset.sql
+  - include:
+      file: dataset_main.sql
+      context: main
+  - include:
+      file: dataset_test.sql
+      context: test

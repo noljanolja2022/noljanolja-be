@@ -1,0 +1,6 @@
+spring:
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    connect-timeout: PT3S
+    timeout: PT3S

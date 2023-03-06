@@ -1,6 +1,0 @@
-services:
-  properties:
-    - id: CORE
-      baseUrl: ${CORE_BASE_URL}
-    - id: AUTH
-      baseUrl: ${AUTH_BASE_URL}

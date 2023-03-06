@@ -1,0 +1,17 @@
+management:
+  metrics:
+    tags:
+      application: "admin"
+  endpoints:
+    web:
+      exposure:
+        include: "health"
+      base-path: "/"
+      path-mapping:
+        health: "/health"
+  endpoint:
+    health:
+      enabled: true
+      show-components: always
+      probes:
+        enabled: true

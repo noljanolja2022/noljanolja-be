@@ -1,6 +1,0 @@
-server:
-  port: 10082
-
-spring:
-  application:
-    name: noljanolja-admin
