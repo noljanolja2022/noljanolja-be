@@ -11,13 +11,13 @@ import java.time.Instant
 data class ContactModel(
     @Id
     @Column("id")
-    val id: String,
+    val id: Long,
 
     @Column("country_code")
-    val countryCode: String,
+    val countryCode: String?,
 
     @Column("phone_number")
-    val phoneNumber: String,
+    val phoneNumber: String?,
 
     @Column("email")
     var email: String? = null,

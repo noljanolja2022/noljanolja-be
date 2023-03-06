@@ -6,6 +6,7 @@ import com.noljanolja.server.common.exception.UserNotFound
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.model.Pagination
 import com.noljanolja.server.core.model.User
+import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserPreferences
 import com.noljanolja.server.core.rest.request.UpdateUserContactsRequest
 import com.noljanolja.server.core.rest.request.UpsertUserRequest
@@ -97,7 +98,26 @@ class UserHandler(
         val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
         val updateUserContactsRequest = request.awaitBodyOrNull<UpdateUserContactsRequest>()
             ?: throw RequestBodyRequired
-        // TODO call user service to update contact
+        userService.upsertUserContacts(userId, updateUserContactsRequest.contacts.flatMap { localContact ->
+            mutableListOf<UserContact>().apply {
+                addAll(localContact.emails.distinct().map { email ->
+                    UserContact(
+                        id = 0,
+                        name = localContact.name,
+                        phone = null,
+                        email = email,
+                    )
+                })
+                addAll(localContact.phones.distinct().map { phone ->
+                    UserContact(
+                        id = 0,
+                        name = localContact.name,
+                        phone = phone,
+                        email = null,
+                    )
+                })
+            }
+        })
         return ServerResponse
             .ok()
             .bodyValueAndAwait(Response<Nothing>())
