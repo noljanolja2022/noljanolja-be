@@ -59,7 +59,7 @@ CREATE INDEX `idx_phone_number` ON `contacts` (`phone_number`);
 CREATE UNIQUE INDEX `idx_email` ON `contacts` (`email`);
 
 -- -----------------------------------------------------
--- Table `user_contact`
+-- Table `user_contacts`
 -- -----------------------------------------------------
 
 DROP TABLE IF EXISTS `user_contacts`;
@@ -75,5 +75,24 @@ CREATE TABLE IF NOT EXISTS `user_contacts`
 ) ENGINE = InnoDB;
 
 CREATE UNIQUE INDEX `idx_user_contact` ON `user_contacts` (`user_id`, `contact_id`);
+
+-- -----------------------------------------------------
+-- Table `user_devices`
+-- -----------------------------------------------------
+
+CREATE TABLE `user_devices`
+(
+    `id`           INT                        NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `user_id`      VARCHAR(36)                NOT NULL REFERENCES users (`id`) ON DELETE CASCADE,
+    `device_type`  ENUM ('Mobile', 'Desktop') NOT NULL,
+    `device_token` VARCHAR(255)               NOT NULL,
+    `created_at`   DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`   DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX `idx_user_device_type` ON `user_devices` (`user_id`, `device_type`);
+
+ALTER TABLE `user_devices`
+    ADD CONSTRAINT uc_device_token UNIQUE (device_token);
 
 SET FOREIGN_KEY_CHECKS = 1;

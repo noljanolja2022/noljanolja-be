@@ -74,7 +74,7 @@ data class UserModel(
                 phoneNumber = phoneNumber.nationalNumber.toString(),
                 email = email,
                 dob = dob,
-                gender = gender?.toString(),
+                gender = gender?.name,
                 isActive = isActive,
                 isReported = isReported,
                 isBlocked = isBlocked,

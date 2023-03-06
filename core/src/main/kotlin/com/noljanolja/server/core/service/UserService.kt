@@ -5,7 +5,9 @@ import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
+import com.noljanolja.server.core.model.UserDevice
 import com.noljanolja.server.core.repo.user.*
+import com.noljanolja.server.core.repo.user.UserDeviceModel.Companion.toUserDeviceModel
 import com.noljanolja.server.core.repo.user.UserModel.Companion.toUserModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional
 class UserService(
     private val userRepo: UserRepo,
     private val userContactsRepo: UserContactsRepo,
+    private val userDevicesRepo: UserDevicesRepo,
     private val contactsRepo: ContactRepo,
     private val objectMapper: ObjectMapper,
 ) {
@@ -147,6 +150,26 @@ class UserService(
         if (updateUserContacts.isNotEmpty()) {
             // Update existing contacts
             userContactsRepo.saveAll(updateUserContacts).toList()
+        }
+    }
+
+    suspend fun getUserDevices(
+        userId: String,
+    ): List<UserDevice> {
+        return userDevicesRepo.findAllByUserId(userId).map { it.toUserDevice() }.toList()
+    }
+
+    suspend fun upsertUserDevice(
+        userDevice: UserDevice,
+    ) {
+        val existingUserDevice =
+            userDevicesRepo.findByUserIdAndDeviceType(userDevice.userId, userDevice.deviceType.name)
+        if (existingUserDevice == null) {
+            userDevicesRepo.save(userDevice.toUserDeviceModel())
+        } else {
+            userDevicesRepo.save(
+                existingUserDevice.copy(deviceToken = userDevice.deviceToken)
+            )
         }
     }
 }

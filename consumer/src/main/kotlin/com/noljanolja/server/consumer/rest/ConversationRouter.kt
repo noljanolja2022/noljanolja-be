@@ -14,7 +14,7 @@ class ConversationRouter(
     }
 
     @Bean
-    fun routes() = coRouter {
+    fun conversationRoutes() = coRouter {
         (CONVERSATIONS_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             GET("", conversationHandler::getConversations)
             POST("", conversationHandler::createConversation)

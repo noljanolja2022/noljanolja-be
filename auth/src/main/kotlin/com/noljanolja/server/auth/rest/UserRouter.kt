@@ -14,7 +14,7 @@ class UserRouter(
     }
 
     @Bean
-    fun routes() = coRouter {
+    fun userRoutes() = coRouter {
         (USER_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             GET("", userHandler::getUser)
             DELETE("", userHandler::deleteUser)

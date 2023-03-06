@@ -14,9 +14,10 @@ class PushTokenRouter(
     }
 
     @Bean
-    fun routes() = coRouter {
+    fun pushTokenRoutes() = coRouter {
         (PUSH_TOKENS_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
-            POST("", pushTokenHandler::updatePushToken)
+            GET("", pushTokenHandler::getPushToken)
+            POST("", pushTokenHandler::upsertPushToken)
         }
     }
 }

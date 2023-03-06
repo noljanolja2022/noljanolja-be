@@ -8,7 +8,7 @@ import com.noljanolja.server.core.model.Pagination
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserPreferences
-import com.noljanolja.server.core.rest.request.UpdateUserContactsRequest
+import com.noljanolja.server.core.rest.request.UpsertUserContactsRequest
 import com.noljanolja.server.core.rest.request.UpsertUserRequest
 import com.noljanolja.server.core.rest.response.GetUsersResponseData
 import com.noljanolja.server.core.service.UserService
@@ -96,9 +96,9 @@ class UserHandler(
 
     suspend fun upsertUserContacts(request: ServerRequest): ServerResponse {
         val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
-        val updateUserContactsRequest = request.awaitBodyOrNull<UpdateUserContactsRequest>()
+        val upsertUserContactsRequest = request.awaitBodyOrNull<UpsertUserContactsRequest>()
             ?: throw RequestBodyRequired
-        userService.upsertUserContacts(userId, updateUserContactsRequest.contacts.flatMap { localContact ->
+        userService.upsertUserContacts(userId, upsertUserContactsRequest.contacts.flatMap { localContact ->
             mutableListOf<UserContact>().apply {
                 addAll(localContact.emails.distinct().map { email ->
                     UserContact(

@@ -133,6 +133,7 @@ serverConsumer = [
     "spring-boot-reactive-redis",
     "spring-boot-security",
     "spring-security-rsocket",
+    "firebase-admin",
 ]
 
 serverConsumerProcessor = [
