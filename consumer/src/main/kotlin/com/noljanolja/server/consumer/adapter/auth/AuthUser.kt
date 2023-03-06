@@ -7,11 +7,4 @@ data class AuthUser(
     val phone: String?,
     val email: String?,
     val isEmailVerified: Boolean,
-    val roles: List<Role>,
-) {
-    enum class Role {
-        ADMIN,
-        STAFF,
-        CONSUMER,
-    }
-}
+)

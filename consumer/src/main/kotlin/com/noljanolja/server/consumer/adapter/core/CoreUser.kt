@@ -1,5 +1,8 @@
 package com.noljanolja.server.consumer.adapter.core
 
+import com.noljanolja.server.consumer.model.Gender
+import com.noljanolja.server.consumer.model.User
+import com.noljanolja.server.consumer.model.UserPreferences
 import java.time.Instant
 import java.time.LocalDate
 
@@ -10,21 +13,29 @@ data class CoreUser(
     val phone: String,
     val email: String? = null,
     val dob: LocalDate? = null,
-    val gender: Gender? = null,
-    val isActive: Boolean = true,
-    val isReported: Boolean = false,
-    val isBlocked: Boolean = false,
-    val preferences: UserPreferences = UserPreferences(),
+    val gender: String? = null,
+    val preferences: CoreUserPreferences = CoreUserPreferences(),
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
 )
 
-data class UserPreferences(
+data class CoreUserPreferences(
     val collectAndUsePersonalInfo: Boolean? = null
 )
 
-enum class Gender {
-    Male,
-    Female,
-    Other
-}
+fun CoreUser.toConsumerUser() = User(
+    id = id,
+    name = name,
+    avatar = avatar,
+    phone = phone,
+    email = email,
+    dob = dob,
+    gender = gender?.let { Gender.valueOf(it) },
+    preferences = preferences.toConsumerUserPreferences(),
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+)
+
+fun CoreUserPreferences.toConsumerUserPreferences() = UserPreferences(
+    collectAndUsePersonalInfo = collectAndUsePersonalInfo,
+)

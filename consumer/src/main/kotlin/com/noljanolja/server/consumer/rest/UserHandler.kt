@@ -1,12 +1,15 @@
 package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.exception.DefaultUnauthorizedException
+import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
+import com.noljanolja.server.consumer.rest.request.SyncUserContactsRequest
 import com.noljanolja.server.consumer.service.UserService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.awaitBodyOrNull
 import org.springframework.web.reactive.function.server.bodyValueAndAwait
 
 @Component
@@ -43,11 +46,14 @@ class UserHandler(
     }
 
     suspend fun syncCurrentUserContact(request: ServerRequest): ServerResponse {
-        // TODO logic
+        val currentUserId = AuthUserHolder.awaitUser()?.id ?: throw DefaultUnauthorizedException(null)
+        val syncCurrentUserContactRequest = request.awaitBodyOrNull<SyncUserContactsRequest>()
+            ?: throw RequestBodyRequired
+        val friends = userService.syncUserContacts(currentUserId, syncCurrentUserContactRequest.contacts)
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
-                Response<Nothing>()
+                Response(data = friends)
             )
     }
 }
