@@ -1,4 +1,4 @@
-package com.noljanolja.server.core.rest
+package com.noljanolja.server.core.exception
 
 import com.noljanolja.server.common.rest.BaseExceptionsHandler
 import org.springframework.boot.autoconfigure.web.WebProperties

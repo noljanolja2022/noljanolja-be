@@ -40,6 +40,7 @@ jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datat
 
 jasync-r2dbc-mysql = { module = "com.github.jasync-sql:jasync-r2dbc-mysql", version = "2.1.7" }
 r2dbc-proxy = { module = "io.r2dbc:r2dbc-proxy", version = "1.1.0.RELEASE" }
+miku-r2dbc-mysql = { module = "dev.miku:r2dbc-mysql", version = "0.8.2.RELEASE" }
 
 testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
@@ -70,7 +71,6 @@ serverCommon = [
     "spring-boot-webflux",
     "spring-boot-actuator",
     "spring-cloud-sleuth",
-    "spring-cloud-sleuth-zipkin",
     "jackson-kotlin",
     "jackson-datatype-jdk8",
     "reactor-kotlin",
@@ -91,6 +91,7 @@ serverCommonTest = [
 serverCore = [
     "spring-boot-r2dbc",
     "r2dbc-proxy",
+    "miku-r2dbc-mysql",
     "libphonenumber",
 ]
 

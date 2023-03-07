@@ -12,6 +12,6 @@ data class UserDevice(
 )
 
 enum class DeviceType {
-    Mobile,
-    Desktop
+    MOBILE,
+    DESKTOP
 }

@@ -5,4 +5,4 @@ spring:
   application:
     name: noljanolja-consumer
   profiles:
-    include: management, redis, rsocket
+    include: management, redis, rsocket, firebase

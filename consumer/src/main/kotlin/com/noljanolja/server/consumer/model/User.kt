@@ -22,7 +22,7 @@ data class UserPreferences(
 )
 
 enum class Gender {
-    Male,
-    Female,
-    Other
+    MALE,
+    FEMALE,
+    OTHER
 }

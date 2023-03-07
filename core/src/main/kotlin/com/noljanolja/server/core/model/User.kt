@@ -1,5 +1,6 @@
 package com.noljanolja.server.core.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.Instant
 import java.time.LocalDate
 
@@ -17,14 +18,17 @@ data class User(
     val preferences: UserPreferences = UserPreferences(),
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
-)
+) {
+    @JsonIgnore
+    var isNew = true
+}
 
 data class UserPreferences(
     val collectAndUsePersonalInfo: Boolean? = null
 )
 
 enum class Gender {
-    Male,
-    Female,
-    Other
+    MALE,
+    FEMALE,
+    OTHER
 }

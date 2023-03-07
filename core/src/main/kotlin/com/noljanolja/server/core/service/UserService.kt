@@ -33,19 +33,20 @@ class UserService(
         friendId: String?,
     ): Pair<List<User>, Int> = coroutineScope {
         // friendId does not exist -> Find all
-        // Count the total
-        var total = async {
-            userRepo.count()
-        }
-        // Get users
-        var users = async {
-            userRepo.findAll(
-                offset = (page - 1) * pageSize,
-                limit = pageSize,
-            ).map { it.toUser(objectMapper) }.toList()
-        }
-        // if friendId exists -> Find by contact phones and emails
-        if (!friendId.isNullOrBlank()) {
+        if (friendId.isNullOrBlank()) {
+            // Count the total
+            val total = async {
+                userRepo.count()
+            }
+            // Get users
+            val users = async {
+                userRepo.findAll(
+                    offset = (page - 1) * pageSize,
+                    limit = pageSize,
+                ).map { it.toUser(objectMapper) }.toList()
+            }
+            Pair(users.await(), total.await().toInt())
+        } else { // if friendId exists -> Find by contact phones and emails
             // Get all contacts by friendId -> Collect phone + email
             val phones = mutableListOf<String>()
             val emails = mutableListOf<String>()
@@ -54,14 +55,14 @@ class UserService(
                 contact.email.takeIf { !it.isNullOrBlank() }?.let { emails.add(it) }
             }
             // Count the total
-            total = async {
+            val total = async {
                 userRepo.countByPhoneNumberInOrEmailIn(
                     phones = phones.sorted(),
                     emails = emails.sorted(),
                 )
             }
             // Get users
-            users = async {
+            val users = async {
                 userRepo.findAllByPhoneNumberInOrEmailIn(
                     phones = phones.sorted(),
                     emails = emails.sorted(),
@@ -69,8 +70,8 @@ class UserService(
                     limit = pageSize,
                 ).map { it.toUser(objectMapper) }.toList()
             }
+            Pair(users.await(), total.await().toInt())
         }
-        Pair(users.await(), total.await().toInt())
     }
 
     suspend fun getUser(

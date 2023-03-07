@@ -1,4 +1,4 @@
-package com.noljanolja.server.consumer.model
+package com.noljanolja.server.core.model
 
 import java.time.Instant
 
@@ -6,8 +6,8 @@ data class Message(
     val id: Long = 0,
     val conversationId: Long = 0,
     val message: String = "",
-    val type: Type,
     val sender: User,
+    val type: Type,
     val createdAt: Instant = Instant.now(),
 ) {
 

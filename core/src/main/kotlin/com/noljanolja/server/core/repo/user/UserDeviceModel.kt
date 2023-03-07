@@ -19,7 +19,7 @@ data class UserDeviceModel(
     val userId: String,
 
     @Column("device_type")
-    val deviceType: String,
+    val deviceType: DeviceType,
 
     @Column("device_token")
     val deviceToken: String,
@@ -36,7 +36,7 @@ data class UserDeviceModel(
         fun UserDevice.toUserDeviceModel() = UserDeviceModel(
             id = id,
             userId = userId,
-            deviceType = deviceType.name,
+            deviceType = deviceType,
             deviceToken = deviceToken,
             createdAt = createdAt,
             updatedAt = updatedAt,
@@ -47,7 +47,7 @@ data class UserDeviceModel(
 fun UserDeviceModel.toUserDevice() = UserDevice(
     id = id,
     userId = userId,
-    deviceType = DeviceType.valueOf(deviceType),
+    deviceType = deviceType,
     deviceToken = deviceToken,
     createdAt = createdAt,
     updatedAt = updatedAt,

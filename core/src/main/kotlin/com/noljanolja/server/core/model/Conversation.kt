@@ -1,4 +1,4 @@
-package com.noljanolja.server.consumer.model
+package com.noljanolja.server.core.model
 
 import java.time.Instant
 
@@ -12,6 +12,7 @@ data class Conversation(
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
 ) {
+
     enum class Type {
         SINGLE,
         GROUP,

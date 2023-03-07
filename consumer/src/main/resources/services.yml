@@ -1,5 +1,5 @@
 services:
-  properties:
+  configs:
     - id: AUTH
       baseUrl: ${AUTH_BASE_URL}
     - id: CORE
