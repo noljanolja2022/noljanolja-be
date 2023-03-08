@@ -46,7 +46,7 @@ abstract class BaseExceptionsHandler(
         val exception = when (error) {
             is ServerWebInputException -> DefaultBadRequestException(error.cause)
 
-            is ResponseStatusException -> if (error.status == HttpStatus.NOT_FOUND) {
+            is ResponseStatusException -> if (error.statusCode == HttpStatus.NOT_FOUND) {
                 DefaultNotFoundException(error.cause)
             } else {
                 DefaultInternalErrorException(error.cause)

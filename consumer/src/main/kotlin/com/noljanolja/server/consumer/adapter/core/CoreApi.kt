@@ -11,7 +11,7 @@ import com.noljanolja.server.consumer.adapter.core.request.SaveMessageRequest
 import com.noljanolja.server.consumer.adapter.core.response.GetUsersResponseData
 import com.noljanolja.server.consumer.exception.CoreServiceError
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
@@ -44,11 +44,11 @@ class CoreApi(
                 .build()
         }
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             // TODO check error: 401, 403, 404
             Mono.just(DefaultNotFoundException(null))
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             // TODO check error
             Mono.just(ExternalServiceException(null))
         }
@@ -63,11 +63,11 @@ class CoreApi(
             builder.path("$USERS_ENDPOINT/{userId}").build(userId)
         }
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             // TODO check error: 401, 403, 404
             Mono.just(DefaultNotFoundException(null))
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             // TODO check error
             Mono.just(ExternalServiceException(null))
         }
@@ -82,11 +82,11 @@ class CoreApi(
         }
         .bodyValue(UpsertUserContactsRequest(localContacts))
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             // TODO check error: 401, 403, 404
             Mono.just(DefaultNotFoundException(null))
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             // TODO check error
             Mono.just(ExternalServiceException(null))
         }
@@ -101,11 +101,11 @@ class CoreApi(
                 .build()
         }
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             // TODO check error: 401, 403, 404
             Mono.just(DefaultNotFoundException(null))
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             // TODO check error
             Mono.just(ExternalServiceException(null))
         }
@@ -121,11 +121,11 @@ class CoreApi(
         }
         .bodyValue(UpsertPushTokenRequest(userId, deviceToken, deviceType))
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             // TODO check error: 401, 403, 404
             Mono.just(DefaultNotFoundException(null))
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             // TODO check error
             Mono.just(ExternalServiceException(null))
         }
@@ -137,12 +137,12 @@ class CoreApi(
         .uri { builder -> builder.path(CONVERSATION_ENDPOINT).build() }
         .bodyValue(request)
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
                 CoreServiceError.CoreServiceBadRequest(response.message)
             }
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreConversation>>().data!!
@@ -158,12 +158,12 @@ class CoreApi(
         }
         .bodyValue(request)
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
                 CoreServiceError.CoreServiceBadRequest(response.message)
             }
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreMessage>>().data!!
@@ -181,12 +181,12 @@ class CoreApi(
                 .build()
         }
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
                 CoreServiceError.CoreServiceBadRequest(response.message)
             }
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreConversation>>>().data!!
@@ -201,12 +201,12 @@ class CoreApi(
                 .build(conversationId)
         }
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
                 CoreServiceError.CoreServiceBadRequest(response.message)
             }
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreConversation>>().data!!
@@ -226,12 +226,12 @@ class CoreApi(
                 .build(conversationId)
         }
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
                 CoreServiceError.CoreServiceBadRequest(response.message)
             }
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreMessage>>>().data!!

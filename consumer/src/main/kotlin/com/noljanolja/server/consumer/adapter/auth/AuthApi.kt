@@ -5,7 +5,7 @@ import com.noljanolja.server.common.exception.ExternalServiceException
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
@@ -27,11 +27,11 @@ class AuthApi(
         }
         .header(HttpHeaders.AUTHORIZATION, bearerToken)
         .retrieve()
-        .onStatus(HttpStatus::is4xxClientError) {
+        .onStatus(HttpStatusCode::is4xxClientError) {
             // TODO check error
             Mono.just(DefaultUnauthorizedException(null))
         }
-        .onStatus(HttpStatus::is5xxServerError) {
+        .onStatus(HttpStatusCode::is5xxServerError) {
             // TODO check error
             Mono.just(ExternalServiceException(null))
         }
