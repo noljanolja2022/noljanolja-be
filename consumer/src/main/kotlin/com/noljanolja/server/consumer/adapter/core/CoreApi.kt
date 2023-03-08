@@ -4,10 +4,10 @@ import com.noljanolja.server.common.exception.DefaultNotFoundException
 import com.noljanolja.server.common.exception.ExternalServiceException
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
-import com.noljanolja.server.consumer.adapter.core.request.UpsertPushTokenRequest
-import com.noljanolja.server.consumer.adapter.core.request.UpsertUserContactsRequest
 import com.noljanolja.server.consumer.adapter.core.request.CreateConversationRequest
 import com.noljanolja.server.consumer.adapter.core.request.SaveMessageRequest
+import com.noljanolja.server.consumer.adapter.core.request.UpsertPushTokenRequest
+import com.noljanolja.server.consumer.adapter.core.request.UpsertUserContactsRequest
 import com.noljanolja.server.consumer.adapter.core.response.GetUsersResponseData
 import com.noljanolja.server.consumer.exception.CoreServiceError
 import org.springframework.beans.factory.annotation.Qualifier
@@ -72,6 +72,37 @@ class CoreApi(
             Mono.just(ExternalServiceException(null))
         }
         .awaitBody<Response<CoreUser>>().data
+
+    suspend fun upsertUser(
+        user: CoreUser,
+    ): CoreUser? = webClient.post()
+        .uri { builder ->
+            builder.path(USERS_ENDPOINT).build()
+        }
+        .bodyValue(user)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            // TODO check error: 401, 403, 404
+            Mono.just(DefaultNotFoundException(null))
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            // TODO check error
+            Mono.just(ExternalServiceException(null))
+        }
+        .awaitBody<Response<CoreUser>>().data
+
+    suspend fun deleteUser(userId: String) = webClient.delete()
+        .uri{ it.path("$USERS_ENDPOINT/$userId").build()}
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            // TODO check error: 401, 403, 404
+            Mono.just(DefaultNotFoundException(null))
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            // TODO check error
+            Mono.just(ExternalServiceException(null))
+        }
+        .awaitBody<Response<Nothing>>().data
 
     suspend fun upsertUserContacts(
         userId: String,

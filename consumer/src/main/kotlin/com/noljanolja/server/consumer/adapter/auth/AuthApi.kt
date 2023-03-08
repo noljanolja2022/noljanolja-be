@@ -36,4 +36,22 @@ class AuthApi(
             Mono.just(ExternalServiceException(null))
         }
         .awaitBody<Response<AuthUser>>().data
+
+    suspend fun deleteUser(
+        bearerToken: String,
+    ): Nothing? = webClient.delete()
+        .uri { builder ->
+            builder.path(USERS_ENDPOINT).build()
+        }
+        .header(HttpHeaders.AUTHORIZATION, bearerToken)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            // TODO check error
+            Mono.just(DefaultUnauthorizedException(null))
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            // TODO check error
+            Mono.just(ExternalServiceException(null))
+        }
+        .awaitBody<Response<Nothing>>().data
 }

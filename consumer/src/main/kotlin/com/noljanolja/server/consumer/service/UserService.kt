@@ -1,11 +1,15 @@
 package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.consumer.adapter.auth.AuthApi
+import com.noljanolja.server.consumer.adapter.auth.AuthUser
 import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.adapter.core.CoreLocalContact.Companion.toCoreLocalContact
+import com.noljanolja.server.consumer.adapter.core.CoreUser
+import com.noljanolja.server.consumer.adapter.core.CoreUserPreferences
 import com.noljanolja.server.consumer.adapter.core.toConsumerUser
 import com.noljanolja.server.consumer.model.LocalContact
 import com.noljanolja.server.consumer.model.User
+import com.noljanolja.server.consumer.rest.request.UpdateCurrentUserRequest
 import org.springframework.stereotype.Component
 
 @Component
@@ -13,9 +17,45 @@ class UserService(
     private val authApi: AuthApi,
     private val coreApi: CoreApi,
 ) {
-    suspend fun getCurrentUser(userId: String): User? {
-        // TODO set user if not exist
-        return coreApi.getUserDetails(userId)?.toConsumerUser()
+    suspend fun getFirebaseUser(bearerToken: String): AuthUser? {
+        return authApi.getUser(bearerToken)
+    }
+
+    suspend fun deleteFirebaseUser(bearerToken: String) {
+        authApi.deleteUser(bearerToken)
+    }
+
+    suspend fun getCurrentUser(user: AuthUser): User? {
+        try {
+            val res = coreApi.getUserDetails(user.id)
+            return res?.toConsumerUser()
+        } catch (e: Exception) {
+            val newUser = CoreUser(
+                id = user.id,
+                name = user.name,
+                avatar = user.avatar,
+                phone = user.phone,
+                email = user.email
+            )
+            val createdUser = coreApi.upsertUser(newUser)
+            return createdUser?.toConsumerUser()
+        }
+    }
+
+    suspend fun updateCurrentUser(userId: String, request: UpdateCurrentUserRequest) : User? {
+        val coreUser = CoreUser(
+            id = userId,
+            name = request.name,
+            email = request.email,
+            dob = request.dob,
+            gender = request.gender,
+            preferences = request.preferences ?: CoreUserPreferences()
+        )
+        return coreApi.upsertUser(coreUser)?.toConsumerUser()
+    }
+
+    suspend fun deleteCurrentUser(userId: String) : Nothing? {
+        return coreApi.deleteUser(userId)
     }
 
     suspend fun syncUserContacts(

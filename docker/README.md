@@ -20,11 +20,15 @@ part, this assumes DB is on the physical host, or is forwarded to the physical h
 
 ## Build server image to deploy server:
 1. Change dir to root project.
+
 2. Build image:
 ```bash=
-bash ./scripts/dockerize.sh [tag] [repo] server [service_name] false
+bash ./scripts/dockerize.sh [tag] [repo] server [service_name] [push_to_registry]
 ```
-- tag is the image tag, ie: 1.0.0
-- repo is the repo we will push to image to, ie: dockerhub, ...
-- service_name must be the module name of service which we want to deploy, ie: core
-- 
+- tag: the image tag, ie: 1.0.0
+- repo: the repo we will push to image to, ie: dockerhub, ...
+
+In this case of Google Artifact registry, use **asia-northeast3-docker.pkg.dev/noljanolja2023/noljanolja-be**
+
+- service_name: the module name of service which we want to deploy, ie: core
+- push_to_registry: true/false, whether to push this image to registry

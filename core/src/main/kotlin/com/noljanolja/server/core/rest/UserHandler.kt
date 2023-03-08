@@ -62,22 +62,23 @@ class UserHandler(
         val existingUser = userService.getUser(upsertUserRequest.id)
         val upsertUser = existingUser?.copy(
             // TODO only upsert non null / blank value from upsertUserRequest:
-            name = upsertUserRequest.name?.takeIf { it.isNotBlank() } ?: existingUser.name
-        )?.apply { isNew = false }
-            ?: User(
-                id = upsertUserRequest.id,
-                name = upsertUserRequest.name.orEmpty(),
-                avatar = upsertUserRequest.avatar,
-                // TODO new user should have phone
-                phone = upsertUserRequest.phone.orEmpty(),
-                email = upsertUserRequest.email,
-                dob = upsertUserRequest.dob,
-                gender = upsertUserRequest.gender,
-                preferences = upsertUserRequest.preferences ?: UserPreferences(),
-            )
-        val user = userService.upsertUser(
-            upsertUser
+            name = upsertUserRequest.name?.takeIf { it.isNotBlank() } ?: existingUser.name,
+            email = upsertUserRequest.email?.takeIf { it.isNotBlank() } ?: existingUser.email,
+            dob = upsertUserRequest.dob ?: existingUser.dob,
+            gender = upsertUserRequest.gender ?: existingUser.gender,
+            preferences = upsertUserRequest.preferences ?: existingUser.preferences
+        ) ?: User(
+            id = upsertUserRequest.id,
+            name = upsertUserRequest.name.orEmpty(),
+            avatar = upsertUserRequest.avatar,
+            // TODO new user should have phone
+            phone = upsertUserRequest.phone.orEmpty(),
+            email = upsertUserRequest.email,
+            dob = upsertUserRequest.dob,
+            gender = upsertUserRequest.gender,
+            preferences = upsertUserRequest.preferences ?: UserPreferences(),
         )
+        val user = userService.upsertUser(upsertUser, existingUser == null)
         return ServerResponse
             .ok()
             .bodyValueAndAwait(

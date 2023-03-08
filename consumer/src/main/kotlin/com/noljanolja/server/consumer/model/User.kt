@@ -5,11 +5,12 @@ import java.time.LocalDate
 
 data class User(
     val id: String,
-    val name: String,
+    val name: String? = null,
     val avatar: String? = null,
-    val phone: String,
+    val phone: String? = null,
     val email: String? = null,
     val isEmailVerified: Boolean = false,
+    val pushToken: String? = null,
     val dob: LocalDate? = null,
     val gender: Gender? = null,
     val preferences: UserPreferences = UserPreferences(),

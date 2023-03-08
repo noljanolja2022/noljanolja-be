@@ -71,7 +71,7 @@ data class UserModel(
     fun getPhone() = if (countryCode.isNotEmpty() && phoneNumber.isNotEmpty()) "+$countryCode$phoneNumber" else ""
 
     companion object {
-        fun User.toUserModel(objectMapper: ObjectMapper): UserModel {
+        fun User.toUserModel(objectMapper: ObjectMapper, isNewUser: Boolean): UserModel {
             // TODO check error when parsing phone number
             val phoneNumber = PhoneNumberUtil.getInstance().parse(phone, null)
             return UserModel(
@@ -90,7 +90,7 @@ data class UserModel(
                 createdAt = createdAt,
                 updatedAt = updatedAt,
             ).apply {
-                isNewRecord = this@toUserModel.isNew
+                isNewRecord = isNewUser
             }
         }
     }
@@ -112,6 +112,4 @@ fun UserModel.toUser(objectMapper: ObjectMapper) = User(
     } ?: UserPreferences(),
     createdAt = createdAt,
     updatedAt = updatedAt,
-).apply {
-    isNew = this@toUser.isNewRecord
-}
+)

@@ -1,9 +1,11 @@
 package com.noljanolja.server.core.rest.request
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.noljanolja.server.core.model.Gender
 import com.noljanolja.server.core.model.UserPreferences
 import java.time.LocalDate
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class UpsertUserRequest(
     val id: String,
     val name: String? = null,

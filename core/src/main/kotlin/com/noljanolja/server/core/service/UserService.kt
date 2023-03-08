@@ -69,14 +69,17 @@ class UserService(
         userId: String,
     ): User? = userRepo.findById(userId)?.toUser(objectMapper)
 
-    suspend fun upsertUser(
-        user: User
-    ): User = userRepo.save(user.toUserModel(objectMapper)).toUser(objectMapper)
+    suspend fun upsertUser(user: User, isNewUser: Boolean = false): User {
+        val userModel = user.toUserModel(objectMapper, isNewUser)
+        val res = userRepo.save(userModel)
+        return res.toUser(objectMapper)
+    }
 
     suspend fun deleteUser(
         userId: String,
     ) {
-        userRepo.softDeleteById(userId)
+//        userRepo.softDeleteById(userId)
+        userRepo.deleteById(userId) // TODO: Temporary use this for development. Switch back to softDelete later
     }
 
     suspend fun upsertUserContacts(

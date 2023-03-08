@@ -6,3 +6,6 @@ spring:
     name: noljanolja-consumer
   profiles:
     include: management, redis, rsocket, firebase
+springdoc:
+  swagger-ui:
+    url: /swagger.yaml

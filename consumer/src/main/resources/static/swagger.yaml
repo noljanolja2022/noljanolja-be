@@ -1,0 +1,142 @@
+openapi: 3.0.0
+info:
+  description: Public API for NoljaNolja consumer
+  version: 1.0.0
+  title: NoljaNolja Swagger
+  contact:
+    email: nguyenbrother9x@gmail.com
+tags:
+  - name: User
+    description: Operation relate to current user
+paths:
+  /api/v1/users/me:
+    get:
+      tags:
+        - User
+      summary: Get Current logged-in user info
+      description: Return user info with preference/setting
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [code, message]
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 0
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    $ref: "#/components/schemas/User"
+    put:
+      tags:
+        - User
+      summary: Update Current logged-in user info
+      description: Return updated user info with preference/setting
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                gender:
+                  type: string
+                dob:
+                  type: string
+                preferences:
+                  $ref: "#/components/schemas/UserPreference"
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [code, message]
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 0
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    $ref: "#/components/schemas/UserPreference"
+    delete:
+      tags:
+        - User
+      summary: Delete user
+      description: This will remove user on both on firebase and noljanolja
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ code, message ]
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 0
+                  message:
+                    type: string
+                    example: success
+components:
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token from firebase
+      name: Bearer Token
+  schemas:
+    User:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+        pushToken:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        isEmailVerified:
+          type: boolean
+        gender:
+          type: string
+          enum:
+            - Male
+            - Female
+            - Other
+        preferences:
+          $ref: "#/components/schemas/UserPreference"
+    UserPreference:
+      type: object
+      properties:
+        collectAndUsePersonalInfo:
+          type: boolean
