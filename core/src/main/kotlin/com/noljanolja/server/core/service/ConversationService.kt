@@ -8,7 +8,11 @@ import com.noljanolja.server.core.repo.user.UserRepo
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 import com.noljanolja.server.core.exception.Error
+import com.noljanolja.server.core.repo.user.UserModel
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toSet
 import org.springframework.transaction.annotation.Transactional
+import kotlin.math.min
 
 @Component
 @Transactional
@@ -101,12 +105,17 @@ class ConversationService(
                 messages.forEach { message ->
                     message.sender = participants.first { it.id == message.senderId }
                 }
-                conversation.messages = messages
-                conversation.participants = userRepo.findLatestSender(
+                val latestSenders = userRepo.findLatestSender(
                     conversationId = conversation.id,
                     senderLimit = senderLimit,
-                ).toList()
-                conversation.creator = userRepo.findById(conversation.creatorId)!!
+                ).toList().toMutableList()
+                val creator = userRepo.findById(conversation.creatorId)!!
+                val allParticipants = userRepo.findAllParticipants(conversation.id).toList()
+                val latestParticipants = (latestSenders + creator + allParticipants)
+                    .distinctBy { it.id }.take(senderLimit.toInt())
+                conversation.messages = messages
+                conversation.participants = latestParticipants
+                conversation.creator = creator
             }
             conversations.map { it.toConversation(objectMapper) }
         }.orEmpty()

@@ -25,12 +25,17 @@ spring-boot-r2dbc = { module = "org.springframework.boot:spring-boot-starter-dat
 spring-boot-reactive-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis-reactive" }
 spring-boot-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
+spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-security-rsocket = { module = "org.springframework.security:spring-security-rsocket" }
+spring-security-messaging = { module = "org.springframework.security:spring-security-messaging" }
+spring-security-oauth2 = { module = "org.springframework.security:spring-security-oauth2-resource-server" }
 
 spring-cloud-gcp = { module = "com.google.cloud:spring-cloud-gcp-storage", version = "4.1.2" }
 
 reactor-kotlin = { module = "io.projectreactor.kotlin:reactor-kotlin-extensions" }
 reactor-test = { module = "io.projectreactor:reactor-test" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.4.1" }
 jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8" }
 
 jasync-r2dbc-mysql = { module = "com.github.jasync-sql:jasync-r2dbc-mysql", version = "2.1.23" }
@@ -127,6 +132,11 @@ serverConsumer = [
     "springdoc-openapi-starter-webflux-ui",
     "firebase-admin",
     "spring-cloud-gcp",
+    "spring-security-rsocket",
+    "spring-security-messaging",
+    "spring-boot-security",
+    "spring-security-oauth2",
+    "kotlinx-serialization"
 ]
 
 serverConsumerProcessor = [

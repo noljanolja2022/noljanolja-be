@@ -2,16 +2,34 @@ package com.noljanolja.server.consumer.rsocket
 
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.service.ConversationPubSubService
+import io.rsocket.core.RSocketServer
+import io.rsocket.core.Resume
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.reactive.awaitFirst
+import org.springframework.boot.rsocket.server.RSocketServerCustomizer
+import org.springframework.context.annotation.Profile
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.rsocket.RSocketRequester
+import org.springframework.messaging.rsocket.annotation.ConnectMapping
+import org.springframework.security.core.context.ReactiveSecurityContextHolder
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Controller
+import javax.annotation.PreDestroy
 
 
 @Controller
 class ConversationController(
     private val pubsubService: ConversationPubSubService,
 ) {
+    val clients = mutableSetOf<RSocketRequester>()
+
+    private fun getTopic(userId: String) = "conversations-$userId"
+
+    @PreDestroy
+    fun shutdown() {
+        clients.stream().forEach { requester -> requester.rsocket()?.dispose() }
+    }
+
     /**
      * Stream conversation message. Message data will be in the following format:
      *
@@ -26,9 +44,16 @@ class ConversationController(
      */
     @MessageMapping("v1/conversations")
     suspend fun streamConversations(requester: RSocketRequester): Flow<Conversation> {
-        // TODO logic
-        return pubsubService.subscribe(getTopic(0))
+        val userId = ReactiveSecurityContextHolder.getContext().awaitFirst().authentication.name
+        requester.rsocket()?.onClose()?.doFirst {
+            println("Client: $userId CONNECTED.");
+            clients.add(requester)
+        }?.doOnError { error ->
+            println("Channel to client $userId CLOSED with error $error")
+        }?.doFinally {
+            clients.remove(requester);
+            println("Client $userId DISCONNECTED")
+        }?.subscribe()
+        return pubsubService.subscribe(getTopic(userId))
     }
-
-    private fun getTopic(userId: Long) = "conversations-$userId"
 }

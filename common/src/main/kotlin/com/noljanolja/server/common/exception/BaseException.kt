@@ -59,7 +59,7 @@ class SerializationException(
  * Default Unauthorized exception
  */
 class DefaultUnauthorizedException(
-    cause: Throwable?,
+    cause: Throwable? = null,
 ) : BaseException(
     code = 401_000,
     message = "Unauthorized",

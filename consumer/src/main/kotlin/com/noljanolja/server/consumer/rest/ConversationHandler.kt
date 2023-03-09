@@ -3,9 +3,10 @@ package com.noljanolja.server.consumer.rest
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
+import com.noljanolja.server.consumer.model.Message
 import com.noljanolja.server.consumer.rest.request.CreateConversationRequest
-import com.noljanolja.server.consumer.rest.request.SaveMessageRequest
 import com.noljanolja.server.consumer.service.ConversationService
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
@@ -77,21 +78,25 @@ class ConversationHandler(
     }
 
     suspend fun sendConversationMessages(request: ServerRequest): ServerResponse {
-        val payload = request.awaitBodyOrNull<SaveMessageRequest>() ?: throw RequestBodyRequired
+        val payload = request.awaitMultipartData()
         val conversationId = request.pathVariable("conversationId").toLongOrNull()
             ?: throw InvalidParamsException("conversationId")
-        val message = with(payload) {
-            conversationService.createMessage(
-                message = message,
-                type = type,
-                conversationId = conversationId,
-            )
-        }
+        val message = payload.getFirst("message")?.content()?.awaitSingle()?.let {
+            String(it.asInputStream().readAllBytes())
+        }.orEmpty()
+        val type = payload.getFirst("type")?.content()?.awaitSingle()?.let {
+            Message.Type.valueOf(String(it.asInputStream().readAllBytes()))
+        } ?: Message.Type.PLAINTEXT
+        val data = conversationService.createMessage(
+            message = message,
+            type = type,
+            conversationId = conversationId,
+        )
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
                 body = Response(
-                    data = message,
+                    data = data,
                 )
             )
     }

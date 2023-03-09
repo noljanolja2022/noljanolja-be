@@ -24,9 +24,11 @@ class ConversationRouter(
 
                 "/messages".nest {
                     GET("", conversationHandler::getConversationMessages)
-                    POST("", conversationHandler::sendConversationMessages)
                 }
             }
+        }
+        (CONVERSATIONS_ROUTE and accept(MediaType.MULTIPART_FORM_DATA)).nest {
+            POST("{conversationId}/messages", conversationHandler::sendConversationMessages)
         }
     }
 }
