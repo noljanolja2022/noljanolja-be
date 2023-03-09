@@ -1,5 +1,4 @@
 spring:
-  cloud:
-    firebase:
-      credentials:
-        encoded-key: ${FIREBASE_CREDENTIALS}
+  firebase:
+    credentials:
+      encoded-key: ${FIREBASE_CREDENTIALS}

@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct
 class FirebaseConfig {
     private val logger = LoggerFactory.getLogger(FirebaseConfig::class.java)
 
-    @Value("\${spring.cloud.firebase.credentials.encoded-key}")
+    @Value("\${spring.firebase.credentials.encoded-key}")
     private val firebaseEncodedKey: String = ""
 
     @PostConstruct

@@ -9,7 +9,12 @@ import java.time.LocalDate
 data class UpdateCurrentUserRequest(
     val name: String? = null,
     val email: String? = null,
+    val avatar: String? = null,
     val dob: LocalDate? = null,
     val gender: Gender? = null,
     val preferences: CoreUserPreferences? = null
 )
+
+enum class UploadType {
+    AVATAR
+}

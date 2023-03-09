@@ -64,6 +64,7 @@ class UserHandler(
             // TODO only upsert non null / blank value from upsertUserRequest:
             name = upsertUserRequest.name?.takeIf { it.isNotBlank() } ?: existingUser.name,
             email = upsertUserRequest.email?.takeIf { it.isNotBlank() } ?: existingUser.email,
+            avatar = upsertUserRequest.avatar?.takeIf { it.isNotBlank() } ?: existingUser.avatar,
             dob = upsertUserRequest.dob ?: existingUser.dob,
             gender = upsertUserRequest.gender ?: existingUser.gender,
             preferences = upsertUserRequest.preferences ?: existingUser.preferences

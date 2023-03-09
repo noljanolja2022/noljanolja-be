@@ -19,16 +19,35 @@ Beware that DB and Liquibase container might not be in the same network. Notice 
 part, this assumes DB is on the physical host, or is forwarded to the physical host.
 
 ## Build server image to deploy server:
-1. Change dir to root project.
-
-2. Build image:
-```bash=
-bash ./scripts/dockerize.sh [tag] [repo] server [service_name] [push_to_registry]
-```
-- tag: the image tag, ie: 1.0.0
-- repo: the repo we will push to image to, ie: dockerhub, ...
-
-In this case of Google Artifact registry, use **asia-northeast3-docker.pkg.dev/noljanolja2023/noljanolja-be**
+1. Build module first (e.g: core, consumer, etc.)
 
 - service_name: the module name of service which we want to deploy, ie: core
-- push_to_registry: true/false, whether to push this image to registry
+    ```agsl
+    ./gradlew [sevice_name]:assemble
+    ```
+
+2. Build image and push image:
+
+    ```bash=
+    bash ./scripts/dockerize.sh latest asia-northeast3-docker.pkg.dev/noljanolja2023/noljanolja-be server [service_name] true
+    ```
+- service_name: the module name of service which we want to deploy, ie: core
+
+3. Deploy image:
+
+    ```agsl
+    kubectl rollout restart deployment/[service_name]
+    ```
+   
+## Set environment variable on GCP
+
+1. Creating configmap (storing configs)
+    ```agsl
+    kubectl create configmap <config_map_name> --from-literal=<key>=<value>
+    ```
+   
+2. Creating secret (storing key, password, etc.)
+    ```agsl
+   kubectl create secret generic <secret_name> --from-literal=<key>>=<secret>
+   ```
+3. To use them, checkout yaml file in Workloads and Secret/config maps tabs on GCP and follow

@@ -14,6 +14,7 @@ class CorsConfig {
         val corsConfiguration = CorsConfiguration().apply {
             allowedOriginPatterns = listOf(
                 "http://localhost:*",
+                "http://34.64.76.116/*"
             )
             maxAge = 300L
             allowedMethods = listOf("*")

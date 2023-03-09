@@ -26,6 +26,8 @@ spring-boot-reactive-redis = { module = "org.springframework.boot:spring-boot-st
 spring-boot-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 
+spring-cloud-gcp = { module = "com.google.cloud:spring-cloud-gcp-storage", version = "4.1.2" }
+
 reactor-kotlin = { module = "io.projectreactor.kotlin:reactor-kotlin-extensions" }
 reactor-test = { module = "io.projectreactor:reactor-test" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
@@ -48,7 +50,7 @@ firebase-admin = { module = "com.google.firebase:firebase-admin", version = "9.1
 
 libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version = "8.13.7" }
 
-springdoc-openapi-webflux-ui = { module = "org.springdoc:springdoc-openapi-webflux-ui", version = "1.6.14"}
+springdoc-openapi-starter-webflux-ui = { module = "org.springdoc:springdoc-openapi-starter-webflux-ui", version = "2.0.2" }
 
 [bundles]
 
@@ -122,8 +124,9 @@ serverAdminTest = [
 serverConsumer = [
     "spring-boot-rsocket",
     "spring-boot-reactive-redis",
-    "springdoc-openapi-webflux-ui",
+    "springdoc-openapi-starter-webflux-ui",
     "firebase-admin",
+    "spring-cloud-gcp",
 ]
 
 serverConsumerProcessor = [

@@ -16,11 +16,11 @@ fi
 docker build \
   --no-cache \
   --progress=plain \
-  --tag "$image_repository":"$image_tag" \
+  --tag "$image_repository/$service:$image_tag" \
   --file "$dockerfilePath" \
   --build-arg "SERVICE=$service" \
-  "$buildDir"
+  "."
 
 if [ "$push_image" == "true" ]; then
-  docker push "$image_repository":"$image_tag"
+  docker push "$image_repository/$service:$image_tag"
 fi

@@ -31,3 +31,9 @@ sealed class CoreServiceError(
         null,
     )
 }
+
+object FileExceedMaxSize : BaseException(
+    400_010,
+    "[Consumer] File upload size exceeded threshold",
+    null
+)
