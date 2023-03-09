@@ -10,10 +10,7 @@ import java.util.*
 
 @Configuration
 class StorageConfig {
-    companion object {
-        private const val PROJECT_ID = "nolajnolja"
-    }
-    @Value("\${spring.storage.google.credentials.encoded-key}")
+    @Value("\${gcloud.storage.credentials}")
     private val gcpEncodedKey: String = ""
 
     @Bean
@@ -21,7 +18,6 @@ class StorageConfig {
         credentials: ServiceAccountCredentials
     ): Storage {
         return StorageOptions.newBuilder()
-            .setProjectId(PROJECT_ID)
             .setCredentials(credentials)
             .build()
             .service

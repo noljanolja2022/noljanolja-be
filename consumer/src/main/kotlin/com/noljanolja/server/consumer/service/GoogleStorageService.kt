@@ -1,5 +1,6 @@
 package com.noljanolja.server.consumer.service
 
+import com.google.cloud.storage.Acl
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
@@ -17,20 +18,21 @@ import java.nio.ByteBuffer
 class GoogleStorageService(
     @Qualifier("cloudStorage") private val storage: Storage,
 ) {
-
-    @Value("\${spring.storage.google.bucket.name}")
+    companion object {
+        private const val FILE_SIZE_LIMIT : Long = 1024 * 1024
+    }
+    @Value("\${gcloud.storage.bucket}")
     private val bucketName: String = "noljanolja2023.appspot.com"
-
     suspend fun uploadFile(
         path: String,
-        contentType: String?,
+        content: String?,
         data: Flow<ByteBuffer>,
-        limitSize: Long = 1024 * 1024,
+        limitSize: Long = FILE_SIZE_LIMIT,
     ): UploadInfo {
         var currentUploadSize = 0L
         val blobId = BlobId.of(bucketName, path)
         val blobInfo = BlobInfo.newBuilder(blobId).apply {
-            contentType?.let {
+            content?.let {
                 setContentType(it)
             }
         }.build()
@@ -46,6 +48,7 @@ class GoogleStorageService(
                     }
                 }
              val uploadedFile = storage.get(blobId)
+             storage.createAcl(blobId, Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER))
              return UploadInfo(
                 path = "${uploadedFile.storage.options.host}/${uploadedFile.blobId.bucket}/${uploadedFile.blobId.name}",
                 size = uploadedFile.size,
