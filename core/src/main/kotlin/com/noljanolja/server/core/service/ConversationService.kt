@@ -1,18 +1,14 @@
 package com.noljanolja.server.core.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.Conversation
 import com.noljanolja.server.core.model.Message
 import com.noljanolja.server.core.repo.conversation.*
 import com.noljanolja.server.core.repo.user.UserRepo
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
-import com.noljanolja.server.core.exception.Error
-import com.noljanolja.server.core.repo.user.UserModel
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toSet
 import org.springframework.transaction.annotation.Transactional
-import kotlin.math.min
 
 @Component
 @Transactional

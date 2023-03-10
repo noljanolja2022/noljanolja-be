@@ -8,11 +8,16 @@ info:
 tags:
   - name: User
     description: Operation relate to current user
+  - name: Conversation
+    description: Operation relate to conversation in general
+  - name: Push Token
+    description: Operation relate to push token
+  - name: Conversation Detail
+    description: Operation relate to conversation detail
 paths:
   /api/v1/users/me:
     get:
-      tags:
-        - User
+      tags: [User]
       summary: Get Current logged-in user info
       description: Return user info with preference/setting
       security:
@@ -36,8 +41,7 @@ paths:
                   data:
                     $ref: "#/components/schemas/User"
     put:
-      tags:
-        - User
+      tags: [User]
       summary: Update Current logged-in user info
       description: Return updated user info with preference/setting
       security:
@@ -78,8 +82,7 @@ paths:
                   data:
                     $ref: "#/components/schemas/UserPreference"
     post:
-      tags:
-        - User
+      tags: [User]
       summary: Update current user info using file
       description: Upload corresponding file to cloud, and update current user info if necessary. Return data related to uploaded file
       security:
@@ -119,8 +122,7 @@ paths:
                   data:
                     $ref: "#/components/schemas/UserFileUpload"
     delete:
-      tags:
-        - User
+      tags: [User]
       summary: Delete user
       description: This will remove user on both on firebase and noljanolja
       security:
@@ -141,13 +143,244 @@ paths:
                   message:
                     type: string
                     example: success
+  /api/v1/push-tokens:
+    get:
+      tags: [Push Token]
+      summary: Get list of push token
+      description: Return list of token registered for this user
+      responses:
+        "200":
+          description: on Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ code, message, data ]
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 0
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      type: string
+    post:
+      tags: [ Push Token ]
+      summary: Update push token
+      description: Register a push token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ userId, deviceToken, deviceType ]
+              properties:
+                userId:
+                  type: string
+                deviceToken:
+                  type: string
+                deviceType:
+                  type: string
+      responses:
+        "200":
+          description: on Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ code, message ]
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 0
+                  message:
+                    type: string
+                    example: success
+  /api/v1/conversations:
+    get:
+      tags: [Conversation]
+      summary: Get list of conversation of current user
+      description: Include recent participants and sender
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ code, message ]
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 0
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Conversation"
+    post:
+      tags: [ Conversation ]
+      summary: Create a conversation
+      description: Include participants, and return created conversation
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, participantIds, type]
+              properties:
+                title:
+                  type: string
+                participantIds:
+                  type: array
+                  items:
+                    type: string
+                type:
+                  $ref: "#/components/schemas/ConversationType"
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ code, message ]
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 0
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    $ref: "#/components/schemas/Conversation"
+  /api/v1/conversations/{conversationId}:
+    get:
+      tags: [Conversation Detail]
+      summary: Get conversation detail
+      description: Include all participants, and many recent messages
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ code, message ]
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 0
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    $ref: "#/components/schemas/Conversation"
+  /api/v1/conversations/{conversationId}/messages:
+    get:
+      tags: [ Conversation Detail ]
+      summary: Get conversation's messages
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ code, message ]
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 0
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    $ref: "#/components/schemas/Conversation"
+    post:
+      tags: [ Conversation Detail ]
+      summary: Send a message to a specified conversation
+      description: Add a message to a conversation and update last sender status
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [message, type]
+              properties:
+                message:
+                  type: string
+                type:
+                  $ref: "#/components/schemas/MessageType"
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ code, message ]
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 0
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Message"
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Token from firebase
+      description: Token from firebase (do not put 'bearer' in here)
       name: Bearer Token
   schemas:
     User:
@@ -169,8 +402,7 @@ components:
         isEmailVerified:
           type: boolean
         gender:
-          type: string
-          enum: [MALE, FEMALE, OTHER]
+          $ref: "#/components/schemas/Gender"
         preferences:
           $ref: "#/components/schemas/UserPreference"
     UserPreference:
@@ -178,6 +410,9 @@ components:
       properties:
         collectAndUsePersonalInfo:
           type: boolean
+    Gender:
+      type: string
+      enum: [ MALE, FEMALE, OTHER ]
     UserFileUpload:
       type: object
       properties:
@@ -187,3 +422,47 @@ components:
           type: number
         md5:
           type: string
+    ConversationType:
+      type: string
+      enum: [ SINGLE, GROUP ]
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        creator:
+          $ref: "#/components/schemas/User"
+        type:
+          $ref: "#/components/schemas/ConversationType"
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    Message:
+      type: object
+      properties:
+        id:
+          type: number
+        conversationId:
+          type: number
+        message:
+          type: string
+        sender:
+          $ref: "#/components/schemas/User"
+        type:
+          $ref: "#/components/schemas/MessageType"
+        createdAt:
+          type: string
+    MessageType:
+      type: string
+      enum: [ PLAINTEXT, STICKER, GIF, PHOTO, DOCUMENT ]

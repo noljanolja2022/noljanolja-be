@@ -25,20 +25,20 @@ class GoogleStorageService(
     private val bucketName: String = "noljanolja2023.appspot.com"
     suspend fun uploadFile(
         path: String,
-        content: String?,
-        data: Flow<ByteBuffer>,
+        contentType: String?,
+        content: Flow<ByteBuffer>,
         limitSize: Long = FILE_SIZE_LIMIT,
     ): UploadInfo {
         var currentUploadSize = 0L
         val blobId = BlobId.of(bucketName, path)
         val blobInfo = BlobInfo.newBuilder(blobId).apply {
-            content?.let {
+            contentType?.let {
                 setContentType(it)
             }
         }.build()
          try {
             storage.writer(blobInfo).use { writer ->
-                    data.collect {
+                    content.collect {
                         currentUploadSize += it.remaining()
                         withContext(Dispatchers.IO) {
                             writer.write(it)

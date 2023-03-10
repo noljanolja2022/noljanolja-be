@@ -4,7 +4,6 @@ import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.common.exception.DefaultUnauthorizedException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
-import com.noljanolja.server.consumer.adapter.auth.AuthUser
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.rest.request.SyncUserContactsRequest
 import com.noljanolja.server.consumer.rest.request.UpdateCurrentUserRequest
@@ -33,7 +32,7 @@ class UserHandler(
 
     suspend fun getCurrentUser(request: ServerRequest): ServerResponse {
         val user =
-            userService.getCurrentUser(retrieveCachedUser(request)) ?: throw DefaultUnauthorizedException(null)
+            userService.getCurrentUser(AuthUserHolder.awaitUser()) ?: throw DefaultUnauthorizedException(null)
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
@@ -42,9 +41,9 @@ class UserHandler(
     }
 
     suspend fun updateCurrentUser(request: ServerRequest): ServerResponse {
-        val reqBody = request.awaitBodyOrNull<UpdateCurrentUserRequest>() ?: throw RequestBodyRequired
-        val currentUser = retrieveCachedUser(request)
-        val user = userService.updateCurrentUser(currentUser.id, reqBody)
+        val req = request.awaitBodyOrNull<UpdateCurrentUserRequest>() ?: throw RequestBodyRequired
+        val currentUser = AuthUserHolder.awaitUser()
+        val user = userService.updateCurrentUser(currentUser.id, req)
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
@@ -67,7 +66,7 @@ class UserHandler(
 
     suspend fun uploadCurrentUserData(request: ServerRequest): ServerResponse {
         val reqData = request.multipartData().awaitFirstOrNull() ?: throw RequestBodyRequired
-        val currentUser = retrieveCachedUser(request)
+        val currentUser = AuthUserHolder.awaitUser()
         val fieldType = try {
             UploadType.valueOf((reqData[PART_NAME_FIELD]?.firstOrNull() as? FormFieldPart)?.value() ?: "")
         } catch (e: Exception) {
@@ -79,8 +78,8 @@ class UserHandler(
                 val fileExtension = avatar.filename().split(".").last()
                 val res = googleStorageService.uploadFile(
                     path = "users/${currentUser.id}/avatar.$fileExtension",
-                    content = "image/$fileExtension",
-                    data = avatar.content().asFlow().map {
+                    contentType = "image/$fileExtension",
+                    content = avatar.content().asFlow().map {
                         val buffer = ByteBuffer.allocate(it.capacity())
                         it.toByteBuffer(buffer)
                         buffer
@@ -102,7 +101,7 @@ class UserHandler(
     }
 
     suspend fun syncCurrentUserContact(request: ServerRequest): ServerResponse {
-        val currentUserId = retrieveCachedUser(request).id
+        val currentUserId = AuthUserHolder.awaitUser().id
         val syncCurrentUserContactRequest = request.awaitBodyOrNull<SyncUserContactsRequest>()
             ?: throw RequestBodyRequired
         val friends = userService.syncUserContacts(currentUserId, syncCurrentUserContactRequest.contacts)
@@ -111,16 +110,5 @@ class UserHandler(
             .bodyValueAndAwait(
                 Response(data = friends)
             )
-    }
-
-    private suspend fun retrieveCachedUser(request: ServerRequest) : AuthUser {
-        var user = AuthUserHolder.awaitUser()
-        if (user == null) {
-            val bearer = request.headers().firstHeader(HttpHeaders.AUTHORIZATION)
-                ?: throw DefaultUnauthorizedException(null)
-            user = userService.getFirebaseUser(bearer)
-                ?: throw DefaultUnauthorizedException(null)
-        }
-        return user
     }
 }

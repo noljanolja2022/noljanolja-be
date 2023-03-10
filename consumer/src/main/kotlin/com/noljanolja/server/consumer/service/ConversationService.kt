@@ -6,7 +6,6 @@ import com.noljanolja.server.consumer.adapter.core.request.CreateConversationReq
 import com.noljanolja.server.consumer.adapter.core.request.SaveMessageRequest
 import com.noljanolja.server.consumer.adapter.core.toConsumerConversation
 import com.noljanolja.server.consumer.adapter.core.toConsumerMessage
-import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
 import kotlinx.coroutines.async
@@ -15,7 +14,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.stereotype.Component
 import com.noljanolja.server.consumer.adapter.core.CoreConversation.Type as CoreConversationType
-
 
 @Component
 class ConversationService(
@@ -26,11 +24,11 @@ class ConversationService(
     private fun getTopic(userId: String) = "conversations-$userId"
 
     suspend fun createConversation(
+        userId: String,
         title: String,
         participantIds: Set<String>,
         type: Conversation.Type,
     ): Conversation {
-        val userId = AuthUserHolder.awaitUser()!!.id
         val conversation = coreApi.createConversation(
             CreateConversationRequest(
                 title = title,
@@ -46,11 +44,11 @@ class ConversationService(
     }
 
     suspend fun createMessage(
+        userId: String,
         message: String,
         type: Message.Type,
         conversationId: Long,
     ): Message {
-        val userId = AuthUserHolder.awaitUser()!!.id
         val data = coreApi.saveMessage(
             request = SaveMessageRequest(
                 message = message,
@@ -74,17 +72,16 @@ class ConversationService(
         return data
     }
 
-    suspend fun getUserConversations(): List<Conversation> {
-        val userId = AuthUserHolder.awaitUser()!!.id
+    suspend fun getUserConversations(userId: String): List<Conversation> {
         return coreApi.getUserConversations(
             userId = userId,
         ).map { it.toConsumerConversation() }
     }
 
     suspend fun getConversationDetail(
+        userId: String,
         conversationId: Long,
     ): Conversation {
-        val userId = AuthUserHolder.awaitUser()!!.id
         return coreApi.getConversationDetail(
             userId = userId,
             conversationId = conversationId,
@@ -92,11 +89,11 @@ class ConversationService(
     }
 
     suspend fun getConversationMessages(
+        userId: String,
         conversationId: Long,
         beforeMessageId: Long?,
         afterMessageId: Long?,
     ): List<Message> {
-        val userId = AuthUserHolder.awaitUser()!!.id
         return coreApi.getConversationMessages(
             userId = userId,
             conversationId = conversationId,

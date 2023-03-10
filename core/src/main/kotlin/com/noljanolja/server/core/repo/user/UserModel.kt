@@ -72,7 +72,6 @@ data class UserModel(
 
     companion object {
         fun User.toUserModel(objectMapper: ObjectMapper, isNewUser: Boolean): UserModel {
-            // TODO check error when parsing phone number
             val phoneNumber = PhoneNumberUtil.getInstance().parse(phone, null)
             return UserModel(
                 _id = id,

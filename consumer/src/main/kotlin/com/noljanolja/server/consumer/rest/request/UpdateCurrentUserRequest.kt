@@ -9,6 +9,7 @@ import java.time.LocalDate
 data class UpdateCurrentUserRequest(
     val name: String? = null,
     val email: String? = null,
+    val phone: String? = null,
     val avatar: String? = null,
     val dob: LocalDate? = null,
     val gender: Gender? = null,

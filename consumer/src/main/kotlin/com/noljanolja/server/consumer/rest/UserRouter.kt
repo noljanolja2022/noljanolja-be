@@ -20,8 +20,12 @@ class UserRouter(
                 GET("", userHandler::getCurrentUser)
                 PUT("", userHandler::updateCurrentUser)
                 DELETE("", userHandler::deleteCurrentUser)
-                POST("", accept(MediaType.MULTIPART_FORM_DATA), userHandler::uploadCurrentUserData)
                 POST("/contacts", userHandler::syncCurrentUserContact)
+            }
+        }
+        (USERS_ROUTE and accept(MediaType.MULTIPART_FORM_DATA)).nest {
+            "/me".nest {
+                POST("", userHandler::uploadCurrentUserData)
             }
         }
     }
