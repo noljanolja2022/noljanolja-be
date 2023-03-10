@@ -18,13 +18,7 @@ interface UserRepo : CoroutineCrudRepository<UserModel, String> {
         limit: Int,
     ): Flow<UserModel>
 
-    @Query(
-        """
-        SELECT COUNT(id) FROM users 
-        WHERE phone_number IN :phones OR email IN :emails
-        """
-    )
-    fun countByPhoneNumberInOrEmailIn(
+    suspend fun countByPhoneNumberInOrEmailIn(
         phones: List<String>,
         emails: List<String>,
     ): Long
@@ -32,7 +26,7 @@ interface UserRepo : CoroutineCrudRepository<UserModel, String> {
     @Query(
         """
         SELECT * FROM users 
-        WHERE phone_number IN :phones OR email IN :emails
+        WHERE phone_number IN (:phones + "") OR email IN (:emails + "")
         LIMIT :limit OFFSET :offset
         """
     )

@@ -84,7 +84,7 @@ class UserService(
 
     suspend fun upsertUserContacts(
         userId: String,
-        userContacts: List<UserContact>
+        userContacts: List<UserContact>,
     ) {
         // Get existing user contacts
         val existingUserContacts = userContactsRepo.findAllByUserId(userId).toList()
