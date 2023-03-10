@@ -14,4 +14,9 @@ interface ContactRepo : CoroutineCrudRepository<ContactModel, Long> {
         """
     )
     fun findAllByUserId(userId: String): Flow<ContactModel>
+
+    fun findAllByPhoneNumberInOrEmailIn(
+        phones: List<String>,
+        emails: List<String>,
+    ): Flow<ContactModel>
 }

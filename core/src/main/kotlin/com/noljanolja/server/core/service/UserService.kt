@@ -3,6 +3,8 @@ package com.noljanolja.server.core.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
+import com.google.i18n.phonenumbers.Phonenumber
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserDevice
@@ -56,8 +58,8 @@ class UserService(
             )
             // Get users
             val users = userRepo.findAllByPhoneNumberInOrEmailIn(
-                phones = phones.sorted(),
-                emails = emails.sorted(),
+                phones = phones.sorted().joinToString(","),
+                emails = emails.sorted().joinToString(","),
                 offset = (page - 1) * pageSize,
                 limit = pageSize,
             ).map { it.toUser(objectMapper) }.toList()
@@ -82,6 +84,14 @@ class UserService(
         userRepo.deleteById(userId) // TODO: Temporary use this for development. Switch back to softDelete later
     }
 
+    private fun parsePhone(phone: String): Phonenumber.PhoneNumber? {
+        return try {
+            phoneNumberUtil.parse(phone, null)
+        } catch (error: NumberParseException) {
+            null
+        }
+    }
+
     suspend fun upsertUserContacts(
         userId: String,
         userContacts: List<UserContact>,
@@ -89,7 +99,12 @@ class UserService(
         // Get existing user contacts
         val existingUserContacts = userContactsRepo.findAllByUserId(userId).toList()
         // Get exising user contact details
-        val existingContacts = contactsRepo.findAllById(existingUserContacts.map { it.contactId }).toList()
+        val contactEmails = userContacts.mapNotNull { it.email?.takeIf { it.isNotBlank() } }
+        val contactPhones = userContacts.mapNotNull { it.phone?.let { parsePhone(it) } }
+        val existingContacts = contactsRepo.findAllByPhoneNumberInOrEmailIn(
+            emails = contactEmails,
+            phones = contactPhones.map { it.nationalNumber.toString() },
+        ).toList()
         // New contacts to be saved
         val newContacts = mutableMapOf<Int, ContactModel>()
         val newUserContacts = mutableMapOf<Int, UserContactModel>()
@@ -97,11 +112,7 @@ class UserService(
         val updateUserContacts = mutableListOf<UserContactModel>()
         userContacts.forEachIndexed { index, userContact ->
             // parse phone number
-            val phoneNumber = try {
-                phoneNumberUtil.parse(userContact.phone, null)
-            } catch (error: NumberParseException) {
-                null
-            }
+            val phoneNumber = parsePhone(userContact.phone.orEmpty())
             // only check contact which has valid email or phone number
             // TODO check email
             if (userContact.email == null && phoneNumber == null) {
@@ -128,9 +139,19 @@ class UserService(
                 )
             } else {
                 // Contact exists -> check if contact name has been changed -> will be updated
-                val existingUserContact = existingUserContacts.first { it.contactId == existingContact.id }
-                if (userContact.name.isNotBlank() && userContact.name != existingUserContact.contactName) {
-                    updateUserContacts.add(existingUserContact.copy(contactName = userContact.name))
+                existingUserContacts.find { it.contactId == existingContact.id }?.let {
+                    if (userContact.name.isNotBlank() && userContact.name != it.contactName) {
+                        updateUserContacts.add(it.copy(contactName = userContact.name))
+                    }
+                } ?: run {
+                    updateUserContacts.add(
+                        UserContactModel(
+                            id = 0,
+                            userId = userId,
+                            contactName = userContact.name,
+                            contactId = existingContact.id,
+                        )
+                    )
                 }
             }
         }

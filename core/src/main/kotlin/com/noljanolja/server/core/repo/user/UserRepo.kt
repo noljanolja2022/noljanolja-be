@@ -26,13 +26,13 @@ interface UserRepo : CoroutineCrudRepository<UserModel, String> {
     @Query(
         """
         SELECT * FROM users 
-        WHERE phone_number IN (:phones + "") OR email IN (:emails + "")
+        WHERE LOCATE(phone_number, :phones) > 0 OR LOCATE(email, :emails) > 0
         LIMIT :limit OFFSET :offset
         """
     )
     fun findAllByPhoneNumberInOrEmailIn(
-        phones: List<String>,
-        emails: List<String>,
+        phones: String,
+        emails: String,
         offset: Int,
         limit: Int,
     ): Flow<UserModel>
