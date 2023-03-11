@@ -21,14 +21,7 @@ import javax.annotation.PreDestroy
 class ConversationController(
     private val pubsubService: ConversationPubSubService,
 ) {
-    val clients = mutableSetOf<RSocketRequester>()
-
     private fun getTopic(userId: String) = "conversations-$userId"
-
-    @PreDestroy
-    fun shutdown() {
-        clients.stream().forEach { requester -> requester.rsocket()?.dispose() }
-    }
 
     /**
      * Stream conversation message. Message data will be in the following format:
@@ -47,11 +40,9 @@ class ConversationController(
         val userId = ReactiveSecurityContextHolder.getContext().awaitFirst().authentication.name
         requester.rsocket()?.onClose()?.doFirst {
             println("Client: $userId CONNECTED.");
-            clients.add(requester)
         }?.doOnError { error ->
             println("Channel to client $userId CLOSED with error $error")
         }?.doFinally {
-            clients.remove(requester);
             println("Client $userId DISCONNECTED")
         }?.subscribe()
         return pubsubService.subscribe(getTopic(userId))

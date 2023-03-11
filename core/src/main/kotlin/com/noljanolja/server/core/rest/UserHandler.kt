@@ -119,7 +119,7 @@ class UserHandler(
                         email = null,
                     )
                 })
-            }
+            }.distinctBy { it.phone.orEmpty() + it.email.orEmpty() }
         })
         return ServerResponse
             .ok()
