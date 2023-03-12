@@ -11,8 +11,9 @@ interface MessageRepo : CoroutineCrudRepository<MessageModel, Long> {
         """
         SELECT * FROM messages 
         WHERE conversation_id = :conversationId 
-        AND (IF(:beforeMessageId IS NULL, FALSE, id < :beforeMessageId) OR IF(:afterMessageId IS NULL, FALSE, id > :afterMessageId))
-        ORDER BY created_at DESC limit :limit
+        AND IF(:beforeMessageId IS NULL, TRUE, id < :beforeMessageId) 
+        AND IF(:afterMessageId IS NULL, TRUE, id > :afterMessageId)
+        ORDER BY created_at DESC LIMIT :limit
     """
     )
      fun findAllByConversationId(

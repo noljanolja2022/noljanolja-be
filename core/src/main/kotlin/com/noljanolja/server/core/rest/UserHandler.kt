@@ -119,8 +119,8 @@ class UserHandler(
                         email = null,
                     )
                 })
-            }.distinctBy { it.phone.orEmpty() + it.email.orEmpty() }
-        })
+            }
+        }.distinctBy { it.phone.orEmpty() + it.email.orEmpty() })
         return ServerResponse
             .ok()
             .bodyValueAndAwait(Response<Nothing>())
