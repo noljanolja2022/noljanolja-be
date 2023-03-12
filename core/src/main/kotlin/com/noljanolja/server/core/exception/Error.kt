@@ -13,6 +13,7 @@ sealed class Error(
         const val INVALID_PARTICIPANTS_SIZE = 400_002
         const val PARTICIPANTS_NOT_FOUND = 400_003
         const val UNSUPPORTED_MESSAGE_TYPE = 400_004
+        const val INVALID_PHONE_NUMBER = 400_005
     }
 
     object ConversationNotFound : Error(
@@ -42,6 +43,12 @@ sealed class Error(
     object UnsupportedMessageType : Error(
         UNSUPPORTED_MESSAGE_TYPE,
         "Unsupported message type",
+        null,
+    )
+
+    object InvalidPhoneNumber : Error(
+        INVALID_PHONE_NUMBER,
+        "Invalid phone number",
         null,
     )
 }

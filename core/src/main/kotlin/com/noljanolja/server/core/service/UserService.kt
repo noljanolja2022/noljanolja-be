@@ -2,15 +2,14 @@ package com.noljanolja.server.core.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.i18n.phonenumbers.NumberParseException
-import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserDevice
 import com.noljanolja.server.core.repo.user.*
 import com.noljanolja.server.core.repo.user.UserDeviceModel.Companion.toUserDeviceModel
 import com.noljanolja.server.core.repo.user.UserModel.Companion.toUserModel
+import com.noljanolja.server.core.utils.parsePhoneNumber
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -26,7 +25,6 @@ class UserService(
     private val contactsRepo: ContactRepo,
     private val objectMapper: ObjectMapper,
 ) {
-    private val phoneNumberUtil: PhoneNumberUtil = PhoneNumberUtil.getInstance()
 
     suspend fun getUsers(
         page: Int,
@@ -84,14 +82,6 @@ class UserService(
         userRepo.deleteById(userId) // TODO: Temporary use this for development. Switch back to softDelete later
     }
 
-    private fun parsePhone(phone: String): Phonenumber.PhoneNumber? {
-        return try {
-            phoneNumberUtil.parse(phone, null)
-        } catch (error: NumberParseException) {
-            null
-        }
-    }
-
     suspend fun upsertUserContacts(
         userId: String,
         userContacts: List<UserContact>,
@@ -100,7 +90,7 @@ class UserService(
         val existingUserContacts = userContactsRepo.findAllByUserId(userId).toList()
         // Get exising user contact details
         val contactEmails = userContacts.mapNotNull { it.email?.takeIf { it.isNotBlank() } }
-        val contactPhones = userContacts.mapNotNull { it.phone?.let { parsePhone(it) } }
+        val contactPhones = userContacts.mapNotNull { it.phone?.let { parsePhoneNumber(it) } }
         val existingContacts = contactsRepo.findAllByPhoneNumberInOrEmailIn(
             emails = contactEmails,
             phones = contactPhones.map { it.nationalNumber.toString() },
@@ -112,7 +102,7 @@ class UserService(
         val updateUserContacts = mutableListOf<UserContactModel>()
         userContacts.forEachIndexed { index, userContact ->
             // parse phone number
-            val phoneNumber = parsePhone(userContact.phone.orEmpty())
+            val phoneNumber = parsePhoneNumber(userContact.phone.orEmpty())
             // only check contact which has valid email or phone number
             // TODO check email
             if (userContact.email == null && phoneNumber == null) {

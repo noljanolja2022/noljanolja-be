@@ -1,10 +1,11 @@
 package com.noljanolja.server.core.repo.user
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.google.i18n.phonenumbers.PhoneNumberUtil
+import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.Gender
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserPreferences
+import com.noljanolja.server.core.utils.parsePhoneNumber
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
@@ -72,7 +73,7 @@ data class UserModel(
 
     companion object {
         fun User.toUserModel(objectMapper: ObjectMapper, isNewUser: Boolean): UserModel {
-            val phoneNumber = PhoneNumberUtil.getInstance().parse(phone, null)
+            val phoneNumber = parsePhoneNumber(phone) ?: throw Error.InvalidPhoneNumber
             return UserModel(
                 _id = id,
                 name = name,
