@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   description: Public API for NoljaNolja consumer
-  version: 1.0.0
+  version: 1.0.1
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -28,18 +28,12 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [code, message]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
-                  data:
-                    $ref: "#/components/schemas/User"
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
     put:
       tags: [User]
       summary: Update Current logged-in user info
@@ -69,18 +63,12 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [code, message]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
-                  data:
-                    $ref: "#/components/schemas/UserPreference"
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
     post:
       tags: [User]
       summary: Update current user info using file
@@ -109,18 +97,12 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [ code, message ]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
-                  data:
-                    $ref: "#/components/schemas/UserFileUpload"
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserFileUpload"
     delete:
       tags: [User]
       summary: Delete user
@@ -133,16 +115,40 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [ code, message ]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
+                $ref: "#/components/schemas/BaseResponse"
+  /api/v1/users/me/contacts:
+    post:
+      tags: [User]
+      summary: Sync contact list
+      description: This will sync data from user contact list to user friend list in server
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ contacts ]
+              properties:
+                contacts:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/LocalContact"
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/User"
   /api/v1/push-tokens:
     get:
       tags: [Push Token]
@@ -154,20 +160,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [ code, message, data ]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
-                  data:
-                    type: array
-                    items:
-                      type: string
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
     post:
       tags: [ Push Token ]
       summary: Update push token
@@ -192,16 +192,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [ code, message ]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
+                $ref: "#/components/schemas/BaseResponse"
   /api/v1/conversations:
     get:
       tags: [Conversation]
@@ -215,20 +206,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [ code, message ]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Conversation"
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Conversation"
     post:
       tags: [ Conversation ]
       summary: Create a conversation
@@ -257,18 +242,12 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [ code, message ]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
-                  data:
-                    $ref: "#/components/schemas/Conversation"
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Conversation"
   /api/v1/conversations/{conversationId}:
     get:
       tags: [Conversation Detail]
@@ -288,22 +267,17 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [ code, message ]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
-                  data:
-                    $ref: "#/components/schemas/Conversation"
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Conversation"
   /api/v1/conversations/{conversationId}/messages:
     get:
       tags: [ Conversation Detail ]
       summary: Get conversation's messages
+      description: Return conversation messages with filter. Currently, maximum amount of messages returned are 20 per batch
       security:
         - bearerAuth: [ ]
       parameters:
@@ -312,27 +286,31 @@ paths:
           schema:
             type: number
           description: the id of the conversation
+        - in: query
+          name: beforeMessageId
+          schema:
+            type: number
+          description: filter messages that were created before provided messageId
+        - in: query
+          name: afterMessageId
+          schema:
+            type: number
+          description: filter messages that were created after provided messageId
       responses:
         "200":
           description: On success
           content:
             application/json:
               schema:
-                type: object
-                required: [ code, message ]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
-                  data:
-                    $ref: "#/components/schemas/Conversation"
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Conversation"
     post:
       tags: [ Conversation Detail ]
-      summary: Send a message to a specified conversation
+      summary: Send a message/chat
       description: Add a message to a conversation and update last sender status
       security:
         - bearerAuth: [ ]
@@ -360,20 +338,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required: [ code, message ]
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    example: 0
-                  message:
-                    type: string
-                    example: success
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Message"
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Message"
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -383,6 +355,14 @@ components:
       description: Token from firebase (do not put 'bearer' in here)
       name: Bearer Token
   schemas:
+    BaseResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
     User:
       type: object
       required: [id]
@@ -401,15 +381,40 @@ components:
           type: string
         isEmailVerified:
           type: boolean
+        dob:
+          type: string
+          description: in date format
+          example: 2023-03-10 04:04:43
         gender:
           $ref: "#/components/schemas/Gender"
         preferences:
           $ref: "#/components/schemas/UserPreference"
+        createdAt:
+          type: string
+          description: in date format
+          example: 2023-03-10 04:04:43
+        updatedAt:
+          type: string
+          description: in date format
+          example: 2023-03-10 04:04:43
     UserPreference:
       type: object
       properties:
         collectAndUsePersonalInfo:
           type: boolean
+    LocalContact:
+      type: object
+      properties:
+        name:
+          type: string
+        emails:
+          type: array
+          items:
+            type: string
+        phones:
+          type: array
+          items:
+            type: string
     Gender:
       type: string
       enum: [ MALE, FEMALE, OTHER ]
