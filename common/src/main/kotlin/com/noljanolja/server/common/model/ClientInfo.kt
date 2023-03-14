@@ -13,7 +13,7 @@ data class ClientInfo(
             val (appVersion, type, platformName, platformVersion, deviceName) = it.destructured
             ClientInfo(
                 appVersion = appVersion,
-                type = type,
+                type = type.uppercase(),
                 platformName = platformName,
                 platformVersion = platformVersion,
                 deviceName = deviceName,

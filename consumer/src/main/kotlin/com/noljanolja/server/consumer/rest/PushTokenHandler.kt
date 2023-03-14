@@ -1,7 +1,6 @@
 package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.exception.DefaultBadRequestException
-import com.noljanolja.server.common.exception.DefaultUnauthorizedException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.filter.ClientInfoHolder
 import com.noljanolja.server.common.rest.Response
@@ -19,7 +18,7 @@ class PushTokenHandler(
     private val notificationService: NotificationService,
 ) {
     suspend fun updatePushToken(request: ServerRequest): ServerResponse {
-        val currentUser = AuthUserHolder.awaitUser() ?: throw DefaultUnauthorizedException(null)
+        val currentUser = AuthUserHolder.awaitUser()
         val clientInfo = ClientInfoHolder.awaitClientInfo() ?: throw DefaultBadRequestException(
             cause = IllegalArgumentException("Invalid User-Agent")
         )

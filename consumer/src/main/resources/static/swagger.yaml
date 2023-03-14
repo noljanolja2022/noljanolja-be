@@ -150,24 +150,6 @@ paths:
                         items:
                           $ref: "#/components/schemas/User"
   /api/v1/push-tokens:
-    get:
-      tags: [Push Token]
-      summary: Get list of push token
-      description: Return list of token registered for this user
-      responses:
-        "200":
-          description: on Success
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/BaseResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          type: string
     post:
       tags: [ Push Token ]
       summary: Update push token
