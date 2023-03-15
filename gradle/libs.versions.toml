@@ -35,7 +35,6 @@ spring-cloud-gcp = { module = "com.google.cloud:spring-cloud-gcp-storage", versi
 reactor-kotlin = { module = "io.projectreactor.kotlin:reactor-kotlin-extensions" }
 reactor-test = { module = "io.projectreactor:reactor-test" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
-kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.4.1" }
 jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8" }
 
 jasync-r2dbc-mysql = { module = "com.github.jasync-sql:jasync-r2dbc-mysql", version = "2.1.23" }
@@ -136,7 +135,6 @@ serverConsumer = [
     "spring-security-messaging",
     "spring-boot-security",
     "spring-security-oauth2",
-    "kotlinx-serialization"
 ]
 
 serverConsumerProcessor = [

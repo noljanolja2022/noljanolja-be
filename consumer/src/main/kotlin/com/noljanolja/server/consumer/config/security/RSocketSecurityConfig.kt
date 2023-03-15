@@ -55,7 +55,7 @@ class JWTCustomVerifier(
     private val authApi: AuthApi,
 ) {
     fun check(token: String): Mono<Authentication> = mono {
-        val authUser = authApi.getUser(token)!!
+        val authUser = authApi.verifyToken(token)
         UsernamePasswordAuthenticationToken(authUser.id, null, listOf())
     }
 }

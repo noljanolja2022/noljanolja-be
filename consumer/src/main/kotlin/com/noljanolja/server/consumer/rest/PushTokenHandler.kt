@@ -18,12 +18,12 @@ class PushTokenHandler(
     private val notificationService: NotificationService,
 ) {
     suspend fun updatePushToken(request: ServerRequest): ServerResponse {
-        val currentUser = AuthUserHolder.awaitUser()
+        val currentUserId = AuthUserHolder.awaitUser().id
         val clientInfo = ClientInfoHolder.awaitClientInfo() ?: throw DefaultBadRequestException(
             cause = IllegalArgumentException("Invalid User-Agent")
         )
         val updatePushTokenRequest = request.awaitBodyOrNull<UpdatePushTokenRequest>() ?: throw RequestBodyRequired
-        notificationService.upsertPushToken(currentUser.id, updatePushTokenRequest.deviceToken, clientInfo.type)
+        notificationService.upsertPushToken(currentUserId, updatePushTokenRequest.deviceToken, clientInfo.type)
         return ServerResponse
             .ok()
             .bodyValueAndAwait(

@@ -31,8 +31,7 @@ class UserHandler(
     }
 
     suspend fun getCurrentUser(request: ServerRequest): ServerResponse {
-        val user =
-            userService.getCurrentUser(AuthUserHolder.awaitUser()) ?: throw DefaultUnauthorizedException(null)
+        val user = userService.getCurrentUser(AuthUserHolder.awaitUser())
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
@@ -42,8 +41,8 @@ class UserHandler(
 
     suspend fun updateCurrentUser(request: ServerRequest): ServerResponse {
         val req = request.awaitBodyOrNull<UpdateCurrentUserRequest>() ?: throw RequestBodyRequired
-        val currentUser = AuthUserHolder.awaitUser()
-        val user = userService.updateCurrentUser(currentUser.id, req)
+        val currentUserId = AuthUserHolder.awaitUser().id
+        val user = userService.updateCurrentUser(currentUserId, req)
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
@@ -52,10 +51,8 @@ class UserHandler(
     }
 
     suspend fun deleteCurrentUser(request: ServerRequest): ServerResponse {
-        val bearer =
-            request.headers().firstHeader(HttpHeaders.AUTHORIZATION) ?: throw DefaultUnauthorizedException(null)
-        val currentUser = userService.getFirebaseUser(bearer) ?: throw DefaultUnauthorizedException(null)
-        userService.deleteFirebaseUser(bearer)
+        val currentUser = AuthUserHolder.awaitUser()
+        userService.deleteFirebaseUser(currentUser.bearerToken)
         userService.deleteCurrentUser(currentUser.id)
         return ServerResponse
             .ok()
@@ -66,7 +63,7 @@ class UserHandler(
 
     suspend fun uploadCurrentUserData(request: ServerRequest): ServerResponse {
         val reqData = request.multipartData().awaitFirstOrNull() ?: throw RequestBodyRequired
-        val currentUser = AuthUserHolder.awaitUser()
+        val currentUserId = AuthUserHolder.awaitUser().id
         val fieldType = try {
             UploadType.valueOf((reqData[PART_NAME_FIELD]?.firstOrNull() as? FormFieldPart)?.value() ?: "")
         } catch (e: Exception) {
@@ -74,10 +71,12 @@ class UserHandler(
         }
         return when (fieldType) {
             UploadType.AVATAR -> {
-                val avatar = (reqData[PART_FILES_FIELD]?.firstOrNull() as? FilePart) ?: throw DefaultBadRequestException(Exception(""))
+                val avatar =
+                    (reqData[PART_FILES_FIELD]?.firstOrNull() as? FilePart) ?: throw DefaultBadRequestException(
+                        Exception(""))
                 val fileExtension = avatar.filename().split(".").last()
                 val res = googleStorageService.uploadFile(
-                    path = "users/${currentUser.id}/avatar.$fileExtension",
+                    path = "users/${currentUserId}/avatar.$fileExtension",
                     contentType = "image/$fileExtension",
                     content = avatar.content().asFlow().map {
                         val buffer = ByteBuffer.allocate(it.capacity())
@@ -85,7 +84,7 @@ class UserHandler(
                         buffer
                     },
                 )
-                userService.updateCurrentUser(currentUser.id, UpdateCurrentUserRequest(
+                userService.updateCurrentUser(currentUserId, UpdateCurrentUserRequest(
                     avatar = res.path
                 ))
                 ServerResponse
@@ -94,9 +93,6 @@ class UserHandler(
                         Response(data = res)
                     )
             }
-            else -> ServerResponse
-                .badRequest()
-                .buildAndAwait()
         }
     }
 

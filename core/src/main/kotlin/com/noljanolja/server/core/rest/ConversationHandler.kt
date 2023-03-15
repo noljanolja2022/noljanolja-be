@@ -7,6 +7,7 @@ import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.Conversation
 import com.noljanolja.server.core.rest.request.CreateConversationRequest
 import com.noljanolja.server.core.rest.request.SaveMessageRequest
+import com.noljanolja.server.core.rest.request.UpdateMessageStatusRequest
 import com.noljanolja.server.core.service.ConversationService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -15,9 +16,15 @@ import org.springframework.web.reactive.function.server.*
 class ConversationHandler(
     private val conversationService: ConversationService,
 ) {
+    companion object {
+        const val QUERY_PARAM_CONVERSATION_ID = "conversationId"
+        const val QUERY_PARAM_MESSAGE_ID = "messageId"
+        const val QUERY_PARAM_USER_ID = "userId"
+    }
+
     suspend fun getConversations(request: ServerRequest): ServerResponse {
-        val userId = request.queryParamOrNull("userId")?.takeIf { it.isNotBlank() }
-            ?: throw InvalidParamsException("userId")
+        val userId = request.queryParamOrNull(QUERY_PARAM_USER_ID)?.takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException(QUERY_PARAM_USER_ID)
         val messageLimit = request.queryParamOrNull("messageLimit")?.toLongOrNull()?.takeIf { it > 0 } ?: 20
         val senderLimit = request.queryParamOrNull("senderLimit")?.toLongOrNull()?.takeIf { it > 0 } ?: 4
         val conversations = conversationService.getUserConversations(
@@ -57,11 +64,11 @@ class ConversationHandler(
     }
 
     suspend fun getConversationDetails(request: ServerRequest): ServerResponse {
-        val userId = request.queryParamOrNull("userId")?.takeIf { it.isNotBlank() }
-            ?: throw InvalidParamsException("userId")
+        val userId = request.queryParamOrNull(QUERY_PARAM_USER_ID)?.takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException(QUERY_PARAM_USER_ID)
         val messageLimit = request.queryParamOrNull("messageLimit")?.toLongOrNull()?.takeIf { it > 0 } ?: 20
-        val conversationId = request.pathVariable("conversationId").toLongOrNull()
-            ?: throw InvalidParamsException("conversationId")
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
         val conversation = conversationService.getConversationDetail(
             conversationId = conversationId,
             userId = userId,
@@ -77,10 +84,10 @@ class ConversationHandler(
     }
 
     suspend fun getConversationMessages(request: ServerRequest): ServerResponse {
-        val conversationId = request.pathVariable("conversationId").toLongOrNull()
-            ?: throw InvalidParamsException("conversationId")
-        val userId = request.queryParamOrNull("userId")?.takeIf { it.isNotBlank() }
-            ?: throw InvalidParamsException("userId")
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val userId = request.queryParamOrNull(QUERY_PARAM_USER_ID)?.takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException(QUERY_PARAM_USER_ID)
         val limit = request.queryParamOrNull("limit")?.toLongOrNull()?.takeIf { it > 0 } ?: 20
         val beforeMessageId = request.queryParamOrNull("beforeMessageId")?.toLongOrNull()
         val afterMessageId = request.queryParamOrNull("afterMessageId")?.toLongOrNull()
@@ -101,8 +108,8 @@ class ConversationHandler(
     }
 
     suspend fun saveConversationMessages(request: ServerRequest): ServerResponse {
-        val conversationId = request.pathVariable("conversationId").toLongOrNull()
-            ?: throw InvalidParamsException("conversationId")
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
         val payload = request.awaitBodyOrNull<SaveMessageRequest>() ?: throw RequestBodyRequired
         val message = with(payload) {
             conversationService.createMessage(
@@ -118,6 +125,23 @@ class ConversationHandler(
                 body = Response(
                     data = message,
                 )
+            )
+    }
+
+    suspend fun updateMessageStatus(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val messageId = request.pathVariable(QUERY_PARAM_MESSAGE_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_MESSAGE_ID)
+        val payload = request.awaitBodyOrNull<UpdateMessageStatusRequest>() ?: throw RequestBodyRequired
+        conversationService.updateMessageStatus(
+            messageId = messageId,
+            conversationId = conversationId,
+            seenBy = payload.seenBy,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
             )
     }
 }

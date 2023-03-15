@@ -8,6 +8,7 @@ data class Message(
     val message: String = "",
     val sender: User,
     val type: Type,
+    val seenBy: List<String> = listOf(),
     val createdAt: Instant = Instant.now(),
 ) {
 
@@ -17,5 +18,9 @@ data class Message(
         GIF,
         PHOTO,
         DOCUMENT,
+    }
+
+    enum class Status {
+        SEEN,
     }
 }

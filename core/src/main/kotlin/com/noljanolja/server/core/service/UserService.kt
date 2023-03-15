@@ -13,6 +13,7 @@ import com.noljanolja.server.core.utils.parsePhoneNumber
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -36,10 +37,8 @@ class UserService(
             // Count the total
             val total = userRepo.count()
             // Get users
-            val users = userRepo.findAll(
-                offset = (page - 1) * pageSize,
-                limit = pageSize,
-            ).map { it.toUser(objectMapper) }.toList()
+            val users = userRepo.findAllBy(PageRequest.of(page - 1, pageSize))
+                .map { it.toUser(objectMapper) }.toList()
             Pair(users, total.toInt())
         } else { // if friendId exists -> Find by contact phones and emails
             // Get all contacts by friendId -> Collect phone + email
@@ -56,10 +55,9 @@ class UserService(
             )
             // Get users
             val users = userRepo.findAllByPhoneNumberInOrEmailIn(
-                phones = phones.sorted().joinToString(","),
-                emails = emails.sorted().joinToString(","),
-                offset = (page - 1) * pageSize,
-                limit = pageSize,
+                phones = phones.sorted(),
+                emails = emails.sorted(),
+                pageable = PageRequest.of(page - 1, pageSize),
             ).map { it.toUser(objectMapper) }.toList()
             Pair(users, total.toInt())
         }

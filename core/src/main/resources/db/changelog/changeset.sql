@@ -146,3 +146,23 @@ CREATE TABLE IF NOT EXISTS `conversations_participants`
 ) ENGINE = InnoDB;
 
 CREATE UNIQUE INDEX `idx_conversation_participant` ON `conversations_participants` (`conversation_id`, `participant_id`);
+
+--changeset tranhieu956230@gmail.com:3
+
+-- -----------------------------------------------------
+-- Table `message_status`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `message_status`;
+
+CREATE TABLE IF NOT EXISTS `message_status`
+(
+    `id`           BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `user_id`      VARCHAR(36)  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    `message_id`   BIGINT       NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+    `status`       ENUM('SEEN') NOT NULL,
+    `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+CREATE UNIQUE INDEX `idx_user_message_status` ON `message_status` (`user_id`, `message_id`, `status`);

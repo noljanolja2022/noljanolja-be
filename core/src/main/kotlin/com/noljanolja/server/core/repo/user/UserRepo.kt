@@ -1,21 +1,15 @@
 package com.noljanolja.server.core.repo.user
 
 import kotlinx.coroutines.flow.Flow
+import org.springframework.data.domain.Pageable
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
 interface UserRepo : CoroutineCrudRepository<UserModel, String> {
-    @Query(
-        """
-        SELECT * FROM users 
-        LIMIT :limit OFFSET :offset
-        """
-    )
-    fun findAll(
-        offset: Int,
-        limit: Int,
+    fun findAllBy(
+        pageable: Pageable,
     ): Flow<UserModel>
 
     suspend fun countByPhoneNumberInOrEmailIn(
@@ -23,18 +17,10 @@ interface UserRepo : CoroutineCrudRepository<UserModel, String> {
         emails: List<String>,
     ): Long
 
-    @Query(
-        """
-        SELECT * FROM users 
-        WHERE LOCATE(phone_number, :phones) > 0 OR LOCATE(email, :emails) > 0
-        LIMIT :limit OFFSET :offset
-        """
-    )
     fun findAllByPhoneNumberInOrEmailIn(
-        phones: String,
-        emails: String,
-        offset: Int,
-        limit: Int,
+        phones: List<String>,
+        emails: List<String>,
+        pageable: Pageable,
     ): Flow<UserModel>
 
     @Query(

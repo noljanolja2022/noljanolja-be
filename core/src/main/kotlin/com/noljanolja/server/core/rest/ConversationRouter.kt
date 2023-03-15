@@ -25,6 +25,7 @@ class ConversationRouter(
                 "/messages".nest {
                     GET("", conversationHandler::getConversationMessages)
                     POST("", conversationHandler::saveConversationMessages)
+                    PUT("{messageId}", conversationHandler::updateMessageStatus)
                 }
             }
         }

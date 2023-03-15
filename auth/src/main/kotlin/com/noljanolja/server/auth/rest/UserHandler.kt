@@ -1,6 +1,7 @@
 package com.noljanolja.server.auth.rest
 
 import com.noljanolja.server.auth.filter.TokenHolder
+import com.noljanolja.server.auth.model.User
 import com.noljanolja.server.auth.service.UserService
 import com.noljanolja.server.common.rest.Response
 import org.springframework.stereotype.Component
@@ -18,6 +19,15 @@ class UserHandler(
         return ServerResponse
             .ok()
             .bodyValueAndAwait(Response(data = user))
+    }
+
+    suspend fun verifyToken(request: ServerRequest): ServerResponse {
+        val user = with(TokenHolder.awaitToken()) {
+            User(id = uid)
+        }
+        return ServerResponse.ok().bodyValueAndAwait(
+            Response(data = user)
+        )
     }
 
     suspend fun deleteUser(request: ServerRequest): ServerResponse {

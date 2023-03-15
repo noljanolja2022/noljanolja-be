@@ -17,6 +17,7 @@ class UserRouter(
     fun userRoutes() = coRouter {
         (USER_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             GET("", userHandler::getUser)
+            GET("verify", userHandler::verifyToken)
             DELETE("", userHandler::deleteUser)
         }
     }

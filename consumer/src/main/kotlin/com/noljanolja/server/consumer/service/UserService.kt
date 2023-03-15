@@ -1,5 +1,6 @@
 package com.noljanolja.server.consumer.service
 
+import com.noljanolja.server.common.exception.DefaultNotFoundException
 import com.noljanolja.server.consumer.adapter.auth.AuthApi
 import com.noljanolja.server.consumer.adapter.auth.AuthUser
 import com.noljanolja.server.consumer.adapter.core.CoreApi
@@ -25,24 +26,29 @@ class UserService(
         authApi.deleteUser(bearerToken)
     }
 
-    suspend fun getCurrentUser(user: AuthUser): User? {
-        try {
-            val res = coreApi.getUserDetails(user.id)
-            return res?.toConsumerUser()
-        } catch (e: Exception) {
-            val newUser = CoreUser(
-                id = user.id,
-                name = user.name,
-                avatar = user.avatar,
-                phone = user.phone,
-                email = user.email
-            )
-            val createdUser = coreApi.upsertUser(newUser)
-            return createdUser?.toConsumerUser()
-        }
+    /**
+     * @param user Only contain id, need to call Firebase to get full user info
+     * @return User
+     */
+    suspend fun getCurrentUser(user: AuthUser): User {
+        return try {
+            coreApi.getUserDetails(userId = user.id)
+        } catch (e: DefaultNotFoundException) {
+            val fullUserData = authApi.getUser(user.bearerToken)
+            val newUser = with(fullUserData) {
+                CoreUser(
+                    id = user.id,
+                    name = name,
+                    avatar = avatar,
+                    phone = phone,
+                    email = email
+                )
+            }
+            coreApi.upsertUser(newUser)
+        }.toConsumerUser()
     }
 
-    suspend fun updateCurrentUser(userId: String, request: UpdateCurrentUserRequest) : User? {
+    suspend fun updateCurrentUser(userId: String, request: UpdateCurrentUserRequest): User? {
         val coreUser = CoreUser(
             id = userId,
             name = request.name,
@@ -51,16 +57,16 @@ class UserService(
             gender = request.gender,
             preferences = request.preferences ?: CoreUserPreferences()
         )
-        return coreApi.upsertUser(coreUser)?.toConsumerUser()
+        return coreApi.upsertUser(coreUser).toConsumerUser()
     }
 
-    suspend fun deleteCurrentUser(userId: String) : Nothing? {
+    suspend fun deleteCurrentUser(userId: String): Nothing? {
         return coreApi.deleteUser(userId)
     }
 
     suspend fun syncUserContacts(
         userId: String,
-        localContacts: List<LocalContact>
+        localContacts: List<LocalContact>,
     ): List<User> {
         coreApi.upsertUserContacts(userId, localContacts.map { it.toCoreLocalContact() })
         // TODO create new API to get friends with pagination

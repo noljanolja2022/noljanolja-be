@@ -14,6 +14,7 @@ sealed class Error(
         const val PARTICIPANTS_NOT_FOUND = 400_003
         const val UNSUPPORTED_MESSAGE_TYPE = 400_004
         const val INVALID_PHONE_NUMBER = 400_005
+        const val MESSAGE_NOT_BELONG_TO_CONVERSATION = 400_006
     }
 
     object ConversationNotFound : Error(
@@ -49,6 +50,12 @@ sealed class Error(
     object InvalidPhoneNumber : Error(
         INVALID_PHONE_NUMBER,
         "Invalid phone number",
+        null,
+    )
+
+    object MessageNotBelongToConversation : Error(
+        MESSAGE_NOT_BELONG_TO_CONVERSATION,
+        "Message not belong to conversation",
         null,
     )
 }

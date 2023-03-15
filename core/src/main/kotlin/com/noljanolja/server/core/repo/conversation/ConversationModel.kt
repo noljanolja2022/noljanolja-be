@@ -2,6 +2,8 @@ package com.noljanolja.server.core.repo.conversation
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.noljanolja.server.core.model.Conversation
+import com.noljanolja.server.core.repo.message.MessageModel
+import com.noljanolja.server.core.repo.message.toMessage
 import com.noljanolja.server.core.repo.user.UserModel
 import com.noljanolja.server.core.repo.user.toUser
 import org.springframework.data.annotation.CreatedDate

@@ -2,12 +2,12 @@ package com.noljanolja.server.auth.model
 
 data class User(
     val id: String,
-    val name: String?,
-    val avatar: String?,
-    val phone: String?,
-    val email: String?,
-    val isEmailVerified: Boolean,
-    val roles: List<Role>,
+    val name: String? = null,
+    val avatar: String? = null,
+    val phone: String? = null,
+    val email: String? = null,
+    val isEmailVerified: Boolean = false,
+    val roles: List<Role> = emptyList(),
 ) {
     enum class Role {
         ADMIN,

@@ -1,4 +1,4 @@
-package com.noljanolja.server.core.repo.conversation
+package com.noljanolja.server.core.repo.message
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.noljanolja.server.core.model.Message
@@ -41,6 +41,9 @@ data class MessageModel(
 ) {
     @Transient
     var sender: UserModel = UserModel()
+
+    @Transient
+    var seenBy: List<String> = listOf()
 }
 
 fun MessageModel.toMessage(objectMapper: ObjectMapper) = Message(
@@ -49,5 +52,6 @@ fun MessageModel.toMessage(objectMapper: ObjectMapper) = Message(
     message = message,
     sender = sender.toUser(objectMapper),
     type = type,
+    seenBy = seenBy,
     createdAt = createdAt,
 )

@@ -21,7 +21,7 @@ class AuthApi(
 
     suspend fun getUser(
         bearerToken: String,
-    ): AuthUser? = webClient.get()
+    ): AuthUser = webClient.get()
         .uri { builder ->
             builder.path(USERS_ENDPOINT).build()
         }
@@ -35,7 +35,25 @@ class AuthApi(
             // TODO check error
             Mono.just(ExternalServiceException(null))
         }
-        .awaitBody<Response<AuthUser>>().data
+        .awaitBody<Response<AuthUser>>().data!!
+
+    suspend fun verifyToken(
+        bearerToken: String,
+    ): AuthUser = webClient.get()
+        .uri { builder ->
+            builder.path("$USERS_ENDPOINT/verify").build()
+        }
+        .header(HttpHeaders.AUTHORIZATION, bearerToken)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            // TODO check error
+            Mono.just(DefaultUnauthorizedException(null))
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            // TODO check error
+            Mono.just(ExternalServiceException(null))
+        }
+        .awaitBody<Response<AuthUser>>().data!!
 
     suspend fun deleteUser(
         bearerToken: String,

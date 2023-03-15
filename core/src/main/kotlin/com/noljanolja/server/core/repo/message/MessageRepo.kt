@@ -1,4 +1,4 @@
-package com.noljanolja.server.core.repo.conversation
+package com.noljanolja.server.core.repo.message
 
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
@@ -13,7 +13,7 @@ interface MessageRepo : CoroutineCrudRepository<MessageModel, Long> {
         WHERE conversation_id = :conversationId 
         AND IF(:beforeMessageId IS NULL, TRUE, id < :beforeMessageId) 
         AND IF(:afterMessageId IS NULL, TRUE, id > :afterMessageId)
-        ORDER BY created_at DESC LIMIT :limit
+        ORDER BY id DESC LIMIT :limit
     """
     )
      fun findAllByConversationId(

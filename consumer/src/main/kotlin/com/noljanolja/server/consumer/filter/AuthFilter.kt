@@ -31,9 +31,7 @@ class AuthFilter(
                 cause = IllegalArgumentException("Token does not start with Bearer")
             )
         }
-        val authUser = authApi.getUser(token)
-            ?: // TODO: 403 error ???
-            throw DefaultUnauthorizedException(null)
+        val authUser = authApi.verifyToken(token).apply { bearerToken = token }
         chain.filter(exchange)
             .contextWrite(AuthUserHolder.withUser(authUser))
             .awaitFirstOrNull()

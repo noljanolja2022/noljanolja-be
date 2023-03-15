@@ -5,6 +5,7 @@ import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.Conversation
 import com.noljanolja.server.core.model.Message
 import com.noljanolja.server.core.repo.conversation.*
+import com.noljanolja.server.core.repo.message.*
 import com.noljanolja.server.core.repo.user.UserRepo
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
@@ -17,6 +18,7 @@ class ConversationService(
     private val messageRepo: MessageRepo,
     private val userRepo: UserRepo,
     private val conversationParticipantRepo: ConversationParticipantRepo,
+    private val messageStatusRepo: MessageStatusRepo,
     private val objectMapper: ObjectMapper,
 ) {
     suspend fun createMessage(
@@ -75,10 +77,15 @@ class ConversationService(
         }
         return conversationRepo.findById(conversationId)!!.apply {
             val messages = messageRepo.findAllByConversationId(id, messageLimit).toList()
+            val messageStatusSeen = messageStatusRepo.findAllByMessageIdInAndStatusOrderByMessageIdDesc(
+                messageIds = messages.map { it.id },
+                status = Message.Status.SEEN,
+            ).toList().distinctBy { it.userId }
             val uniqueSenderIds = messages.mapTo(mutableSetOf()) { it.senderId }
             val participants = userRepo.findAllById(uniqueSenderIds).toList()
             messages.forEach { message ->
                 message.sender = participants.first { it.id == message.senderId }
+                message.seenBy = messageStatusSeen.filter { it.messageId == message.id }.map { it.userId }
             }
             this.messages = messages
             this.participants = userRepo.findAllParticipants(id).toList()
@@ -96,7 +103,6 @@ class ConversationService(
             conversations.forEach { conversation ->
                 val messages = messageRepo.findAllByConversationId(conversation.id, messageLimit).toList()
                 val uniqueSenderIds = messages.mapTo(mutableSetOf()) { it.senderId }
-                //Find participants of these messages
                 val participants = userRepo.findAllById(uniqueSenderIds).toList()
                 messages.forEach { message ->
                     message.sender = participants.first { it.id == message.senderId }
@@ -145,5 +151,29 @@ class ConversationService(
             this.creator = participants.first { it.id == creatorId }
             this.participants = participants
         }.toConversation(objectMapper)
+    }
+
+    suspend fun updateMessageStatus(
+        messageId: Long,
+        conversationId: Long,
+        seenBy: String,
+    ) {
+        conversationParticipantRepo.findAllByParticipantIdAndConversationId(seenBy, conversationId).toList()
+            .ifEmpty { throw Error.UserNotParticipateInConversation }
+        val message = messageRepo.findById(messageId)
+        if (message?.conversationId != conversationId) throw Error.MessageNotBelongToConversation
+        if (!messageStatusRepo.existsByMessageIdAndUserIdAndStatus(
+                messageId = messageId,
+                userId = seenBy,
+                status = Message.Status.SEEN,
+            )
+        )
+            messageStatusRepo.save(
+                MessageStatusModel(
+                    messageId = messageId,
+                    userId = seenBy,
+                    status = Message.Status.SEEN,
+                )
+            )
     }
 }

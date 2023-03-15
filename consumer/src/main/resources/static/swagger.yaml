@@ -12,8 +12,8 @@ tags:
     description: Operation relate to conversation in general
   - name: Push Token
     description: Operation relate to push token
-  - name: Conversation Detail
-    description: Operation relate to conversation detail
+  - name: Message
+    description: Operation relate to message
 paths:
   /api/v1/users/me:
     get:
@@ -232,7 +232,7 @@ paths:
                         $ref: "#/components/schemas/Conversation"
   /api/v1/conversations/{conversationId}:
     get:
-      tags: [Conversation Detail]
+      tags: [Conversation]
       summary: Get conversation detail
       description: Include all participants, and many recent messages
       security:
@@ -257,7 +257,7 @@ paths:
                         $ref: "#/components/schemas/Conversation"
   /api/v1/conversations/{conversationId}/messages:
     get:
-      tags: [ Conversation Detail ]
+      tags: [ Message ]
       summary: Get conversation's messages
       description: Return conversation messages with filter. Currently, maximum amount of messages returned are 20 per batch
       security:
@@ -291,7 +291,7 @@ paths:
                       data:
                         $ref: "#/components/schemas/Conversation"
     post:
-      tags: [ Conversation Detail ]
+      tags: [ Message ]
       summary: Send a message/chat
       description: Add a message to a conversation and update last sender status
       security:
@@ -328,6 +328,32 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/Message"
+  /api/v1/conversations/{conversationId}/messages/{messageId}/seen:
+    post:
+      tags: [ Message ]
+      summary: Seen a message
+      description: Seen a message
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+        - in: path
+          name: messageId
+          schema:
+            type: number
+          description: the id of the message
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -448,6 +474,10 @@ components:
           $ref: "#/components/schemas/User"
         type:
           $ref: "#/components/schemas/MessageType"
+        seenBy:
+          type: array
+          items:
+            type: string
         createdAt:
           type: string
     MessageType:

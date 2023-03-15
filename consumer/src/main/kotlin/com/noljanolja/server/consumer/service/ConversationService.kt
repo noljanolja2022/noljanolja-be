@@ -4,14 +4,12 @@ import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.adapter.core.CoreMessage
 import com.noljanolja.server.consumer.adapter.core.request.CreateConversationRequest
 import com.noljanolja.server.consumer.adapter.core.request.SaveMessageRequest
+import com.noljanolja.server.consumer.adapter.core.request.UpdateMessageStatusRequest
 import com.noljanolja.server.consumer.adapter.core.toConsumerConversation
 import com.noljanolja.server.consumer.adapter.core.toConsumerMessage
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.springframework.stereotype.Component
 import com.noljanolja.server.consumer.adapter.core.CoreConversation.Type as CoreConversationType
 
@@ -29,7 +27,7 @@ class ConversationService(
         participantIds: Set<String>,
         type: Conversation.Type,
     ): Conversation {
-        val conversation = coreApi.createConversation(
+        return coreApi.createConversation(
             CreateConversationRequest(
                 title = title,
                 creatorId = userId,
@@ -37,10 +35,6 @@ class ConversationService(
                 participantIds = participantIds,
             )
         ).toConsumerConversation()
-        coroutineScope {
-            notifyParticipants(conversation)
-        }
-        return conversation
     }
 
     suspend fun createMessage(
@@ -61,7 +55,7 @@ class ConversationService(
             userId = userId,
             conversationId = conversationId,
         ).toConsumerConversation()
-        coroutineScope {
+        CoroutineScope(Dispatchers.Default).launch {
             launch {
                 notifyParticipants(conversation)
             }
@@ -103,7 +97,7 @@ class ConversationService(
     }
 
     private fun notifyParticipants(
-        conversation: Conversation
+        conversation: Conversation,
     ) {
         val participantIds = conversation.participants.map { it.id }
         participantIds.forEach {
@@ -126,5 +120,28 @@ class ConversationService(
                 )
             }
         }.awaitAll()
+    }
+
+    suspend fun seenMessage(
+        userId: String,
+        messageId: Long,
+        conversationId: Long,
+    ) {
+        try {
+            coreApi.updateMessageStatus(
+                payload = UpdateMessageStatusRequest(
+                    seenBy = userId,
+                ),
+                messageId = messageId,
+                conversationId = conversationId,
+            )
+            val conversation = coreApi.getConversationDetail(
+                userId = userId,
+                conversationId = conversationId,
+            ).toConsumerConversation()
+            notifyParticipants(conversation)
+        } catch (e: Exception) {
+            println("Failed to update message status: ${e.message}")
+        }
     }
 }

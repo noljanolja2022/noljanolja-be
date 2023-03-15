@@ -7,6 +7,9 @@ import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.Message
 import com.noljanolja.server.consumer.rest.request.CreateConversationRequest
 import com.noljanolja.server.consumer.service.ConversationService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -15,6 +18,11 @@ import org.springframework.web.reactive.function.server.*
 class ConversationHandler(
     private val conversationService: ConversationService,
 ) {
+    companion object {
+        const val QUERY_PARAM_CONVERSATION_ID = "conversationId"
+        const val QUERY_PARAM_MESSAGE_ID = "messageId"
+    }
+    
     suspend fun getConversations(request: ServerRequest): ServerResponse {
         val conversations = conversationService.getUserConversations(AuthUserHolder.awaitUser().id)
         return ServerResponse
@@ -46,8 +54,8 @@ class ConversationHandler(
     }
 
     suspend fun getConversationDetails(request: ServerRequest): ServerResponse {
-        val conversationId = request.pathVariable("conversationId").toLongOrNull()
-            ?: throw InvalidParamsException("conversationId")
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
         val conversation = conversationService.getConversationDetail(
             userId = AuthUserHolder.awaitUser().id,
             conversationId = conversationId,
@@ -62,8 +70,8 @@ class ConversationHandler(
     }
 
     suspend fun getConversationMessages(request: ServerRequest): ServerResponse {
-        val conversationId = request.pathVariable("conversationId").toLongOrNull()
-            ?: throw InvalidParamsException("conversationId")
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
         val beforeMessageId = request.queryParamOrNull("beforeMessageId")?.toLongOrNull()
         val afterMessageId = request.queryParamOrNull("afterMessageId")?.toLongOrNull()
         val messages = conversationService.getConversationMessages(
@@ -83,8 +91,8 @@ class ConversationHandler(
 
     suspend fun sendConversationMessages(request: ServerRequest): ServerResponse {
         val payload = request.awaitMultipartData()
-        val conversationId = request.pathVariable("conversationId").toLongOrNull()
-            ?: throw InvalidParamsException("conversationId")
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
         val message = payload.getFirst("message")?.content()?.awaitSingle()?.let {
             String(it.asInputStream().readAllBytes())
         }.orEmpty()
@@ -103,6 +111,25 @@ class ConversationHandler(
                 body = Response(
                     data = data,
                 )
+            )
+    }
+
+    suspend fun seenMessage(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val messageId = request.pathVariable(QUERY_PARAM_MESSAGE_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_MESSAGE_ID)
+        val userId = AuthUserHolder.awaitUser().id
+        CoroutineScope(Dispatchers.Default).launch {
+            conversationService.seenMessage(
+                userId = userId,
+                messageId = messageId,
+                conversationId = conversationId,
+            )
+        }
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
             )
     }
 }

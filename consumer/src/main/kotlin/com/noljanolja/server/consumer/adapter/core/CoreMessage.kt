@@ -9,6 +9,7 @@ data class CoreMessage(
     val message: String = "",
     val sender: CoreUser,
     val type: Type,
+    val seenBy: List<String> = listOf(),
     val createdAt: Instant = Instant.now(),
 ) {
 
@@ -27,5 +28,6 @@ fun CoreMessage.toConsumerMessage() = Message(
     message = message,
     sender = sender.toConsumerUser(),
     type = Message.Type.valueOf(type.name),
+    seenBy = seenBy,
     createdAt = createdAt,
 )

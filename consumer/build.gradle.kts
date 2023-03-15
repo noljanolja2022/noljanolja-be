@@ -1,6 +1,5 @@
 plugins {
     id(BuildPlugins.COMMON_SERVER)
-    kotlin(BuildPlugins.KOTLIN_SERIALIZATION) version "1.8.10"
 }
 
 dependencies {
