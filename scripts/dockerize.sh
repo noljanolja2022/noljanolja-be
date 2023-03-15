@@ -22,5 +22,5 @@ docker build \
   "$buildDir"
 
 if [ "$push_image" == "true" ]; then
-  docker push "$image_repository/$service:$image_tag"
+  docker push "$image_repository":"$image_tag"
 fi

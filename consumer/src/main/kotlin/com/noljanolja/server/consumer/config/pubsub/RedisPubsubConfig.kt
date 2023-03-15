@@ -1,7 +1,6 @@
 package com.noljanolja.server.consumer.config.pubsub
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.noljanolja.server.consumer.model.Conversation
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -14,7 +13,9 @@ import org.springframework.data.redis.serializer.StringRedisSerializer
 
 
 @Configuration
-class RedisPubSubConfig {
+class RedisPubSubConfig(
+    private val objectMapper: ObjectMapper,
+) {
     @Bean
     fun reactiveRedisTemplate(
         factory: ReactiveRedisConnectionFactory,
@@ -34,10 +35,7 @@ class RedisPubSubConfig {
     ): ReactiveRedisTemplate<String, V> {
         val serializationContext = RedisSerializationContext.newSerializationContext<String, V>(StringRedisSerializer())
             .key(StringRedisSerializer())
-            .value(Jackson2JsonRedisSerializer(
-                jacksonObjectMapper().registerModule(JavaTimeModule()),
-                V::class.java)
-            )
+            .value(Jackson2JsonRedisSerializer(objectMapper, V::class.java))
             .build()
 
         return ReactiveRedisTemplate(connectionFactory, serializationContext)
