@@ -1,0 +1,4 @@
+gcloud:
+  storage:
+    credentials: ${GCP_BUCKET_CREDENTIALS}
+    bucket: ${GCP_BUCKET_NAME}

@@ -5,4 +5,9 @@ spring:
   application:
     name: noljanolja-admin
   profiles:
-    include: management
+    include: management, storage
+springdoc:
+  swagger-ui:
+    url: /swagger.yaml
+  cache:
+    disabled: false

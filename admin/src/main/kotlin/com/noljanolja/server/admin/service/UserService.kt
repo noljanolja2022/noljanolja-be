@@ -12,7 +12,7 @@ class UserService(
     private val coreApi: CoreApi,
 ) {
     suspend fun getCurrentUser(userId: String): User? {
-        // TODO set user if not exist
-        return coreApi.getUser(userId)?.toAdminUser()
+        val coreUser = coreApi.getUser(userId)
+        return coreUser?.toAdminUser()
     }
 }

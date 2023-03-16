@@ -15,6 +15,7 @@ sealed class Error(
         const val UNSUPPORTED_MESSAGE_TYPE = 400_004
         const val INVALID_PHONE_NUMBER = 400_005
         const val MESSAGE_NOT_BELONG_TO_CONVERSATION = 400_006
+        const val STICKER_PACK_NOT_FOUND = 400_010
     }
 
     object ConversationNotFound : Error(
@@ -57,5 +58,11 @@ sealed class Error(
         MESSAGE_NOT_BELONG_TO_CONVERSATION,
         "Message not belong to conversation",
         null,
+    )
+
+    object StickerPackNotFound: Error(
+        STICKER_PACK_NOT_FOUND,
+        "Sticker pack not found",
+        null
     )
 }

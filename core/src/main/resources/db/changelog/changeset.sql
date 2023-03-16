@@ -166,3 +166,38 @@ CREATE TABLE IF NOT EXISTS `message_status`
 ) ENGINE = InnoDB;
 
 CREATE UNIQUE INDEX `idx_user_message_status` ON `message_status` (`user_id`, `message_id`, `status`);
+
+--changeset nguyenbrother9x@gmail.com:4
+
+-- -----------------------------------------------------
+-- Table `sticker_packs`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `sticker_packs`;
+
+CREATE TABLE IF NOT EXISTS `sticker_packs`
+(
+    `id`                      BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `name`                    VARCHAR(36)  NOT NULL,
+    `publisher`               VARCHAR(128) NOT NULL,
+    `tray_image_file`         VARCHAR(128) NOT NULL,
+    `animated_sticker_pack`   TINYINT(1)   NOT NULL DEFAULT 0
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `stickers`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `stickers`;
+
+CREATE TABLE IF NOT EXISTS `stickers`
+(
+    `id`           BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `pack_id`      BIGINT       NOT NULL REFERENCES `sticker_packs` (`id`) ON DELETE CASCADE,
+    `image_file`   VARCHAR(128) NOT NULL,
+    `emojis`       VARCHAR(128) NOT NULL,
+    `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+CREATE UNIQUE INDEX `idx_id_pack` ON `stickers` (`id`, `pack_id`);

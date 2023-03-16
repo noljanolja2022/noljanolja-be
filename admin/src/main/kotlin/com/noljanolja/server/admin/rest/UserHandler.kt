@@ -14,7 +14,7 @@ class UserHandler(
     private val userService: UserService,
 ) {
     suspend fun getCurrentUser(request: ServerRequest): ServerResponse {
-        val currentUserId = AuthUserHolder.awaitUser()?.id ?: throw DefaultUnauthorizedException(null)
+        val currentUserId = AuthUserHolder.awaitUser().id
         val user = userService.getCurrentUser(currentUserId) ?: throw DefaultUnauthorizedException(null)
         return ServerResponse
             .ok()

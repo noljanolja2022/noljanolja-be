@@ -1,0 +1,107 @@
+openapi: 3.0.0
+info:
+  description: Public API for NoljaNolja admin
+  version: 1.0.0
+  title: NoljaNolja Swagger
+  contact:
+    email: nguyenbrother9x@gmail.com
+tags:
+  - name: User
+    description: Operation relate to current user
+  - name: Media
+    description: Operation relate to media like stickers, emoji, etc.
+paths:
+  /api/v1/users/me:
+    get:
+      tags: [ User ]
+      summary: Get Current logged-in user info
+      description: Return user info
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
+  /api/v1/media/sticker-packs:
+    post:
+      tags: [ Media ]
+      summary: Create sticker pack
+      description: ...
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [ file ]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: the zip file contains sticker images, a tray image, and a metadata file name `contents.json`
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: number
+                        description: the id of the generated sticker pack
+components:
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token from firebase (do not put 'bearer' in here)
+      name: Bearer Token
+  schemas:
+    BaseResponse:
+      type: object
+      required: [ code, message ]
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+    User:
+      type: object
+      required: [ id ]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        dob:
+          type: string
+          description: in date format
+          example: 2023-03-10 04:04:43
+        createdAt:
+          type: string
+          description: in date format
+          example: 2023-03-10 04:04:43
+        updatedAt:
+          type: string
+          description: in date format
+          example: 2023-03-10 04:04:43

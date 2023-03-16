@@ -12,6 +12,10 @@ class UserService(
         const val CUSTOM_CLAIM_KEY_ROLE = "role"
     }
 
+    suspend fun setPermission(userId: String) {
+        firebaseAuth.setCustomUserClaims(userId, mapOf(Pair(CUSTOM_CLAIM_KEY_ROLE, "admin")) )
+    }
+
     suspend fun getUser(
         userId: String,
     ): User {
