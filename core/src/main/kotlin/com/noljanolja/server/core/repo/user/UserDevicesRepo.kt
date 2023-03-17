@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository
 interface UserDevicesRepo : CoroutineCrudRepository<UserDeviceModel, Long> {
     fun findAllByUserId(userId: String): Flow<UserDeviceModel>
     suspend fun findByUserIdAndDeviceType(userId: String, deviceType: String): UserDeviceModel?
+    suspend fun deleteByUserId(userId: String)
 }

@@ -1,8 +1,6 @@
 package com.noljanolja.server.core.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.google.i18n.phonenumbers.NumberParseException
-import com.google.i18n.phonenumbers.Phonenumber
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserDevice
@@ -166,14 +164,18 @@ class UserService(
     suspend fun upsertUserDevice(
         userDevice: UserDevice,
     ) {
-        val existingUserDevice =
-            userDevicesRepo.findByUserIdAndDeviceType(userDevice.userId, userDevice.deviceType.name)
-        if (existingUserDevice == null) {
-            userDevicesRepo.save(userDevice.toUserDeviceModel())
+        if (userDevice.deviceToken.isEmpty() && userDevice.userId.isNotEmpty()) {
+            userDevicesRepo.deleteByUserId(userDevice.userId)
         } else {
-            userDevicesRepo.save(
-                existingUserDevice.copy(deviceToken = userDevice.deviceToken)
-            )
+            val existingUserDevice =
+                userDevicesRepo.findByUserIdAndDeviceType(userDevice.userId, userDevice.deviceType.name)
+            if (existingUserDevice == null) {
+                userDevicesRepo.save(userDevice.toUserDeviceModel())
+            } else {
+                userDevicesRepo.save(
+                    existingUserDevice.copy(deviceToken = userDevice.deviceToken)
+                )
+            }
         }
     }
 }
