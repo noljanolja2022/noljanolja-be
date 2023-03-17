@@ -102,10 +102,15 @@ class ConversationService(
             val conversations = conversationRepo.findAllByUserId(user.id).toList()
             conversations.forEach { conversation ->
                 val messages = messageRepo.findAllByConversationId(conversation.id, messageLimit).toList()
+                val messageStatusSeen = messageStatusRepo.findAllByMessageIdInAndStatusOrderByMessageIdDesc(
+                    messageIds = messages.map { it.id },
+                    status = Message.Status.SEEN,
+                ).toList().distinctBy { it.userId }
                 val uniqueSenderIds = messages.mapTo(mutableSetOf()) { it.senderId }
                 val participants = userRepo.findAllById(uniqueSenderIds).toList()
                 messages.forEach { message ->
                     message.sender = participants.first { it.id == message.senderId }
+                    message.seenBy = messageStatusSeen.filter { it.messageId == message.id }.map { it.userId }
                 }
                 val latestSenders = userRepo.findLatestSender(
                     conversationId = conversation.id,
