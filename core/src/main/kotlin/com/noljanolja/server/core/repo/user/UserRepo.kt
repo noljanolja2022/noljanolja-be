@@ -12,14 +12,12 @@ interface UserRepo : CoroutineCrudRepository<UserModel, String> {
         pageable: Pageable,
     ): Flow<UserModel>
 
-    suspend fun countByPhoneNumberInOrEmailIn(
+    suspend fun countByPhoneNumberIn(
         phones: List<String>,
-        emails: List<String>,
     ): Long
 
-    fun findAllByPhoneNumberInOrEmailIn(
+    fun findAllByPhoneNumberIn(
         phones: List<String>,
-        emails: List<String>,
         pageable: Pageable,
     ): Flow<UserModel>
 

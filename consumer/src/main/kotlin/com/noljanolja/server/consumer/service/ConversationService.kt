@@ -1,16 +1,21 @@
 package com.noljanolja.server.consumer.service
 
-import com.noljanolja.server.consumer.adapter.core.CoreApi
-import com.noljanolja.server.consumer.adapter.core.CoreMessage
+import com.noljanolja.server.consumer.adapter.core.*
 import com.noljanolja.server.consumer.adapter.core.request.CreateConversationRequest
+import com.noljanolja.server.consumer.adapter.core.request.SaveAttachmentsRequest
 import com.noljanolja.server.consumer.adapter.core.request.SaveMessageRequest
 import com.noljanolja.server.consumer.adapter.core.request.UpdateMessageStatusRequest
-import com.noljanolja.server.consumer.adapter.core.toConsumerConversation
-import com.noljanolja.server.consumer.adapter.core.toConsumerMessage
+import com.noljanolja.server.consumer.exception.Error
+import com.noljanolja.server.consumer.rest.request.Attachments
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
+import com.noljanolja.server.consumer.utils.getAttachmentPath
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import org.apache.tika.Tika
 import org.springframework.stereotype.Component
+import java.time.Instant
 import com.noljanolja.server.consumer.adapter.core.CoreConversation.Type as CoreConversationType
 
 @Component
@@ -18,7 +23,14 @@ class ConversationService(
     private val coreApi: CoreApi,
     private val pubSubService: ConversationPubSubService,
     private val notificationService: NotificationService,
+    private val storageService: GoogleStorageService,
 ) {
+    companion object {
+        const val IMAGE_CONTENT_TYPE_PREFIX = "image/"
+        const val VIDEO_CONTENT_TYPE_PREFIX = "video/"
+        const val MAX_IMAGE_SIZE = 10L * 1024 * 1024
+    }
+
     private fun getTopic(userId: String) = "conversations-$userId"
 
     suspend fun createConversation(
@@ -42,8 +54,10 @@ class ConversationService(
         message: String,
         type: Message.Type,
         conversationId: Long,
-    ): Message {
-        val data = coreApi.saveMessage(
+        attachments: Attachments,
+    ): Message = coroutineScope {
+        validateAttachments(type, attachments)
+        val savedMessage = coreApi.saveMessage(
             request = SaveMessageRequest(
                 message = message,
                 type = CoreMessage.Type.valueOf(type.name),
@@ -51,11 +65,46 @@ class ConversationService(
             ),
             conversationId = conversationId,
         ).toConsumerMessage()
+        val saveAttachments = attachments.files.map {
+            val fileName = "${Instant.now().epochSecond}_${userId}_${it.filename}"
+            val contentType = Tika().detect(it.data.first().asInputStream())
+            val uploadInfo = storageService.uploadFile(
+                path = getAttachmentPath(conversationId, fileName),
+                contentType = contentType,
+                content = it.data.map { it.asByteBuffer() },
+                limitSize = getLimitSize(
+                    messageType = type,
+                    contentType = contentType
+                )
+            )
+            Message.Attachment(
+                name = fileName,
+                originalName = it.filename,
+                type = contentType,
+                size = uploadInfo.size,
+                md5 = uploadInfo.md5,
+            )
+        }
+        val savedMessageWithAttachments = coreApi.saveAttachments(
+            payload = SaveAttachmentsRequest(
+                attachments = saveAttachments.map {
+                    SaveAttachmentsRequest.Attachment(
+                        name = it.name,
+                        type = it.type,
+                        originalName = it.originalName,
+                        size = it.size,
+                        md5 = it.md5,
+                    )
+                },
+            ),
+            conversationId = conversationId,
+            messageId = savedMessage.id,
+        ).toConsumerMessage()
         val conversation = coreApi.getConversationDetail(
             userId = userId,
             conversationId = conversationId,
         ).toConsumerConversation()
-        CoroutineScope(Dispatchers.Default).launch {
+        withContext(Dispatchers.Default) {
             launch {
                 notifyParticipants(conversation)
             }
@@ -63,7 +112,19 @@ class ConversationService(
                 pushNotifications(conversation)
             }
         }
-        return data
+        savedMessageWithAttachments
+    }
+
+    fun getLimitSize(
+        messageType: Message.Type,
+        contentType: String?,
+    ): Long {
+        return when {
+            messageType == Message.Type.PHOTO && contentType?.startsWith(IMAGE_CONTENT_TYPE_PREFIX) ?: false
+            -> MAX_IMAGE_SIZE
+
+            else -> 0
+        }
     }
 
     suspend fun getUserConversations(userId: String): List<Conversation> {
@@ -96,6 +157,41 @@ class ConversationService(
         ).map { it.toConsumerMessage() }
     }
 
+    suspend fun seenMessage(
+        userId: String,
+        messageId: Long,
+        conversationId: Long,
+    ) {
+        try {
+            coreApi.updateMessageStatus(
+                payload = UpdateMessageStatusRequest(
+                    seenBy = userId,
+                ),
+                messageId = messageId,
+                conversationId = conversationId,
+            )
+            val conversation = coreApi.getConversationDetail(
+                userId = userId,
+                conversationId = conversationId,
+            ).toConsumerConversation()
+            notifyParticipants(conversation)
+        } catch (e: Exception) {
+            println("Failed to update message status: ${e.message}")
+        }
+    }
+
+    suspend fun getAttachmentById(
+        userId: String,
+        conversationId: Long,
+        attachmentId: Long,
+    ): Message.Attachment {
+        return coreApi.getAttachmentById(
+            userId = userId,
+            conversationId = conversationId,
+            attachmentId = attachmentId,
+        ).toConsumerAttachment()
+    }
+
     private fun notifyParticipants(
         conversation: Conversation,
     ) {
@@ -122,26 +218,36 @@ class ConversationService(
         }.awaitAll()
     }
 
-    suspend fun seenMessage(
-        userId: String,
-        messageId: Long,
-        conversationId: Long,
+    private fun validateAttachments(
+        messageType: Message.Type,
+        attachments: Attachments,
     ) {
-        try {
-            coreApi.updateMessageStatus(
-                payload = UpdateMessageStatusRequest(
-                    seenBy = userId,
-                ),
-                messageId = messageId,
-                conversationId = conversationId,
-            )
-            val conversation = coreApi.getConversationDetail(
-                userId = userId,
-                conversationId = conversationId,
-            ).toConsumerConversation()
-            notifyParticipants(conversation)
-        } catch (e: Exception) {
-            println("Failed to update message status: ${e.message}")
+        when {
+            !isValidContentType(
+                messageType = messageType,
+                attachments = attachments,
+            ) -> throw Error.InvalidContentType
+
+            attachments.files.any {
+                it.contentLength > getLimitSize(
+                    messageType = messageType,
+                    contentType = it.contentType
+                )
+            }
+            -> throw Error.FileExceedMaxSize
+        }
+    }
+
+    private fun isValidContentType(
+        messageType: Message.Type,
+        attachments: Attachments,
+    ): Boolean {
+        return when (messageType) {
+            Message.Type.PHOTO -> attachments.files.all {
+                (it.contentType?.startsWith(IMAGE_CONTENT_TYPE_PREFIX) ?: false)
+            }
+
+            else -> true
         }
     }
 }

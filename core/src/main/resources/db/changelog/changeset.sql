@@ -201,3 +201,26 @@ CREATE TABLE IF NOT EXISTS `stickers`
 ) ENGINE = InnoDB;
 
 CREATE UNIQUE INDEX `idx_id_pack` ON `stickers` (`id`, `pack_id`);
+
+--changeset tranhieu956230@gmail.com:5
+
+-- -----------------------------------------------------
+-- Table `attachments`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `attachments`;
+
+CREATE TABLE IF NOT EXISTS `attachments`
+(
+    `id`            BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `message_id`    BIGINT       NOT NULL REFERENCES `messages`(`id`) ON DELETE CASCADE,
+    `name`          VARCHAR(255) NOT NULL,
+    `original_name` VARCHAR(255) NOT NULL,
+    `size`          BIGINT       NOT NULL,
+    `md5`           VARCHAR(255) NOT NULL,
+    `type`          VARCHAR(255) NOT NULL,
+    `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+CREATE FULLTEXT INDEX idx_original_name ON attachments(original_name);

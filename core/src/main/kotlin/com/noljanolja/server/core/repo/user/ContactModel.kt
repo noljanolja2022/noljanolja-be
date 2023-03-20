@@ -19,9 +19,6 @@ data class ContactModel(
     @Column("phone_number")
     val phoneNumber: String?,
 
-    @Column("email")
-    var email: String? = null,
-
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),

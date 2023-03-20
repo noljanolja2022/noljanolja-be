@@ -6,6 +6,7 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.Conversation
 import com.noljanolja.server.core.rest.request.CreateConversationRequest
+import com.noljanolja.server.core.rest.request.SaveAttachmentsRequest
 import com.noljanolja.server.core.rest.request.SaveMessageRequest
 import com.noljanolja.server.core.rest.request.UpdateMessageStatusRequest
 import com.noljanolja.server.core.service.ConversationService
@@ -142,6 +143,45 @@ class ConversationHandler(
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response<Nothing>()
+            )
+    }
+
+    suspend fun saveAttachments(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<SaveAttachmentsRequest>() ?: throw RequestBodyRequired
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val messageId = request.pathVariable(QUERY_PARAM_MESSAGE_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_MESSAGE_ID)
+        val message = conversationService.saveAttachments(
+            attachments = payload.attachments,
+            conversationId = conversationId,
+            messageId = messageId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = message,
+                )
+            )
+    }
+
+    suspend fun getAttachmentById(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val attachmentId = request.pathVariable("attachmentId").toLongOrNull()
+            ?: throw InvalidParamsException("attachmentId")
+        val userId = request.queryParamOrNull(QUERY_PARAM_USER_ID)?.takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException(QUERY_PARAM_USER_ID)
+        val attachment = conversationService.getAttachmentById(
+            userId = userId,
+            conversationId = conversationId,
+            attachmentId = attachmentId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = attachment,
+                )
             )
     }
 }

@@ -102,22 +102,14 @@ class UserHandler(
         val upsertUserContactsRequest = request.awaitBodyOrNull<UpsertUserContactsRequest>()
             ?: throw RequestBodyRequired
         userService.upsertUserContacts(userId, upsertUserContactsRequest.contacts.flatMap { localContact ->
-            localContact.emails.distinct().map { email ->
-                UserContact(
-                    id = 0,
-                    name = localContact.name,
-                    phone = null,
-                    email = email,
-                )
-            } + localContact.phones.distinct().map { phone ->
+            localContact.phones.mapNotNull { phone ->
                 UserContact(
                     id = 0,
                     name = localContact.name,
                     phone = phone,
-                    email = null,
-                )
+                ).takeIf { phone.isNotBlank() }
             }
-        }.distinctBy { it.phone.orEmpty() + it.email.orEmpty() })
+        }.distinctBy { it.phone.orEmpty() })
         return ServerResponse
             .ok()
             .bodyValueAndAwait(Response<Nothing>())

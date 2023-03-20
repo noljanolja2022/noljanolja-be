@@ -7,6 +7,7 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.adapter.core.response.GetUsersResponseData
 import com.noljanolja.server.consumer.exception.CoreServiceError
+import com.noljanolja.server.consumer.model.Message
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
@@ -248,7 +249,6 @@ class CoreApi(
         .uri { builder ->
             builder.path(MESSAGE_ENDPOINT)
                 .queryParam("userId", userId)
-                .queryParam("conversationId", conversationId)
                 .queryParamIfPresent("afterMessageId", Optional.ofNullable(afterMessageId))
                 .queryParamIfPresent("beforeMessageId", Optional.ofNullable(beforeMessageId))
                 .build(conversationId)
@@ -284,4 +284,46 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Nothing>>()
+
+    suspend fun saveAttachments(
+        payload: SaveAttachmentsRequest,
+        messageId: Long,
+        conversationId: Long,
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$MESSAGE_ENDPOINT/{messageId}/attachments")
+                .build(conversationId, messageId)
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreMessage>>().data!!
+
+    suspend fun getAttachmentById(
+        userId: String,
+        conversationId: Long,
+        attachmentId: Long,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$GET_CONVERSATION_DETAIL_ENDPOINT/attachments/{attachmentId}")
+                .queryParam("userId", userId)
+                .build(conversationId, attachmentId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreAttachment>>().data!!
 }

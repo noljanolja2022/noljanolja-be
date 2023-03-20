@@ -25,7 +25,14 @@ class ConversationRouter(
                 "/messages".nest {
                     GET("", conversationHandler::getConversationMessages)
                     POST("", conversationHandler::saveConversationMessages)
-                    PUT("{messageId}", conversationHandler::updateMessageStatus)
+                    "/{messageId}".nest {
+                        PUT("", conversationHandler::updateMessageStatus)
+                        POST("/attachments", conversationHandler::saveAttachments)
+                    }
+                }
+
+                "/attachments".nest {
+                    GET("{attachmentId}", conversationHandler::getAttachmentById)
                 }
             }
         }

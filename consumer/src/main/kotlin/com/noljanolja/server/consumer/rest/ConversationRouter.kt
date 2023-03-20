@@ -31,6 +31,10 @@ class ConversationRouter(
                         POST("seen", conversationHandler::seenMessage)
                     }
                 }
+
+                "/attachments".nest {
+                    GET("{attachmentId}", conversationHandler::downloadConversationAttachment)
+                }
             }
         }
     }

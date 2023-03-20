@@ -53,6 +53,7 @@ prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version 
 firebase-admin = { module = "com.google.firebase:firebase-admin", version = "9.1.1" }
 
 libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version = "8.13.7" }
+apache-tika = { module = "org.apache.tika:tika-core", version = "2.7.0" }
 
 springdoc-openapi-starter-webflux-ui = { module = "org.springdoc:springdoc-openapi-starter-webflux-ui", version = "2.0.2" }
 
@@ -138,6 +139,7 @@ serverConsumer = [
     "spring-security-messaging",
     "spring-boot-security",
     "spring-security-oauth2",
+    "apache-tika"
 ]
 
 serverConsumerProcessor = [

@@ -11,6 +11,7 @@ data class CoreMessage(
     val type: Type,
     val seenBy: List<String> = listOf(),
     val createdAt: Instant = Instant.now(),
+    val attachments: List<CoreAttachment> = listOf(),
 ) {
 
     enum class Type {
@@ -29,5 +30,6 @@ fun CoreMessage.toConsumerMessage() = Message(
     sender = sender.toConsumerUser(),
     type = Message.Type.valueOf(type.name),
     seenBy = seenBy,
+    attachments = attachments.map { it.toConsumerAttachment() },
     createdAt = createdAt,
 )

@@ -10,6 +10,7 @@ data class Message(
     val type: Type,
     val seenBy: List<String> = listOf(),
     val createdAt: Instant = Instant.now(),
+    val attachments: List<Attachment> = listOf(),
 ) {
 
     enum class Type {

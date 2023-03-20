@@ -17,11 +17,11 @@ tags:
 paths:
   /api/v1/users/me:
     get:
-      tags: [User]
+      tags: [ User ]
       summary: Get Current logged-in user info
       description: Return user info with preference/setting
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         "200":
           description: On success
@@ -35,11 +35,11 @@ paths:
                       data:
                         $ref: "#/components/schemas/User"
     put:
-      tags: [User]
+      tags: [ User ]
       summary: Update Current logged-in user info
       description: Return updated user info with preference/setting
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -70,7 +70,7 @@ paths:
                       data:
                         $ref: "#/components/schemas/User"
     post:
-      tags: [User]
+      tags: [ User ]
       summary: Update current user info using file
       description: Upload corresponding file to cloud, and update current user info if necessary. Return data related to uploaded file
       security:
@@ -81,11 +81,11 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [field, files]
+              required: [ field, files ]
               properties:
                 field:
                   type: string
-                  enum: [AVATAR]
+                  enum: [ AVATAR ]
                 files:
                   type: array
                   items:
@@ -104,7 +104,7 @@ paths:
                       data:
                         $ref: "#/components/schemas/UserFileUpload"
     delete:
-      tags: [User]
+      tags: [ User ]
       summary: Delete user
       description: This will remove user on both on firebase and noljanolja
       security:
@@ -118,7 +118,7 @@ paths:
                 $ref: "#/components/schemas/BaseResponse"
   /api/v1/users/me/contacts:
     post:
-      tags: [User]
+      tags: [ User ]
       summary: Sync contact list
       description: This will sync data from user contact list to user friend list in server
       security:
@@ -177,7 +177,7 @@ paths:
                 $ref: "#/components/schemas/BaseResponse"
   /api/v1/conversations:
     get:
-      tags: [Conversation]
+      tags: [ Conversation ]
       summary: Get list of conversation of current user
       description: Include recent participants and sender
       security:
@@ -208,7 +208,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [title, participantIds, type]
+              required: [ title, participantIds, type ]
               properties:
                 title:
                   type: string
@@ -232,7 +232,7 @@ paths:
                         $ref: "#/components/schemas/Conversation"
   /api/v1/conversations/{conversationId}:
     get:
-      tags: [Conversation]
+      tags: [ Conversation ]
       summary: Get conversation detail
       description: Include all participants, and many recent messages
       security:
@@ -308,12 +308,17 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [message, type]
+              required: [ message, type ]
               properties:
                 message:
                   type: string
                 type:
                   $ref: "#/components/schemas/MessageType"
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
       responses:
         "200":
           description: On success
@@ -354,6 +359,21 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/BaseResponse"
+  /api/v1/conversations/{conversationId}/attachments/{attachmentId}:
+    get:
+      tags: [ Conversation ]
+      summary: Download attachment
+      description: Download attachment
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: Return a file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -365,7 +385,7 @@ components:
   schemas:
     BaseResponse:
       type: object
-      required: [code, message]
+      required: [ code, message ]
       properties:
         code:
           type: integer
@@ -373,7 +393,7 @@ components:
           type: string
     User:
       type: object
-      required: [id]
+      required: [ id ]
       properties:
         id:
           type: string
@@ -478,8 +498,34 @@ components:
           type: array
           items:
             type: string
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Attachment"
         createdAt:
           type: string
     MessageType:
       type: string
       enum: [ PLAINTEXT, STICKER, GIF, PHOTO, DOCUMENT ]
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: number
+        messageId:
+          type: number
+        name:
+          type: string
+          description: Server assign a unique name for each attachment
+        originalName:
+          type: string
+          description: Original name of the file
+        size:
+          type: number
+          description: Size of the file in bytes
+        type:
+          type: string
+          description: Type of the file
+          example: image/jpeg
+        md5:
+          type: string

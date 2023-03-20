@@ -44,6 +44,9 @@ data class MessageModel(
 
     @Transient
     var seenBy: List<String> = listOf()
+
+    @Transient
+    var attachments: List<AttachmentModel> = listOf()
 }
 
 fun MessageModel.toMessage(objectMapper: ObjectMapper) = Message(
@@ -54,4 +57,5 @@ fun MessageModel.toMessage(objectMapper: ObjectMapper) = Message(
     type = type,
     seenBy = seenBy,
     createdAt = createdAt,
+    attachments = attachments.map { it.toAttachment() }
 )

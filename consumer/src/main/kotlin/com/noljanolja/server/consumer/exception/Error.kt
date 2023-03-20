@@ -32,8 +32,39 @@ sealed class CoreServiceError(
     )
 }
 
-object FileExceedMaxSize : BaseException(
-    400_010,
-    "[Consumer] File upload size exceeded threshold",
-    null
-)
+sealed class Error(
+    code: Int,
+    message: String,
+    cause: Throwable?,
+) : BaseException(code, message, cause) {
+    companion object {
+        const val FILE_NOT_FOUND = 404_002
+        const val FILE_EXCEED_MAX_SIZE = 400_010
+        const val EXCEED_MAX_ATTACHMENTS_SIZE = 400_011
+        const val INVALID_CONTENT_TYPE = 400_012
+    }
+
+    object FileExceedMaxSize : BaseException(
+        FILE_EXCEED_MAX_SIZE,
+        "File upload size exceeded threshold",
+        null
+    )
+
+    object ExceedMaxAttachmentsSize : BaseException(
+        EXCEED_MAX_ATTACHMENTS_SIZE,
+        "Exceed max attachments size",
+        null
+    )
+
+    object InvalidContentType : BaseException(
+        INVALID_CONTENT_TYPE,
+        "Invalid content type",
+        null
+    )
+
+    object FileNotFound : BaseException(
+        FILE_NOT_FOUND,
+        "File not found",
+        null
+    )
+}

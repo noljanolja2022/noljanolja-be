@@ -9,6 +9,8 @@ sealed class Error(
 ) : BaseException(code, message, cause) {
     companion object {
         const val CONVERSATION_NOT_FOUND = 404_002
+        const val MESSAGE_NOT_FOUND = 404_003
+        const val ATTACHMENT_NOT_FOUND = 404_004
         const val USER_NOT_PARTICIPATE_IN_CONVERSATION = 400_001
         const val INVALID_PARTICIPANTS_SIZE = 400_002
         const val PARTICIPANTS_NOT_FOUND = 400_003
@@ -21,6 +23,18 @@ sealed class Error(
     object ConversationNotFound : Error(
         CONVERSATION_NOT_FOUND,
         "Conversation not found",
+        null,
+    )
+
+    object MessageNotFound : Error(
+        MESSAGE_NOT_FOUND,
+        "Message not found",
+        null
+    )
+
+    object AttachmentNotFound : Error(
+        ATTACHMENT_NOT_FOUND,
+        "Attachment not found",
         null,
     )
 
@@ -60,7 +74,7 @@ sealed class Error(
         null,
     )
 
-    object StickerPackNotFound: Error(
+    object StickerPackNotFound : Error(
         STICKER_PACK_NOT_FOUND,
         "Sticker pack not found",
         null

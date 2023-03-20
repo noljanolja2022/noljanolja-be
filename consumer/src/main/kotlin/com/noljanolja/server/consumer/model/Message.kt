@@ -8,9 +8,20 @@ data class Message(
     val message: String = "",
     val type: Type,
     val sender: User,
-    val seenBy : List<String> = listOf(),
+    val seenBy: List<String> = listOf(),
+    val attachments: List<Attachment> = listOf(),
     val createdAt: Instant = Instant.now(),
 ) {
+
+    data class Attachment(
+        val id: Long = 0,
+        val messageId: Long = 0,
+        val name: String,
+        val originalName: String,
+        val size: Long,
+        val type: String,
+        val md5: String,
+    )
 
     enum class Type {
         PLAINTEXT,

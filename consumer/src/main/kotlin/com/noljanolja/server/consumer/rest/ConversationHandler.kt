@@ -3,26 +3,38 @@ package com.noljanolja.server.consumer.rest
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
+import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.filter.AuthUserHolder
+import com.noljanolja.server.consumer.rest.request.Attachments
+import com.noljanolja.server.consumer.rest.request.FileAttachment
 import com.noljanolja.server.consumer.model.Message
 import com.noljanolja.server.consumer.rest.request.CreateConversationRequest
 import com.noljanolja.server.consumer.service.ConversationService
+import com.noljanolja.server.consumer.service.GoogleStorageService
+import com.noljanolja.server.consumer.utils.getAttachmentPath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitSingle
+import org.springframework.core.io.InputStreamResource
+import org.springframework.http.HttpHeaders
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
 @Component
 class ConversationHandler(
     private val conversationService: ConversationService,
+    private val googleStorageService: GoogleStorageService,
 ) {
     companion object {
         const val QUERY_PARAM_CONVERSATION_ID = "conversationId"
         const val QUERY_PARAM_MESSAGE_ID = "messageId"
+        const val DOWNLOAD_FILE_HEADER = "Noljanolja-File-Download"
+        const val MAX_ATTACHMENTS_SIZE = 10
     }
-    
+
     suspend fun getConversations(request: ServerRequest): ServerResponse {
         val conversations = conversationService.getUserConversations(AuthUserHolder.awaitUser().id)
         return ServerResponse
@@ -99,11 +111,23 @@ class ConversationHandler(
         val type = payload.getFirst("type")?.content()?.awaitSingle()?.let {
             Message.Type.valueOf(String(it.asInputStream().readAllBytes()))
         } ?: Message.Type.PLAINTEXT
+        val attachments = (payload["attachments"] as? List<FilePart>)?.takeIf { it.size <= MAX_ATTACHMENTS_SIZE }
+            ?: throw Error.ExceedMaxAttachmentsSize
         val data = conversationService.createMessage(
             userId = AuthUserHolder.awaitUser().id,
             message = message,
             type = type,
             conversationId = conversationId,
+            attachments = Attachments(
+                files = attachments.map {
+                    FileAttachment(
+                        filename = it.filename(),
+                        contentType = it.headers().contentType?.toString(),
+                        data = it.content().asFlow(),
+                        contentLength = it.headers().contentLength
+                    )
+                }
+            )
         )
         return ServerResponse
             .ok()
@@ -130,6 +154,32 @@ class ConversationHandler(
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response<Nothing>()
+            )
+    }
+
+    suspend fun downloadConversationAttachment(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val attachmentId = request.pathVariable("attachmentId").toLongOrNull()
+            ?: throw InvalidParamsException("attachmentId")
+        val userId = AuthUserHolder.awaitUser().id
+        val attachment = conversationService.getAttachmentById(
+            userId = userId,
+            conversationId = conversationId,
+            attachmentId = attachmentId
+        )
+        val resourceInfo = googleStorageService.getResource(
+            getAttachmentPath(
+                conversationId = conversationId,
+                attachmentName = attachment.name,
+            )
+        )
+        return ServerResponse.ok()
+            .header(HttpHeaders.CONTENT_TYPE, resourceInfo.contentType)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=${attachment.name}")
+            .header(DOWNLOAD_FILE_HEADER, attachment.name)
+            .bodyValueAndAwait(
+                InputStreamResource(resourceInfo.data)
             )
     }
 }

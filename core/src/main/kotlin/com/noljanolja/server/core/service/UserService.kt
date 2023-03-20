@@ -38,23 +38,19 @@ class UserService(
             val users = userRepo.findAllBy(PageRequest.of(page - 1, pageSize))
                 .map { it.toUser(objectMapper) }.toList()
             Pair(users, total.toInt())
-        } else { // if friendId exists -> Find by contact phones and emails
-            // Get all contacts by friendId -> Collect phone + email
+        } else { // if friendId exists -> Find by contact phones
+            // Get all contacts by friendId -> Collect phone
             val phones = mutableListOf<String>()
-            val emails = mutableListOf<String>()
             contactsRepo.findAllByUserId(userId = friendId).toList().forEach { contact ->
                 contact.phoneNumber.takeIf { !it.isNullOrBlank() }?.let { phones.add(it) }
-                contact.email.takeIf { !it.isNullOrBlank() }?.let { emails.add(it) }
             }
             // Count the total
-            val total = userRepo.countByPhoneNumberInOrEmailIn(
+            val total = userRepo.countByPhoneNumberIn(
                 phones = phones.sorted(),
-                emails = emails.sorted(),
             )
             // Get users
-            val users = userRepo.findAllByPhoneNumberInOrEmailIn(
+            val users = userRepo.findAllByPhoneNumberIn(
                 phones = phones.sorted(),
-                emails = emails.sorted(),
                 pageable = PageRequest.of(page - 1, pageSize),
             ).map { it.toUser(objectMapper) }.toList()
             Pair(users, total.toInt())
@@ -82,13 +78,12 @@ class UserService(
         userId: String,
         userContacts: List<UserContact>,
     ) {
+        val user = userRepo.findById(userId)!!
         // Get existing user contacts
         val existingUserContacts = userContactsRepo.findAllByUserId(userId).toList()
         // Get exising user contact details
-        val contactEmails = userContacts.mapNotNull { it.email?.takeIf { it.isNotBlank() } }
-        val contactPhones = userContacts.mapNotNull { it.phone?.let { parsePhoneNumber(it) } }
-        val existingContacts = contactsRepo.findAllByPhoneNumberInOrEmailIn(
-            emails = contactEmails,
+        val contactPhones = userContacts.mapNotNull { it.phone?.let { parsePhoneNumber(it, user.countryCode.toInt()) } }
+        val existingContacts = contactsRepo.findAllByPhoneNumberIn(
             phones = contactPhones.map { it.nationalNumber.toString() },
         ).toList()
         // New contacts to be saved
@@ -98,24 +93,19 @@ class UserService(
         val updateUserContacts = mutableListOf<UserContactModel>()
         userContacts.forEachIndexed { index, userContact ->
             // parse phone number
-            val phoneNumber = parsePhoneNumber(userContact.phone.orEmpty())
-            // only check contact which has valid email or phone number
-            // TODO check email
-            if (userContact.email == null && phoneNumber == null) {
-                return@forEachIndexed
-            }
-            // find an existing contact which has the same email or number
+            val phoneNumber = parsePhoneNumber(userContact.phone.orEmpty(), user.countryCode.toInt())
+                ?: return@forEachIndexed
+            // only check contact which has valid phone number
+            // find an existing contact which has the same number
             val existingContact = existingContacts.find {
-                (it.email != null && it.email == userContact.email) ||
-                        (it.phoneNumber != null && it.phoneNumber == phoneNumber?.nationalNumber.toString())
+                (it.phoneNumber != null && it.phoneNumber == phoneNumber.nationalNumber.toString())
             }
             if (existingContact == null) {
                 // Contact does not exist -> will be added
                 newContacts[index] = ContactModel(
                     id = 0,
-                    countryCode = phoneNumber?.countryCode?.toString(),
-                    phoneNumber = phoneNumber?.nationalNumber?.toString(),
-                    email = userContact.email,
+                    countryCode = phoneNumber.countryCode.toString(),
+                    phoneNumber = phoneNumber.nationalNumber.toString(),
                 )
                 newUserContacts[index] = UserContactModel(
                     id = 0,
