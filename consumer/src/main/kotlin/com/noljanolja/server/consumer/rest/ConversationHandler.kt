@@ -111,8 +111,9 @@ class ConversationHandler(
         val type = payload.getFirst("type")?.content()?.awaitSingle()?.let {
             Message.Type.valueOf(String(it.asInputStream().readAllBytes()))
         } ?: Message.Type.PLAINTEXT
-        val attachments = (payload["attachments"] as? List<FilePart>)?.takeIf { it.size <= MAX_ATTACHMENTS_SIZE }
-            ?: throw Error.ExceedMaxAttachmentsSize
+        val attachments = (payload["attachments"] as? List<FilePart>)?.also {
+            if (it.size > MAX_ATTACHMENTS_SIZE) throw Error.ExceedMaxAttachmentsSize
+        }.orEmpty()
         val data = conversationService.createMessage(
             userId = AuthUserHolder.awaitUser().id,
             message = message,
