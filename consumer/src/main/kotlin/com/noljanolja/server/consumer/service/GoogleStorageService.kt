@@ -1,10 +1,6 @@
 package com.noljanolja.server.consumer.service
 
-import com.google.cloud.storage.Acl
-import com.google.cloud.storage.BlobId
-import com.google.cloud.storage.BlobInfo
-import com.google.cloud.storage.Storage
-import com.noljanolja.server.consumer.exception.Error
+import com.google.cloud.storage.*
 import com.noljanolja.server.consumer.model.ResourceInfo
 import com.noljanolja.server.consumer.model.UploadInfo
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +26,7 @@ class GoogleStorageService(
         path: String,
         contentType: String?,
         content: Flow<ByteBuffer>,
+        isPublicAccessible: Boolean = false,
         limitSize: Long = FILE_SIZE_LIMIT,
     ): UploadInfo {
         var currentUploadSize = 0L
@@ -47,11 +44,13 @@ class GoogleStorageService(
                         writer.write(it)
                     }
                     if (currentUploadSize > limitSize)
-                        throw Error.FileExceedMaxSize
+                        throw com.noljanolja.server.consumer.exception.Error.FileExceedMaxSize
                 }
             }
             val uploadedFile = storage.get(blobId)
-            storage.createAcl(blobId, Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER))
+            if (isPublicAccessible) {
+                storage.createAcl(blobId, Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER))
+            }
             return UploadInfo(
                 path = "${uploadedFile.storage.options.host}/${uploadedFile.blobId.bucket}/${uploadedFile.blobId.name}",
                 size = uploadedFile.size,
@@ -63,16 +62,16 @@ class GoogleStorageService(
         }
     }
 
-    suspend fun getResource(path: String): ResourceInfo {
+    suspend fun getResource(path: String, fileName: String? = null): ResourceInfo {
         return try {
             val blobId = BlobId.of(bucketName, path)
             ResourceInfo(
                 data = storage.get(blobId).getContent().inputStream(),
-                contentType = storage.get(blobId).contentType
-
+                contentType = storage.get(blobId).contentType,
+                fileName = fileName
             )
         } catch (exception: FileNotFoundException) {
-            throw Error.FileNotFound
+            throw com.noljanolja.server.consumer.exception.Error.FileExceedMaxSize
         }
     }
 }

@@ -10,5 +10,6 @@ data class UploadInfo(
 
 data class ResourceInfo(
     val data : InputStream,
-    val contentType: String
+    val contentType: String,
+    var fileName: String? = null
 )

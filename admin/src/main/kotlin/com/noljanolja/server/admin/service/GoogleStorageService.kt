@@ -18,7 +18,8 @@ class GoogleStorageService(
     @Qualifier("cloudStorage") private val storage: Storage,
 ) {
     companion object {
-        private const val FILE_SIZE_LIMIT : Long = 1024 * 1024
+        internal const val FILE_SIZE_LIMIT : Long = 1024 * 1024
+        internal const val STICKER_BUCKET = "stickers"
     }
     @Value("\${gcloud.storage.bucket}")
     private val bucketName: String = "noljanolja2023.appspot.com"
@@ -26,6 +27,7 @@ class GoogleStorageService(
         path: String,
         contentType: String?,
         content: ByteBuffer,
+        isPublicAccessible: Boolean = false,
         limitSize: Long = FILE_SIZE_LIMIT,
     ): UploadInfo {
         var currentUploadSize = 0L
@@ -45,7 +47,9 @@ class GoogleStorageService(
                     throw FileExceedMaxSize
             }
             val uploadedFile = storage.get(blobId)
-            storage.createAcl(blobId, Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER))
+            if (isPublicAccessible) {
+                storage.createAcl(blobId, Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER))
+            }
             return UploadInfo(
                 path = "${uploadedFile.storage.options.host}/${uploadedFile.blobId.bucket}/${uploadedFile.blobId.name}",
                 size = uploadedFile.size,

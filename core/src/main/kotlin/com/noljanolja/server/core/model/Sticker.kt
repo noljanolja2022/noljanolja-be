@@ -10,6 +10,6 @@ data class StickerPack(
     val name: String,
     val publisher: String,
     val trayImageFile: String,
-    val animatedStickerPack: Boolean,
+    val isAnimated: Boolean,
     val stickers: List<Sticker>
 )

@@ -13,6 +13,8 @@ import org.springframework.http.codec.ServerCodecConfigurer
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.server.ServerWebInputException
+import java.util.logging.Level
+import java.util.logging.Logger
 
 abstract class BaseExceptionsHandler(
     errorAttributes: ErrorAttributes,
@@ -23,6 +25,7 @@ abstract class BaseExceptionsHandler(
     errorAttributes, webProperties.resources, applicationContext
 ) {
 
+    private val logger = Logger.getLogger("NoljaNolja")
     companion object {
         private const val HTTP_STATUS_FACTOR = 1000
     }
@@ -56,7 +59,7 @@ abstract class BaseExceptionsHandler(
 
             else -> DefaultInternalErrorException(error.cause)
         }
-
+        logger.log(Level.SEVERE, error.cause?.message ?: error.message)
         val status = HttpStatus.valueOf(exception.code / HTTP_STATUS_FACTOR)
 
         return ServerResponse.status(status)

@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS `sticker_packs`
     `name`                    VARCHAR(36)  NOT NULL,
     `publisher`               VARCHAR(128) NOT NULL,
     `tray_image_file`         VARCHAR(128) NOT NULL,
-    `animated_sticker_pack`   TINYINT(1)   NOT NULL DEFAULT 0
+    `is_animated`   TINYINT(1)   NOT NULL DEFAULT 0
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------

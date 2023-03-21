@@ -7,6 +7,7 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.adapter.core.response.GetUsersResponseData
 import com.noljanolja.server.consumer.exception.CoreServiceError
+import com.noljanolja.server.consumer.model.StickerPack
 import com.noljanolja.server.consumer.model.Message
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatusCode
@@ -27,6 +28,7 @@ class CoreApi(
         const val CONVERSATION_ENDPOINT = "/api/v1/conversations"
         const val GET_CONVERSATION_DETAIL_ENDPOINT = "/api/v1/conversations/{conversationId}"
         const val MESSAGE_ENDPOINT = "/api/v1/conversations/{conversationId}/messages"
+        const val MEDIA_ENDPOINT = "/api/v1/media"
     }
 
     suspend fun getUsers(
@@ -43,12 +45,12 @@ class CoreApi(
         }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            // TODO check error: 401, 403, 404
-            Mono.just(DefaultNotFoundException(null))
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            // TODO check error
-            Mono.just(ExternalServiceException(null))
+            Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<GetUsersResponseData>>().data?.let {
             it.users to it.pagination
@@ -62,12 +64,12 @@ class CoreApi(
         }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            // TODO check error: 401, 403, 404
-            Mono.just(DefaultNotFoundException(null))
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            // TODO check error
-            Mono.just(ExternalServiceException(null))
+            Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreUser>>().data!!
 
@@ -326,4 +328,38 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreAttachment>>().data!!
+
+    suspend fun getAllStickerPacksFromUser(
+        userId: String
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/sticker-packs").build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<StickerPack>>>().data
+
+    suspend fun getStickerPack(
+        stickerPackId: Long
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/sticker-packs/$stickerPackId").build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<StickerPack>>().data
 }

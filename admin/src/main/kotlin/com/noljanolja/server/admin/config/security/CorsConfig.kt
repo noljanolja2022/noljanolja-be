@@ -27,7 +27,7 @@ class CorsConfig {
 
     @Bean
     fun filterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
-        http.csrf().disable()
+//        http.csrf().disable() //Only enable when use locally to develop
         return http.build()
     }
 }

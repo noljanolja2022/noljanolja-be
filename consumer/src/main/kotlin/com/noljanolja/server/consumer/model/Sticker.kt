@@ -1,4 +1,4 @@
-package com.noljanolja.server.admin.model
+package com.noljanolja.server.consumer.model
 
 data class StickerPack(
     var id: Long?,

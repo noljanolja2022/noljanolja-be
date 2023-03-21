@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   description: Public API for NoljaNolja consumer
-  version: 1.0.1
+  version: 1.0.2
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -14,14 +14,16 @@ tags:
     description: Operation relate to push token
   - name: Message
     description: Operation relate to message
+  - name: Media
+    description: Stickers, emojis, etc.
 paths:
   /api/v1/users/me:
     get:
-      tags: [ User ]
+      tags: [User]
       summary: Get Current logged-in user info
       description: Return user info with preference/setting
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         "200":
           description: On success
@@ -35,11 +37,11 @@ paths:
                       data:
                         $ref: "#/components/schemas/User"
     put:
-      tags: [ User ]
+      tags: [User]
       summary: Update Current logged-in user info
       description: Return updated user info with preference/setting
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -70,7 +72,7 @@ paths:
                       data:
                         $ref: "#/components/schemas/User"
     post:
-      tags: [ User ]
+      tags: [User]
       summary: Update current user info using file
       description: Upload corresponding file to cloud, and update current user info if necessary. Return data related to uploaded file
       security:
@@ -81,11 +83,11 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [ field, files ]
+              required: [field, files]
               properties:
                 field:
                   type: string
-                  enum: [ AVATAR ]
+                  enum: [AVATAR]
                 files:
                   type: array
                   items:
@@ -104,7 +106,7 @@ paths:
                       data:
                         $ref: "#/components/schemas/UserFileUpload"
     delete:
-      tags: [ User ]
+      tags: [User]
       summary: Delete user
       description: This will remove user on both on firebase and noljanolja
       security:
@@ -118,7 +120,7 @@ paths:
                 $ref: "#/components/schemas/BaseResponse"
   /api/v1/users/me/contacts:
     post:
-      tags: [ User ]
+      tags: [User]
       summary: Sync contact list
       description: This will sync data from user contact list to user friend list in server
       security:
@@ -177,7 +179,7 @@ paths:
                 $ref: "#/components/schemas/BaseResponse"
   /api/v1/conversations:
     get:
-      tags: [ Conversation ]
+      tags: [Conversation]
       summary: Get list of conversation of current user
       description: Include recent participants and sender
       security:
@@ -208,7 +210,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [ title, participantIds, type ]
+              required: [title, participantIds, type]
               properties:
                 title:
                   type: string
@@ -232,7 +234,7 @@ paths:
                         $ref: "#/components/schemas/Conversation"
   /api/v1/conversations/{conversationId}:
     get:
-      tags: [ Conversation ]
+      tags: [Conversation]
       summary: Get conversation detail
       description: Include all participants, and many recent messages
       security:
@@ -308,10 +310,15 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [ message, type ]
+              required: [message, type]
               properties:
                 message:
                   type: string
+                  description: | 
+                    The content of the message. Format varies depending on the type.  
+                    Examples:
+                    - PLAINTEXT: Hi this is a message
+                    - STICKER: 3/01.png {stickerPackId}/{stickerFileName}
                 type:
                   $ref: "#/components/schemas/MessageType"
                 attachments:
@@ -374,6 +381,66 @@ paths:
               schema:
                 type: string
                 format: binary
+  /api/v1/media/sticker-packs:
+    get:
+      tags: [Media]
+      summary: Retrieve sticker packs of current user
+      description: Currently retrieve all available sticker packs
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/StickerPack"
+  /api/v1/media/sticker-packs/{stickerPackId}:
+    get:
+      tags: [ Media ]
+      summary: Retrieve sticker pack
+      description: This will trigger download of a zip file
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: stickerPackId
+          schema:
+            type: number
+          description: the id of the sticker pack
+      responses:
+        "200":
+          description: On success, download a zip file with name `stickerPackId`.zip. The zip file will include a tray image, all sticker images, and a content.json metadata file for this sticker pack
+
+  /api/v1/media/sticker-packs/{stickerPackId}/{stickerFile}:
+    get:
+      tags: [ Media ]
+      summary: Retrieve a sticker image
+      description: This will trigger download an image file with extension depend on the provided name
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: stickerPackId
+          schema:
+            type: number
+          description: the id of the sticker pack
+        - in: path
+          name: stickerFile
+          schema:
+            type: string
+          description: the file name of the sticker
+          example: 01_Hi.webp
+      responses:
+        "200":
+          description: On success, this should trigger a download
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -385,7 +452,7 @@ components:
   schemas:
     BaseResponse:
       type: object
-      required: [ code, message ]
+      required: [code, message]
       properties:
         code:
           type: integer
@@ -393,7 +460,7 @@ components:
           type: string
     User:
       type: object
-      required: [ id ]
+      required: [id]
       properties:
         id:
           type: string
@@ -529,3 +596,33 @@ components:
           example: image/jpeg
         md5:
           type: string
+    StickerPack:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        publisher:
+          type: string
+        trayImageFile:
+          type: string
+          description: the preview image of all the sticker
+        isAnimated:
+          type: boolean
+          description: whether this sticker is animated
+        stickers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sticker"
+    Sticker:
+      type: object
+      properties:
+        image_file:
+          type: string
+          description: name of the sticker image file
+        emojis:
+          type: array
+          items:
+            type: string
+            description: All emojis that this sticker will represent

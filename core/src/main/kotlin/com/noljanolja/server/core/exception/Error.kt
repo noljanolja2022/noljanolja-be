@@ -18,6 +18,7 @@ sealed class Error(
         const val INVALID_PHONE_NUMBER = 400_005
         const val MESSAGE_NOT_BELONG_TO_CONVERSATION = 400_006
         const val STICKER_PACK_NOT_FOUND = 400_010
+        const val STICKERS_NOT_FOUND = 400_011
     }
 
     object ConversationNotFound : Error(
@@ -77,6 +78,12 @@ sealed class Error(
     object StickerPackNotFound : Error(
         STICKER_PACK_NOT_FOUND,
         "Sticker pack not found",
+        null
+    )
+
+    object StickersNotFound: Error(
+        STICKERS_NOT_FOUND,
+        "Stickers requested not found",
         null
     )
 }

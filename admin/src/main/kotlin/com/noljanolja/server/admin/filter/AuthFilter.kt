@@ -2,7 +2,10 @@ package com.noljanolja.server.admin.filter
 
 import com.noljanolja.server.admin.adapter.auth.AuthApi
 import com.noljanolja.server.admin.adapter.auth.AuthUser
-import com.noljanolja.server.common.exception.DefaultUnauthorizedException
+import com.noljanolja.server.admin.model.CoreServiceError
+import com.noljanolja.server.admin.model.NoPrivilegeUser
+import com.noljanolja.server.common.exception.InvalidTokenProvidedException
+import com.noljanolja.server.common.exception.NoTokenProvidedException
 import com.noljanolja.server.common.filter.BaseWebFilter
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.mono
@@ -28,17 +31,15 @@ class AuthFilter(
         chain: WebFilterChain,
     ): Mono<Void> = mono {
         val token = exchange.request.headers.getFirst(HttpHeaders.AUTHORIZATION).orEmpty().trim()
-        if (!token.startsWith(BEARER_PREFIX)) {
-            throw DefaultUnauthorizedException(
-                cause = IllegalArgumentException("Token does not start with Bearer")
-            )
+        if (token.isEmpty()) {
+            throw NoTokenProvidedException()
         }
-        val authUser = authApi.getUser(token)
-        if (authUser == null || authUser.roles.intersect(PRIVILEGED_ROLES).isEmpty()) {
-            // TODO: 403 error
-            throw DefaultUnauthorizedException(
-                cause = IllegalArgumentException("Forbidden")
-            )
+        if (!token.startsWith(BEARER_PREFIX)) {
+            throw InvalidTokenProvidedException()
+        }
+        val authUser = authApi.getUser(token) ?: throw CoreServiceError.UserNotFound
+        if (authUser.roles.intersect(PRIVILEGED_ROLES).isEmpty()) {
+            throw NoPrivilegeUser
         }
         chain.filter(exchange)
             .contextWrite(AuthUserHolder.withUser(authUser))

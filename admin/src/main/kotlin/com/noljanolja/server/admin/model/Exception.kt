@@ -34,6 +34,12 @@ sealed class CoreServiceError(
 
 object FileExceedMaxSize : BaseException(
     400_010,
-    "[Consumer] File upload size exceeded threshold",
+    "File upload size exceeded threshold",
+    null
+)
+
+object NoPrivilegeUser : CoreServiceError(
+    403_000,
+    "User doesn't have required privilege to access",
     null
 )

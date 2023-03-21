@@ -1,7 +1,6 @@
 package com.noljanolja.server.admin.adapter.auth
 
-import com.noljanolja.server.common.exception.DefaultUnauthorizedException
-import com.noljanolja.server.common.exception.ExternalServiceException
+import com.noljanolja.server.admin.model.CoreServiceError
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
@@ -9,6 +8,7 @@ import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
+import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Component
@@ -28,12 +28,12 @@ class AuthApi(
         .header(HttpHeaders.AUTHORIZATION, bearerToken)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            // TODO check error
-            Mono.just(DefaultUnauthorizedException(null))
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            // TODO check error
-            Mono.just(ExternalServiceException(null))
+            Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<AuthUser>>().data
 }

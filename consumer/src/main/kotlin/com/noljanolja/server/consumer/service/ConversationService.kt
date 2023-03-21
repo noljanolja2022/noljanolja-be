@@ -6,9 +6,9 @@ import com.noljanolja.server.consumer.adapter.core.request.SaveAttachmentsReques
 import com.noljanolja.server.consumer.adapter.core.request.SaveMessageRequest
 import com.noljanolja.server.consumer.adapter.core.request.UpdateMessageStatusRequest
 import com.noljanolja.server.consumer.exception.Error
-import com.noljanolja.server.consumer.rest.request.Attachments
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
+import com.noljanolja.server.consumer.rest.request.Attachments
 import com.noljanolja.server.consumer.utils.getAttachmentPath
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -72,6 +72,7 @@ class ConversationService(
                 path = getAttachmentPath(conversationId, fileName),
                 contentType = contentType,
                 content = it.data.map { it.asByteBuffer() },
+                isPublicAccessible = true,
                 limitSize = getLimitSize(
                     messageType = type,
                     contentType = contentType

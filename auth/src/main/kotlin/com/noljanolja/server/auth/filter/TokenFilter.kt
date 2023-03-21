@@ -1,7 +1,11 @@
 package com.noljanolja.server.auth.filter
 
+import com.google.firebase.auth.AuthErrorCode
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.noljanolja.server.common.exception.DefaultUnauthorizedException
+import com.noljanolja.server.common.exception.InvalidTokenProvidedException
+import com.noljanolja.server.common.exception.NoTokenProvidedException
 import com.noljanolja.server.common.filter.BaseWebFilter
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.mono
@@ -26,17 +30,22 @@ class TokenFilter(
         chain: WebFilterChain,
     ): Mono<Void> = mono {
         val token = exchange.request.headers.getFirst(HttpHeaders.AUTHORIZATION).orEmpty().trim()
+        if (token.isEmpty()) {
+            throw NoTokenProvidedException()
+        }
         if (!token.startsWith(BEARER_PREFIX)) {
-            throw DefaultUnauthorizedException(
-                cause = IllegalArgumentException("Token does not start with Bearer")
-            )
+            throw InvalidTokenProvidedException()
         }
         val firebaseToken = try {
             firebaseAuth.verifyIdToken(token.substring(BEARER_PREFIX.length))
-        } catch (error: Exception) {
-            throw DefaultUnauthorizedException(
-                cause = error
-            )
+        } catch (error: FirebaseAuthException) {
+            when (error.authErrorCode) {
+                AuthErrorCode.EXPIRED_ID_TOKEN -> throw DefaultUnauthorizedException(Error("Token is expired, please use a new token"))
+
+                else -> throw DefaultUnauthorizedException(
+                    cause = error
+                )
+            }
         }
 
         chain.filter(exchange)

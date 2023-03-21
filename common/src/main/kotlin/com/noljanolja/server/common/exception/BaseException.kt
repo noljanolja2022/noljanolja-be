@@ -66,6 +66,22 @@ class DefaultUnauthorizedException(
     cause = cause,
 )
 
+class InvalidTokenProvidedException(
+    cause: Throwable? = null,
+) : BaseException(
+    code = 401_001,
+    message = "Invalid Token provided",
+    cause = cause,
+)
+
+class NoTokenProvidedException(
+    cause: Throwable? = null,
+) : BaseException(
+    code = 401_002,
+    message = "No Token provided",
+    cause = cause,
+)
+
 // 404 exceptions
 
 /**

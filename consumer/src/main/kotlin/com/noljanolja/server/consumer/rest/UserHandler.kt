@@ -83,6 +83,7 @@ class UserHandler(
                         it.toByteBuffer(buffer)
                         buffer
                     },
+                    isPublicAccessible = true
                 )
                 userService.updateCurrentUser(currentUserId, UpdateCurrentUserRequest(
                     avatar = res.path

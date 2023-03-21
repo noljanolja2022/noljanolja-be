@@ -21,8 +21,8 @@ class StickerService(
     private val objectMapper: ObjectMapper,
 ) {
     suspend fun getStickerPack(packId: Long) : StickerPack {
-        val stickers = stickerRepo.findAllByPackId(packId).map { it.toSticker() }.toList()
         val stickerPackModel = stickerPackRepo.findById(packId) ?: throw Error.StickerPackNotFound
+        val stickers = stickerRepo.findAllByPackId(packId).map { it.toSticker() }.toList()
         return stickerPackModel.toStickerPack(stickers)
     }
 
@@ -37,11 +37,11 @@ class StickerService(
     suspend fun createStickerPack(request: CreateStickerRequest): StickerPack {
         val createdPackModel = stickerPackRepo.save(
             StickerPackModel(
-                _id = 0, name = request.name,
+                id = 0, name = request.name,
                 publisher = request.publisher,
                 trayImageFile = request.trayImageFile,
-                animatedStickerPack = request.animatedStickerPack
-            ).apply { isNewRecord = true }
+                isAnimated = request.isAnimated
+            )
         )
         val stickers = stickerRepo.saveAll(
             request.stickers.map {

@@ -35,9 +35,7 @@ class CoreApi(
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { _ ->
-                CoreServiceError.UserNotFound
-            }
+            Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreUser>>().data
 
