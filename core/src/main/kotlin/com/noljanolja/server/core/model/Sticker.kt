@@ -6,7 +6,7 @@ data class Sticker(
 )
 
 data class StickerPack(
-    val id: Long,
+    val id: Long?,
     val name: String,
     val publisher: String,
     val trayImageFile: String,

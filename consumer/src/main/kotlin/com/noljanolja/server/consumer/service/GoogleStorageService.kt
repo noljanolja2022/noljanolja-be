@@ -1,6 +1,7 @@
 package com.noljanolja.server.consumer.service
 
 import com.google.cloud.storage.*
+import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.model.ResourceInfo
 import com.noljanolja.server.consumer.model.UploadInfo
 import kotlinx.coroutines.Dispatchers
@@ -9,7 +10,6 @@ import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import java.io.FileNotFoundException
 import java.nio.ByteBuffer
 
 @Component
@@ -63,15 +63,12 @@ class GoogleStorageService(
     }
 
     suspend fun getResource(path: String, fileName: String? = null): ResourceInfo {
-        return try {
-            val blobId = BlobId.of(bucketName, path)
-            ResourceInfo(
-                data = storage.get(blobId).getContent().inputStream(),
-                contentType = storage.get(blobId).contentType,
-                fileName = fileName
-            )
-        } catch (exception: FileNotFoundException) {
-            throw com.noljanolja.server.consumer.exception.Error.FileExceedMaxSize
-        }
+        val blobId = BlobId.of(bucketName, path)
+        val blob = storage.get(blobId) ?: throw Error.FileNotFound
+        return ResourceInfo(
+            data = blob.getContent().inputStream(),
+            contentType = blob.contentType,
+            fileName = fileName
+        )
     }
 }
