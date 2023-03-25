@@ -29,6 +29,10 @@ class CoreApi(
         const val GET_CONVERSATION_DETAIL_ENDPOINT = "/api/v1/conversations/{conversationId}"
         const val MESSAGE_ENDPOINT = "/api/v1/conversations/{conversationId}/messages"
         const val MEDIA_ENDPOINT = "/api/v1/media"
+
+        val coreErrorsMapping = mapOf(
+            404_001 to CoreServiceError.UserNotFound
+        )
     }
 
     suspend fun getUsers(
@@ -65,7 +69,11 @@ class CoreApi(
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
+                if (response.code in coreErrorsMapping) {
+                    coreErrorsMapping[response.code]
+                } else {
+                    CoreServiceError.CoreServiceBadRequest(response.message)
+                }
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
@@ -82,12 +90,12 @@ class CoreApi(
         .bodyValue(user)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            // TODO check error: 401, 403, 404
-            Mono.just(DefaultNotFoundException(null))
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            // TODO check error
-            Mono.just(ExternalServiceException(null))
+            Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreUser>>().data!!
 
@@ -95,12 +103,12 @@ class CoreApi(
         .uri { it.path("$USERS_ENDPOINT/$userId").build() }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            // TODO check error: 401, 403, 404
-            Mono.just(DefaultNotFoundException(null))
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            // TODO check error
-            Mono.just(ExternalServiceException(null))
+            Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Nothing>>().data
 
@@ -114,12 +122,12 @@ class CoreApi(
         .bodyValue(UpsertUserContactsRequest(localContacts))
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            // TODO check error: 401, 403, 404
-            Mono.just(DefaultNotFoundException(null))
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            // TODO check error
-            Mono.just(ExternalServiceException(null))
+            Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Nothing>>()
 
@@ -133,12 +141,12 @@ class CoreApi(
         }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            // TODO check error: 401, 403, 404
-            Mono.just(DefaultNotFoundException(null))
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            // TODO check error
-            Mono.just(ExternalServiceException(null))
+            Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<String>>>().data.orEmpty()
 
@@ -153,12 +161,12 @@ class CoreApi(
         .bodyValue(UpsertPushTokenRequest(userId, deviceToken, deviceType))
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            // TODO check error: 401, 403, 404
-            Mono.just(DefaultNotFoundException(null))
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            // TODO check error
-            Mono.just(ExternalServiceException(null))
+            Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Nothing>>()
 
@@ -231,6 +239,26 @@ class CoreApi(
                 .queryParam("userId", userId)
                 .build(conversationId)
         }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreConversation>>().data!!
+
+    suspend fun updateConversation(
+        payload: UpdateConversationRequest,
+        conversationId: Long,
+    ): CoreConversation = webClient.put()
+        .uri { builder ->
+            builder.path(GET_CONVERSATION_DETAIL_ENDPOINT)
+                .build(conversationId)
+        }
+        .bodyValue(payload)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->

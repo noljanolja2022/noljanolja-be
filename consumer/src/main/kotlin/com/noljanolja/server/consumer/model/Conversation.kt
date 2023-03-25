@@ -9,6 +9,7 @@ data class Conversation(
     val type: Type,
     val messages: List<Message>,
     val participants: List<User>,
+    val imageUrl: String,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
 ) {

@@ -8,4 +8,8 @@ import org.springframework.stereotype.Repository
 @Repository
 interface ConversationParticipantRepo : CoroutineCrudRepository<ConversationParticipantModel, Long> {
     fun findAllByParticipantIdAndConversationId(participantId: String, conversationId: Long): Flow<ConversationParticipantModel>
+
+    fun findAllByConversationId(conversationId: Long): Flow<ConversationParticipantModel>
+
+    suspend fun deleteAllByParticipantIdIn(ids: List<String>)
 }

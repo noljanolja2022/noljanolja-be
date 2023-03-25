@@ -5,10 +5,7 @@ import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.Conversation
-import com.noljanolja.server.core.rest.request.CreateConversationRequest
-import com.noljanolja.server.core.rest.request.SaveAttachmentsRequest
-import com.noljanolja.server.core.rest.request.SaveMessageRequest
-import com.noljanolja.server.core.rest.request.UpdateMessageStatusRequest
+import com.noljanolja.server.core.rest.request.*
 import com.noljanolja.server.core.service.ConversationService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -53,6 +50,28 @@ class ConversationHandler(
                 participantIds = participantIds,
                 type = type,
                 creatorId = creatorId,
+                imageUrl = imageUrl,
+            )
+        }
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = conversation,
+                )
+            )
+    }
+
+    suspend fun updateConversation(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<UpdateConversationRequest>() ?: throw RequestBodyRequired
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val conversation = with(payload) {
+            conversationService.updateConversation(
+                id = conversationId,
+                updatedTitle = title,
+                updatedParticipantIds = participantIds,
+                updatedImageUrl = imageUrl,
             )
         }
         return ServerResponse

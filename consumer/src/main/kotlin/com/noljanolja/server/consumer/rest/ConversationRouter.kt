@@ -17,10 +17,15 @@ class ConversationRouter(
     fun conversationRoutes() = coRouter {
         (CONVERSATIONS_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             GET("", conversationHandler::getConversations)
-            POST("", conversationHandler::createConversation)
+            (accept(MediaType.MULTIPART_FORM_DATA)).nest {
+                POST("", conversationHandler::createConversation)
+            }
 
             "/{conversationId}".nest {
                 GET("", conversationHandler::getConversationDetails)
+                (accept(MediaType.MULTIPART_FORM_DATA)).nest {
+                    PUT("", conversationHandler::updateConversation)
+                }
 
                 "/messages".nest {
                     GET("", conversationHandler::getConversationMessages)

@@ -8,6 +8,7 @@ import com.noljanolja.server.consumer.adapter.core.CoreLocalContact.Companion.to
 import com.noljanolja.server.consumer.adapter.core.CoreUser
 import com.noljanolja.server.consumer.adapter.core.CoreUserPreferences
 import com.noljanolja.server.consumer.adapter.core.toConsumerUser
+import com.noljanolja.server.consumer.exception.CoreServiceError
 import com.noljanolja.server.consumer.model.LocalContact
 import com.noljanolja.server.consumer.model.User
 import com.noljanolja.server.consumer.rest.request.UpdateCurrentUserRequest
@@ -33,7 +34,7 @@ class UserService(
     suspend fun getCurrentUser(user: AuthUser): User {
         return try {
             coreApi.getUserDetails(userId = user.id)
-        } catch (e: DefaultNotFoundException) {
+        } catch (e: CoreServiceError.UserNotFound) {
             val fullUserData = authApi.getUser(user.bearerToken)
             val newUser = with(fullUserData) {
                 CoreUser(

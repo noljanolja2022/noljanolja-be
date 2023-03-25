@@ -1,10 +1,7 @@
 package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.consumer.adapter.core.*
-import com.noljanolja.server.consumer.adapter.core.request.CreateConversationRequest
-import com.noljanolja.server.consumer.adapter.core.request.SaveAttachmentsRequest
-import com.noljanolja.server.consumer.adapter.core.request.SaveMessageRequest
-import com.noljanolja.server.consumer.adapter.core.request.UpdateMessageStatusRequest
+import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
@@ -13,7 +10,9 @@ import com.noljanolja.server.consumer.utils.getAttachmentPath
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.reactive.asFlow
 import org.apache.tika.Tika
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
 import java.time.Instant
 import com.noljanolja.server.consumer.adapter.core.CoreConversation.Type as CoreConversationType
@@ -38,14 +37,88 @@ class ConversationService(
         title: String,
         participantIds: Set<String>,
         type: Conversation.Type,
+        image: FilePart?,
     ): Conversation {
-        return coreApi.createConversation(
+        image?.headers()?.let {
+            when {
+                it.contentLength > MAX_IMAGE_SIZE -> throw Error.FileExceedMaxSize
+                it.contentType?.toString()?.startsWith(IMAGE_CONTENT_TYPE_PREFIX) != true ->
+                    throw Error.InvalidContentType
+
+                else -> null
+            }
+        }
+        var conversation = coreApi.createConversation(
             CreateConversationRequest(
                 title = title,
                 creatorId = userId,
                 type = CoreConversationType.valueOf(type.name),
                 participantIds = participantIds,
             )
+        )
+        image?.let {
+            val fileName = "${Instant.now().epochSecond}_${userId}_${it.filename()}"
+            val imageDataBuffer = it.content().asFlow()
+            val uploadInfo = storageService.uploadFile(
+                path = "conversations/${conversation.id}/${fileName}",
+                contentType = Tika().detect(imageDataBuffer.first().asInputStream()),
+                content = imageDataBuffer.map { it.toByteBuffer() },
+                isPublicAccessible = true,
+                limitSize = MAX_IMAGE_SIZE
+            )
+            conversation = coreApi.updateConversation(
+                payload = UpdateConversationRequest(
+                    imageUrl = uploadInfo.path,
+                ),
+                conversationId = conversation.id,
+            )
+        }
+        return conversation.toConsumerConversation()
+    }
+
+    suspend fun updateConversation(
+        userId: String,
+        conversationId: Long,
+        title: String?,
+        image: FilePart?,
+        participantIds: Set<String>?,
+    ): Conversation {
+        val conversation = coreApi.getConversationDetail(
+            userId = userId,
+            conversationId = conversationId,
+        ).toConsumerConversation()
+        participantIds?.let {
+            if ((conversation.type == Conversation.Type.SINGLE && it != conversation.participants.map { it.id }.toSet())
+                || (conversation.type == Conversation.Type.GROUP && it.isEmpty())
+            ) throw Error.CannotUpdateConversation
+        }
+        image?.headers()?.let {
+            when {
+                it.contentLength > MAX_IMAGE_SIZE -> throw Error.FileExceedMaxSize
+                it.contentType?.toString()?.startsWith(IMAGE_CONTENT_TYPE_PREFIX) != true ->
+                    throw Error.InvalidContentType
+
+                else -> null
+            }
+        }
+        val newPath = image?.let {
+            val fileName = "${Instant.now().epochSecond}_${userId}_${it.filename()}"
+            val imageDataBuffer = it.content().asFlow()
+            storageService.uploadFile(
+                path = "conversations/${conversationId}/${fileName}",
+                contentType = Tika().detect(imageDataBuffer.first().asInputStream()),
+                content = imageDataBuffer.map { it.toByteBuffer() },
+                isPublicAccessible = true,
+                limitSize = MAX_IMAGE_SIZE
+            ).path
+        }
+        return coreApi.updateConversation(
+            payload = UpdateConversationRequest(
+                title = title,
+                imageUrl = newPath,
+                participantIds = participantIds
+            ),
+            conversationId = conversationId,
         ).toConsumerConversation()
     }
 
@@ -54,10 +127,11 @@ class ConversationService(
         message: String,
         type: Message.Type,
         conversationId: Long,
+        localId: String,
         attachments: Attachments,
     ): Message = coroutineScope {
         validateAttachments(type, attachments)
-        val savedMessage = coreApi.saveMessage(
+        var savedMessage = coreApi.saveMessage(
             request = SaveMessageRequest(
                 message = message,
                 type = CoreMessage.Type.valueOf(type.name),
@@ -72,7 +146,6 @@ class ConversationService(
                 path = getAttachmentPath(conversationId, fileName),
                 contentType = contentType,
                 content = it.data.map { it.asByteBuffer() },
-                isPublicAccessible = true,
                 limitSize = getLimitSize(
                     messageType = type,
                     contentType = contentType
@@ -86,25 +159,29 @@ class ConversationService(
                 md5 = uploadInfo.md5,
             )
         }
-        val savedMessageWithAttachments = coreApi.saveAttachments(
-            payload = SaveAttachmentsRequest(
-                attachments = saveAttachments.map {
-                    SaveAttachmentsRequest.Attachment(
-                        name = it.name,
-                        type = it.type,
-                        originalName = it.originalName,
-                        size = it.size,
-                        md5 = it.md5,
-                    )
-                },
-            ),
-            conversationId = conversationId,
-            messageId = savedMessage.id,
-        ).toConsumerMessage()
+        if (saveAttachments.isNotEmpty()) {
+            savedMessage = coreApi.saveAttachments(
+                payload = SaveAttachmentsRequest(
+                    attachments = saveAttachments.map {
+                        SaveAttachmentsRequest.Attachment(
+                            name = it.name,
+                            type = it.type,
+                            originalName = it.originalName,
+                            size = it.size,
+                            md5 = it.md5,
+                        )
+                    },
+                ),
+                conversationId = conversationId,
+                messageId = savedMessage.id,
+            ).toConsumerMessage()
+        }
         val conversation = coreApi.getConversationDetail(
             userId = userId,
             conversationId = conversationId,
-        ).toConsumerConversation()
+        ).toConsumerConversation().apply {
+            this.messages.firstOrNull()?.localId = localId
+        }
         withContext(Dispatchers.Default) {
             launch {
                 notifyParticipants(conversation)
@@ -113,7 +190,9 @@ class ConversationService(
                 pushNotifications(conversation)
             }
         }
-        savedMessageWithAttachments
+        savedMessage.apply {
+            this.localId = localId
+        }
     }
 
     fun getLimitSize(

@@ -21,6 +21,7 @@ class ConversationRouter(
 
             "/{conversationId}".nest {
                 GET("", conversationHandler::getConversationDetails)
+                PUT("", conversationHandler::updateConversation)
 
                 "/messages".nest {
                     GET("", conversationHandler::getConversationMessages)

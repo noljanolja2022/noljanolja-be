@@ -207,7 +207,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               required: [title, participantIds, type]
@@ -220,6 +220,9 @@ paths:
                     type: string
                 type:
                   $ref: "#/components/schemas/ConversationType"
+                image:
+                  type: string
+                  format: binary
       responses:
         "200":
           description: On success
@@ -245,6 +248,46 @@ paths:
           schema:
             type: number
           description: the id of the conversation
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Conversation"
+    put:
+      tags: [ Conversation ]
+      summary: Update conversation
+      description: Update a conversation
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                participantIds:
+                  type: array
+                  items:
+                    type: string
+                image:
+                  type: string
+                  format: binary
       responses:
         "200":
           description: On success
@@ -326,6 +369,8 @@ paths:
                   items:
                     type: string
                     format: binary
+                localId:
+                  type: string
       responses:
         "200":
           description: On success
@@ -544,6 +589,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/User"
+        imageUrl:
+          type: string
         createdAt:
           type: string
         updatedAt:
@@ -569,6 +616,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Attachment"
+        localId:
+          type: string
         createdAt:
           type: string
     MessageType:

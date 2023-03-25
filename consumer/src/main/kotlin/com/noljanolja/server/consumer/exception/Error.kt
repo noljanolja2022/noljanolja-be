@@ -42,6 +42,7 @@ sealed class Error(
         const val FILE_EXCEED_MAX_SIZE = 400_010
         const val EXCEED_MAX_ATTACHMENTS_SIZE = 400_011
         const val INVALID_CONTENT_TYPE = 400_012
+        const val CANNOT_UPDATE_CONVERSATION = 400_013
     }
 
     object FileExceedMaxSize : BaseException(
@@ -66,5 +67,11 @@ sealed class Error(
         FILE_NOT_FOUND,
         "File not found",
         null
+    )
+
+    object CannotUpdateConversation: BaseException(
+        CANNOT_UPDATE_CONVERSATION,
+        "Cannot update conversation",
+        null,
     )
 }

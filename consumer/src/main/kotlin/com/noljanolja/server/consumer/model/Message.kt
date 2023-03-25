@@ -10,6 +10,7 @@ data class Message(
     val sender: User,
     val seenBy: List<String> = listOf(),
     val attachments: List<Attachment> = listOf(),
+    var localId: String = "",
     val createdAt: Instant = Instant.now(),
 ) {
 

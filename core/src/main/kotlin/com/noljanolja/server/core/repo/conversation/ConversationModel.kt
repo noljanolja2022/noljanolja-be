@@ -21,13 +21,16 @@ data class ConversationModel(
     val id: Long = 0,
 
     @Column("title")
-    val title: String = "",
+    var title: String = "",
 
     @Column("type")
     val type: Conversation.Type,
 
     @Column("creator_id")
     val creatorId: String,
+
+    @Column("image_url")
+    var imageUrl: String = "",
 
     @Column("created_at")
     @CreatedDate
@@ -56,4 +59,5 @@ fun ConversationModel.toConversation(objectMapper: ObjectMapper) = Conversation(
     participants = participants.map { it.toUser(objectMapper) },
     createdAt = createdAt,
     updatedAt = updatedAt,
+    imageUrl = imageUrl,
 )

@@ -44,7 +44,7 @@ class GoogleStorageService(
                         writer.write(it)
                     }
                     if (currentUploadSize > limitSize)
-                        throw com.noljanolja.server.consumer.exception.Error.FileExceedMaxSize
+                        throw Error.FileExceedMaxSize
                 }
             }
             val uploadedFile = storage.get(blobId)

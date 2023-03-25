@@ -6,4 +6,5 @@ data class CreateConversationRequest(
     val title: String,
     val participantIds: Set<String>,
     val type: Conversation.Type,
+    val imageUrl: String,
 )

@@ -94,7 +94,7 @@ class ConversationService(
             }
             this.messages = messages
             this.participants = userRepo.findAllParticipants(id).toList()
-            this.creator = this.participants.first { it.id == creatorId }
+            this.creator = userRepo.findById(this.creatorId)!!
         }.toConversation(objectMapper)
     }
 
@@ -140,6 +140,7 @@ class ConversationService(
         participantIds: MutableSet<String> = mutableSetOf(),
         type: Conversation.Type,
         creatorId: String,
+        imageUrl: String,
     ): Conversation {
         if (participantIds.size != userRepo.findAllById(participantIds).toList().size)
             throw Error.ParticipantsNotFound
@@ -148,6 +149,7 @@ class ConversationService(
                 title = title,
                 type = type,
                 creatorId = creatorId,
+                imageUrl = imageUrl,
             )
         )
         conversationParticipantRepo.saveAll(
@@ -158,10 +160,49 @@ class ConversationService(
                 )
             }
         ).toList()
-        val participants = userRepo.findAllById(participantIds).toList()
         return conversation.apply {
-            this.creator = participants.first { it.id == creatorId }
-            this.participants = participants
+            this.creator = userRepo.findById(conversation.creatorId)!!
+            this.participants = userRepo.findAllById(participantIds).toList()
+        }.toConversation(objectMapper)
+    }
+
+    suspend fun updateConversation(
+        id: Long,
+        updatedTitle: String?,
+        updatedParticipantIds: Set<String>?,
+        updatedImageUrl: String?,
+    ): Conversation {
+        if (updatedParticipantIds != null
+            && updatedParticipantIds.size != userRepo.findAllById(updatedParticipantIds).toList().size
+        ) throw Error.ParticipantsNotFound
+        val conversation = conversationRepo.findById(id) ?: throw Error.ConversationNotFound
+        val savedConversation = conversationRepo.save(
+            conversation.apply {
+                updatedTitle?.takeIf { it.isNotBlank() }?.let {
+                    title = it
+                }
+                updatedImageUrl?.takeIf { it.isNotBlank() }?.let {
+                    imageUrl = it
+                }
+            }
+        )
+        var currentParticipantIds = conversationParticipantRepo.findAllByConversationId(conversation.id).toList()
+            .mapTo(mutableSetOf()) { it.participantId }
+        if (updatedParticipantIds != null) {
+            val deletedParticipantIds = currentParticipantIds.minus(updatedParticipantIds)
+            val newParticipantIds = updatedParticipantIds.minus(currentParticipantIds)
+            conversationParticipantRepo.deleteAllByParticipantIdIn(deletedParticipantIds.toList())
+            newParticipantIds.map {
+                ConversationParticipantModel(
+                    participantId = it,
+                    conversationId = conversation.id,
+                )
+            }.also { if (it.isNotEmpty()) conversationParticipantRepo.saveAll(it).toList() }
+            currentParticipantIds = updatedParticipantIds.toMutableSet()
+        }
+        return savedConversation.apply {
+            this.creator = userRepo.findById(conversation.creatorId)!!
+            this.participants = userRepo.findAllById(currentParticipantIds).toList()
         }.toConversation(objectMapper)
     }
 

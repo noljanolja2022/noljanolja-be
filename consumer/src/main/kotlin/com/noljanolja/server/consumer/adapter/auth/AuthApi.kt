@@ -1,5 +1,7 @@
 package com.noljanolja.server.consumer.adapter.auth
 
+import com.noljanolja.server.common.exception.DefaultUnauthorizedException
+import com.noljanolja.server.common.exception.ExternalServiceException
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.exception.CoreServiceError
 import org.springframework.beans.factory.annotation.Qualifier
@@ -28,12 +30,10 @@ class AuthApi(
         .header(HttpHeaders.AUTHORIZATION, bearerToken)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
+            Mono.just(DefaultUnauthorizedException())
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
+            Mono.just(ExternalServiceException(null))
         }
         .awaitBody<Response<AuthUser>>().data!!
 
@@ -46,12 +46,10 @@ class AuthApi(
         .header(HttpHeaders.AUTHORIZATION, bearerToken)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
+            Mono.just(DefaultUnauthorizedException())
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
+            Mono.just(ExternalServiceException(null))
         }
         .awaitBody<Response<AuthUser>>().data!!
 
@@ -64,12 +62,10 @@ class AuthApi(
         .header(HttpHeaders.AUTHORIZATION, bearerToken)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
+            Mono.just(DefaultUnauthorizedException())
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
+            Mono.just(ExternalServiceException(null))
         }
         .awaitBody<Response<Nothing>>().data
 }

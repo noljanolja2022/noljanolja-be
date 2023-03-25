@@ -11,6 +11,7 @@ data class CoreConversation(
     val type: Type,
     val messages: List<Message>,
     val participants: List<CoreUser>,
+    val imageUrl: String,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
 ) {
@@ -28,6 +29,7 @@ fun CoreConversation.toConsumerConversation() = Conversation(
     type = Conversation.Type.valueOf(type.name),
     messages = messages,
     participants = participants.map { it.toConsumerUser() },
+    imageUrl = imageUrl,
     createdAt = createdAt,
     updatedAt = updatedAt,
 )

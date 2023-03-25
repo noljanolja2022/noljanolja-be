@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS `conversations`
     `title`             VARCHAR(255)            NOT NULL,
     `creator_id`        VARCHAR(36)             NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     `type`              ENUM('SINGLE', 'GROUP') NOT NULL,
+    `image_url`         VARCHAR(255)            NOT NULL,
     `created_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;

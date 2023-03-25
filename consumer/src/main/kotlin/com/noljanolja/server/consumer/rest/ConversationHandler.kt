@@ -1,14 +1,13 @@
 package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
-import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.filter.AuthUserHolder
+import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.rest.request.Attachments
 import com.noljanolja.server.consumer.rest.request.FileAttachment
 import com.noljanolja.server.consumer.model.Message
-import com.noljanolja.server.consumer.rest.request.CreateConversationRequest
 import com.noljanolja.server.consumer.service.ConversationService
 import com.noljanolja.server.consumer.service.GoogleStorageService
 import com.noljanolja.server.consumer.utils.getAttachmentPath
@@ -47,15 +46,51 @@ class ConversationHandler(
     }
 
     suspend fun createConversation(request: ServerRequest): ServerResponse {
-        val payload = request.awaitBodyOrNull<CreateConversationRequest>() ?: throw RequestBodyRequired
-        val conversation = with(payload) {
-            conversationService.createConversation(
-                userId = AuthUserHolder.awaitUser().id,
-                title = title,
-                participantIds = participantIds,
-                type = type,
+        val payload = request.awaitMultipartData()
+        val type = payload.getFirst("type")?.content()?.awaitSingle()?.let {
+            Conversation.Type.valueOf(String(it.asInputStream().readAllBytes()))
+        } ?: Conversation.Type.SINGLE
+        val title = payload.getFirst("title")?.content()?.awaitSingle()?.let {
+            String(it.asInputStream().readAllBytes())
+        }.orEmpty()
+        val participantIds = payload["participantIds"]?.mapTo(mutableSetOf()) {
+            String(it.content().awaitSingle().asInputStream().readAllBytes())
+        }.orEmpty()
+        val image = (payload["image"] as? List<FilePart>)?.firstOrNull()
+        val conversation = conversationService.createConversation(
+            userId = AuthUserHolder.awaitUser().id,
+            title = title,
+            participantIds = participantIds,
+            type = type,
+            image = image,
+        )
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = conversation,
+                )
             )
+    }
+
+    suspend fun updateConversation(request: ServerRequest): ServerResponse {
+        val payload = request.awaitMultipartData()
+        val conversationId = request.pathVariable("conversationId").toLongOrNull()
+            ?: throw InvalidParamsException("conversationId")
+        val title = payload.getFirst("title")?.content()?.awaitSingle()?.let {
+            String(it.asInputStream().readAllBytes())
         }
+        val participantIds = payload["participantIds"]?.mapTo(mutableSetOf()) {
+            String(it.content().awaitSingle().asInputStream().readAllBytes())
+        }
+        val image = (payload["image"] as? List<FilePart>)?.firstOrNull()
+        val conversation = conversationService.updateConversation(
+            userId = AuthUserHolder.awaitUser().id,
+            title = title,
+            participantIds = participantIds,
+            image = image,
+            conversationId = conversationId,
+        )
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
@@ -114,11 +149,15 @@ class ConversationHandler(
         val attachments = (payload["attachments"] as? List<FilePart>)?.also {
             if (it.size > MAX_ATTACHMENTS_SIZE) throw Error.ExceedMaxAttachmentsSize
         }.orEmpty()
+        val localId = payload.getFirst("localId")?.content()?.awaitSingle()?.let {
+            String(it.asInputStream().readAllBytes())
+        }.orEmpty()
         val data = conversationService.createMessage(
             userId = AuthUserHolder.awaitUser().id,
             message = message,
             type = type,
             conversationId = conversationId,
+            localId = localId,
             attachments = Attachments(
                 files = attachments.map {
                     FileAttachment(

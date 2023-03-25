@@ -7,4 +7,5 @@ data class CreateConversationRequest(
     val participantIds: MutableSet<String>,
     val type: Conversation.Type,
     val creatorId: String,
+    val imageUrl: String,
 )
