@@ -1,7 +1,11 @@
 openapi: 3.0.0
 info:
-  description: Public API for NoljaNolja consumer
-  version: 1.0.2
+  description: | 
+      Changelog - 25/3/2023:
+        - Add API find users by phone number
+        - Add API get users contact list
+        - Update API sync contact list
+  version: 1.0.3
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -118,7 +122,65 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BaseResponse"
+  /api/v1/users:
+    get:
+      tags: [User]
+      summary: Find users
+      description: Return list of users based on query provided
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: phoneNumber
+          schema:
+            $ref: "#/components/schemas/phoneNumber"
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/User"
   /api/v1/users/me/contacts:
+    get:
+      tags: [User]
+      summary: Get all contacts of current user
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            $ref: "#/components/schemas/page"
+        - in: query
+          name: pageSize
+          schema:
+            $ref: "#/components/schemas/pageSize"
+        - in: query
+          name: phoneNumber
+          schema:
+            $ref: "#/components/schemas/phoneNumber"
+      responses:
+        "200":
+          description: On success, return all contacts of current user
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/User"
     post:
       tags: [User]
       summary: Sync contact list
@@ -139,7 +201,7 @@ paths:
                     $ref: "#/components/schemas/LocalContact"
       responses:
         "200":
-          description: On success
+          description: On success, return newly added contacts
           content:
             application/json:
               schema:
@@ -675,3 +737,17 @@ components:
           items:
             type: string
             description: All emojis that this sticker will represent
+    phoneNumber:
+      type: string
+      description: |
+        The formatted phone number.   
+        *Important, the + sign must be encoded
+      example: '%2B84913042222'
+    page:
+      type: integer
+      description: the pagination, divided per batch. Use in conjunction with pageSize
+      example: 1
+    pageSize:
+      type: integer
+      description: the size of each batch. Use in conjunction with pageSize
+      example: 100

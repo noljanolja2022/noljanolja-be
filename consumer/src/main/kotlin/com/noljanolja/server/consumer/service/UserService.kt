@@ -1,6 +1,5 @@
 package com.noljanolja.server.consumer.service
 
-import com.noljanolja.server.common.exception.DefaultNotFoundException
 import com.noljanolja.server.consumer.adapter.auth.AuthApi
 import com.noljanolja.server.consumer.adapter.auth.AuthUser
 import com.noljanolja.server.consumer.adapter.core.CoreApi
@@ -65,16 +64,26 @@ class UserService(
         return coreApi.deleteUser(userId)
     }
 
+    suspend fun getUserContacts(
+        page: Int = 1,
+        pageSize: Int = 100,
+        phoneNumber: String? = null
+    ) : List<User> {
+        val res = coreApi.getUsers(phoneNumber = phoneNumber, page = page, pageSize = pageSize)
+        return res?.first?.map { it.toConsumerUser() } ?: emptyList()
+    }
+
     suspend fun syncUserContacts(
         userId: String,
         localContacts: List<LocalContact>,
     ): List<User> {
-        coreApi.upsertUserContacts(userId, localContacts.map { it.toCoreLocalContact() })
-        // TODO create new API to get friends with pagination
-        val friendsList = coreApi.getUsers(friendId = userId, page = 1, pageSize = 100)
-        return when {
-            friendsList == null || friendsList.first.isEmpty() -> return emptyList()
-            else -> friendsList.first.map { it.toConsumerUser() }
-        }
+        val updatedContacts = coreApi.upsertUserContacts(userId, localContacts.map { it.toCoreLocalContact() })
+        return updatedContacts.map { it.toConsumerUser() }
+    }
+
+    suspend fun findUsers(
+        phoneNumber: String
+    ): List<User> {
+        return coreApi.getUsers(phoneNumber = phoneNumber)?.first?.map { it.toConsumerUser() }.orEmpty()
     }
 }

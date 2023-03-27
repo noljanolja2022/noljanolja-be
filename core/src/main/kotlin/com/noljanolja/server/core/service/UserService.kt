@@ -1,6 +1,7 @@
 package com.noljanolja.server.core.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserDevice
@@ -25,20 +26,20 @@ class UserService(
     private val objectMapper: ObjectMapper,
 ) {
 
+    suspend fun getUsersByIds(
+        userIds: List<String>
+    ): List<User> {
+        return userRepo.findAllById(userIds).map { it.toUser(objectMapper) }.toList()
+    }
+
     suspend fun getUsers(
         page: Int,
         pageSize: Int,
         friendId: String?,
+        phoneNumber: String?
     ): Pair<List<User>, Int> = coroutineScope {
         // friendId does not exist -> Find all
-        if (friendId.isNullOrBlank()) {
-            // Count the total
-            val total = userRepo.count()
-            // Get users
-            val users = userRepo.findAllBy(PageRequest.of(page - 1, pageSize))
-                .map { it.toUser(objectMapper) }.toList()
-            Pair(users, total.toInt())
-        } else { // if friendId exists -> Find by contact phones
+        if (!friendId.isNullOrBlank()) {
             // Get all contacts by friendId -> Collect phone
             val phones = mutableListOf<String>()
             contactsRepo.findAllByUserId(userId = friendId).toList().forEach { contact ->
@@ -53,6 +54,21 @@ class UserService(
                 phones = phones.sorted(),
                 pageable = PageRequest.of(page - 1, pageSize),
             ).map { it.toUser(objectMapper) }.toList()
+            Pair(users, total.toInt())
+        } else if (!phoneNumber.isNullOrBlank()) {
+            val phone = parsePhoneNumber(phoneNumber) ?: throw Error.InvalidPhoneNumber
+            val phoneNumberString = phone.nationalNumber.toString()
+            val users = userRepo.findAllByPhoneNumberIn(
+                listOf(phoneNumberString),
+                PageRequest.of(page - 1, pageSize)
+            ).map { it.toUser(objectMapper) }.toList()
+            Pair(users, users.size)
+        } else { // if friendId exists -> Find by contact phones
+            // Count the total
+            val total = userRepo.count()
+            // Get users
+            val users = userRepo.findAllBy(PageRequest.of(page - 1, pageSize))
+                .map { it.toUser(objectMapper) }.toList()
             Pair(users, total.toInt())
         }
     }
@@ -77,7 +93,7 @@ class UserService(
     suspend fun upsertUserContacts(
         userId: String,
         userContacts: List<UserContact>,
-    ) {
+    ) : List<String> {
         val user = userRepo.findById(userId)!!
         // Get existing user contacts
         val existingUserContacts = userContactsRepo.findAllByUserId(userId).toList()
@@ -143,6 +159,7 @@ class UserService(
             // Update existing contacts
             userContactsRepo.saveAll(updateUserContacts).toList()
         }
+        return newUserContacts.map { it.value.userId }
     }
 
     suspend fun getUserDevices(

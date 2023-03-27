@@ -1,7 +1,7 @@
 package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.exception.DefaultBadRequestException
-import com.noljanolja.server.common.exception.DefaultUnauthorizedException
+import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
@@ -13,7 +13,6 @@ import com.noljanolja.server.consumer.service.UserService
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import org.springframework.http.HttpHeaders
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.codec.multipart.FormFieldPart
 import org.springframework.stereotype.Component
@@ -97,6 +96,18 @@ class UserHandler(
         }
     }
 
+    suspend fun getCurrentUserContacts(request: ServerRequest): ServerResponse {
+        val phoneNumber = request.queryParamOrNull("phoneNumber") ?: throw InvalidParamsException("phoneNumber")
+        val page = request.queryParamOrNull("page")?.toIntOrNull()?.takeIf { it > 0 } ?: 1
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 } ?: 100
+        val contacts = userService.getUserContacts(page, pageSize, phoneNumber)
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                Response(data = contacts)
+            )
+    }
+
     suspend fun syncCurrentUserContact(request: ServerRequest): ServerResponse {
         val currentUserId = AuthUserHolder.awaitUser().id
         val syncCurrentUserContactRequest = request.awaitBodyOrNull<SyncUserContactsRequest>()
@@ -106,6 +117,16 @@ class UserHandler(
             .ok()
             .bodyValueAndAwait(
                 Response(data = friends)
+            )
+    }
+
+    suspend fun findUserByPhone(request: ServerRequest): ServerResponse {
+        val phoneNumber = request.queryParamOrNull("phoneNumber") ?: throw InvalidParamsException("phoneNumber")
+        val res = userService.findUsers(phoneNumber)
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                Response(data = res)
             )
     }
 }

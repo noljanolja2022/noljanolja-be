@@ -1,21 +1,20 @@
 package com.noljanolja.server.consumer.adapter.core
 
-import com.noljanolja.server.common.exception.DefaultNotFoundException
-import com.noljanolja.server.common.exception.ExternalServiceException
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.adapter.core.response.GetUsersResponseData
 import com.noljanolja.server.consumer.exception.CoreServiceError
 import com.noljanolja.server.consumer.model.StickerPack
-import com.noljanolja.server.consumer.model.Message
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.bodyToMono
+import org.springframework.web.util.UriUtils
 import reactor.core.publisher.Mono
+import java.nio.charset.StandardCharsets
 import java.util.*
 
 @Component
@@ -36,16 +35,18 @@ class CoreApi(
     }
 
     suspend fun getUsers(
-        friendId: String,
-        page: Int,
-        pageSize: Int,
+        friendId: String? = null,
+        phoneNumber: String? = null,
+        page: Int = 1,
+        pageSize: Int = 100,
     ): Pair<List<CoreUser>, Pagination>? = webClient.get()
         .uri { builder ->
-            builder.path(USERS_ENDPOINT)
-                .queryParam("page", page)
-                .queryParam("pageSize", pageSize)
-                .queryParam("friendId", friendId)
-                .build()
+            builder.path(USERS_ENDPOINT).apply {
+                queryParam("page", page)
+                queryParam("pageSize", pageSize)
+                queryParamIfPresent("friendId", Optional.ofNullable(friendId))
+                queryParamIfPresent("phoneNumber", Optional.ofNullable(phoneNumber?.let { UriUtils.encode(it, StandardCharsets.UTF_8) }))
+            }.build()
         }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
@@ -129,7 +130,7 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<Nothing>>()
+        .awaitBody<Response<List<CoreUser>>>().data!!
 
     suspend fun getPushToken(
         userId: String,

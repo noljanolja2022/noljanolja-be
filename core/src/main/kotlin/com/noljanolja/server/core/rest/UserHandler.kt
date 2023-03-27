@@ -14,6 +14,8 @@ import com.noljanolja.server.core.rest.response.GetUsersResponseData
 import com.noljanolja.server.core.service.UserService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
+import org.springframework.web.util.UriUtils
+import java.nio.charset.StandardCharsets
 
 @Component
 class UserHandler(
@@ -28,10 +30,15 @@ class UserHandler(
         val page = request.queryParamOrNull("page")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_PAGE_SIZE
         val friendId = request.queryParamOrNull("friendId")
+        var phoneNumber = request.queryParamOrNull("phoneNumber")
+        if (!phoneNumber.isNullOrBlank()) {
+            phoneNumber = UriUtils.decode(phoneNumber, StandardCharsets.UTF_8)
+        }
         val (users, total) = userService.getUsers(
             page = page,
             pageSize = pageSize,
             friendId = friendId,
+            phoneNumber = phoneNumber
         )
         return ServerResponse
             .ok()
@@ -101,7 +108,7 @@ class UserHandler(
         val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
         val upsertUserContactsRequest = request.awaitBodyOrNull<UpsertUserContactsRequest>()
             ?: throw RequestBodyRequired
-        userService.upsertUserContacts(userId, upsertUserContactsRequest.contacts.flatMap { localContact ->
+        val updatedUserIds = userService.upsertUserContacts(userId, upsertUserContactsRequest.contacts.flatMap { localContact ->
             localContact.phones.mapNotNull { phone ->
                 UserContact(
                     id = 0,
@@ -110,8 +117,9 @@ class UserHandler(
                 ).takeIf { phone.isNotBlank() }
             }
         }.distinctBy { it.phone.orEmpty() })
+        val users = userService.getUsersByIds(updatedUserIds)
         return ServerResponse
             .ok()
-            .bodyValueAndAwait(Response<Nothing>())
+            .bodyValueAndAwait(Response(data = users))
     }
 }
