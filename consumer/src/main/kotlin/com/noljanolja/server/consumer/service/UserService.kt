@@ -65,11 +65,11 @@ class UserService(
     }
 
     suspend fun getUserContacts(
+        userId: String,
         page: Int = 1,
-        pageSize: Int = 100,
-        phoneNumber: String? = null
+        pageSize: Int = 100
     ) : List<User> {
-        val res = coreApi.getUsers(phoneNumber = phoneNumber, page = page, pageSize = pageSize)
+        val res = coreApi.getUsers(friendId = userId, page = page, pageSize = pageSize)
         return res?.first?.map { it.toConsumerUser() } ?: emptyList()
     }
 
@@ -82,7 +82,7 @@ class UserService(
     }
 
     suspend fun findUsers(
-        phoneNumber: String
+        phoneNumber: String? = null
     ): List<User> {
         return coreApi.getUsers(phoneNumber = phoneNumber)?.first?.map { it.toConsumerUser() }.orEmpty()
     }

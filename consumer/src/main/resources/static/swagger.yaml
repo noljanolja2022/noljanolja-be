@@ -132,6 +132,7 @@ paths:
       parameters:
         - in: query
           name: phoneNumber
+          required: true
           schema:
             $ref: "#/components/schemas/phoneNumber"
       responses:
@@ -163,10 +164,6 @@ paths:
           name: pageSize
           schema:
             $ref: "#/components/schemas/pageSize"
-        - in: query
-          name: phoneNumber
-          schema:
-            $ref: "#/components/schemas/phoneNumber"
       responses:
         "200":
           description: On success, return all contacts of current user

@@ -1,7 +1,6 @@
 package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.exception.DefaultBadRequestException
-import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
@@ -97,10 +96,9 @@ class UserHandler(
     }
 
     suspend fun getCurrentUserContacts(request: ServerRequest): ServerResponse {
-        val phoneNumber = request.queryParamOrNull("phoneNumber") ?: throw InvalidParamsException("phoneNumber")
         val page = request.queryParamOrNull("page")?.toIntOrNull()?.takeIf { it > 0 } ?: 1
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 } ?: 100
-        val contacts = userService.getUserContacts(page, pageSize, phoneNumber)
+        val contacts = userService.getUserContacts(AuthUserHolder.awaitUser().id, page, pageSize)
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
@@ -121,7 +119,7 @@ class UserHandler(
     }
 
     suspend fun findUserByPhone(request: ServerRequest): ServerResponse {
-        val phoneNumber = request.queryParamOrNull("phoneNumber") ?: throw InvalidParamsException("phoneNumber")
+        val phoneNumber = request.queryParamOrNull("phoneNumber")
         val res = userService.findUsers(phoneNumber)
         return ServerResponse
             .ok()
