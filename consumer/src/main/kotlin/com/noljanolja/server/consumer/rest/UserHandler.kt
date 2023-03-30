@@ -4,6 +4,7 @@ import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
+import com.noljanolja.server.consumer.model.User
 import com.noljanolja.server.consumer.rest.request.SyncUserContactsRequest
 import com.noljanolja.server.consumer.rest.request.UpdateCurrentUserRequest
 import com.noljanolja.server.consumer.rest.request.UploadType
@@ -120,6 +121,13 @@ class UserHandler(
 
     suspend fun findUserByPhone(request: ServerRequest): ServerResponse {
         val phoneNumber = request.queryParamOrNull("phoneNumber")
+        if (phoneNumber.isNullOrBlank()) {
+            return ServerResponse
+                .ok()
+                .bodyValueAndAwait(
+                    Response(data = emptyList<User>())
+                )
+        }
         val res = userService.findUsers(phoneNumber)
         return ServerResponse
             .ok()
