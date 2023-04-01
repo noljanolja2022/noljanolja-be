@@ -11,6 +11,7 @@ sealed class Error(
         const val CONVERSATION_NOT_FOUND = 404_002
         const val MESSAGE_NOT_FOUND = 404_003
         const val ATTACHMENT_NOT_FOUND = 404_004
+        const val VIDEO_NOT_FOUND = 404_005
         const val USER_NOT_PARTICIPATE_IN_CONVERSATION = 400_001
         const val INVALID_PARTICIPANTS_SIZE = 400_002
         const val PARTICIPANTS_NOT_FOUND = 400_003
@@ -36,6 +37,12 @@ sealed class Error(
     object AttachmentNotFound : Error(
         ATTACHMENT_NOT_FOUND,
         "Attachment not found",
+        null,
+    )
+
+    object VideoNotFound : Error(
+        VIDEO_NOT_FOUND,
+        "Video not found",
         null,
     )
 
@@ -81,7 +88,7 @@ sealed class Error(
         null
     )
 
-    object StickersNotFound: Error(
+    object StickersNotFound : Error(
         STICKERS_NOT_FOUND,
         "Stickers requested not found",
         null

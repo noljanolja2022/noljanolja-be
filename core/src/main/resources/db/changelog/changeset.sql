@@ -225,3 +225,44 @@ CREATE TABLE IF NOT EXISTS `attachments`
 ) ENGINE = InnoDB;
 
 CREATE FULLTEXT INDEX idx_original_name ON attachments(original_name);
+
+--changeset tranhieu956230@gmail.com:6
+
+-- -----------------------------------------------------
+-- Table `channels`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `channels`;
+
+CREATE TABLE IF NOT EXISTS `channels`
+(
+    `id`            VARCHAR(255) NOT NULL PRIMARY KEY,
+    `title`         VARCHAR(255) NOT NULL,
+    `thumbnail`     VARCHAR(255) NOT NULL,
+    `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `videos`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `videos`;
+
+CREATE TABLE IF NOT EXISTS `videos`
+(
+    `id`              VARCHAR(255) NOT NULL PRIMARY KEY,
+    `title`           VARCHAR(255) NOT NULL,
+    `thumbnail`       VARCHAR(255) NOT NULL,
+    `url`             VARCHAR(255) NOT NULL,
+    `published_at`    DATETIME     NOT NULL,
+    `duration`        VARCHAR(255) NOT NULL,
+    `duration_ms`     BIGINT       NOT NULL,
+    `view_count`      BIGINT       NOT NULL,
+    `like_count`      BIGINT       NOT NULL,
+    `favorite_count`  BIGINT       NOT NULL,
+    `comment_count`   BIGINT       NOT NULL,
+    `channel_id`      VARCHAR(255) NOT NULL REFERENCES `messages`(`id`) ON DELETE CASCADE,
+    `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
