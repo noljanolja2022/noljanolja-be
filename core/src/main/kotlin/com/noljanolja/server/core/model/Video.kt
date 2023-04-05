@@ -17,4 +17,5 @@ data class Video(
     val channelId: String,
     val channelTitle: String,
     val channelThumbnail: String,
+    val isHighlighted: Boolean,
 )

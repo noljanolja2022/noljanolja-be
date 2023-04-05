@@ -37,7 +37,7 @@ class UserService(
         pageSize: Int,
         friendId: String?,
         phoneNumber: String?
-    ): Pair<List<User>, Int> = coroutineScope {
+    ): Pair<List<User>, Long> = coroutineScope {
         // friendId does not exist -> Find all
         if (!friendId.isNullOrBlank()) {
             // Get all contacts by friendId -> Collect phone
@@ -54,7 +54,7 @@ class UserService(
                 phones = phones.sorted(),
                 pageable = PageRequest.of(page - 1, pageSize),
             ).map { it.toUser(objectMapper) }.toList()
-            Pair(users, total.toInt())
+            Pair(users, total)
         } else if (!phoneNumber.isNullOrBlank()) {
             val phone = parsePhoneNumber(phoneNumber) ?: throw Error.InvalidPhoneNumber
             val phoneNumberString = phone.nationalNumber.toString()
@@ -62,14 +62,17 @@ class UserService(
                 listOf(phoneNumberString),
                 PageRequest.of(page - 1, pageSize)
             ).map { it.toUser(objectMapper) }.toList()
-            Pair(users, users.size)
+            val total = userRepo.countByPhoneNumberIn(
+                phones = listOf(phoneNumberString),
+            )
+            Pair(users, total)
         } else { // if friendId exists -> Find by contact phones
             // Count the total
             val total = userRepo.count()
             // Get users
             val users = userRepo.findAllBy(PageRequest.of(page - 1, pageSize))
                 .map { it.toUser(objectMapper) }.toList()
-            Pair(users, total.toInt())
+            Pair(users, total)
         }
     }
 
@@ -93,7 +96,7 @@ class UserService(
     suspend fun upsertUserContacts(
         userId: String,
         userContacts: List<UserContact>,
-    ) : List<String> {
+    ): List<String> {
         val user = userRepo.findById(userId)!!
         // Get existing user contacts
         val existingUserContacts = userContactsRepo.findAllByUserId(userId).toList()

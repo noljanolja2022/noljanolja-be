@@ -49,6 +49,9 @@ data class VideoModel(
     @Column("channel_id")
     var channelId: String = "",
 
+    @Column("is_highlighted")
+    var isHighlighted: Boolean = false,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -80,6 +83,7 @@ fun VideoModel.toVideo() = Video(
     likeCount = likeCount,
     favoriteCount = favoriteCount,
     commentCount = commentCount,
+    isHighlighted = isHighlighted,
     channelId = channelId,
     channelTitle = channel.title,
     channelThumbnail = channel.thumbnail,

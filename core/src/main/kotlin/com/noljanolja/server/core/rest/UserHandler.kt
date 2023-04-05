@@ -3,14 +3,13 @@ package com.noljanolja.server.core.rest
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.exception.UserNotFound
+import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
-import com.noljanolja.server.core.model.Pagination
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserPreferences
 import com.noljanolja.server.core.rest.request.UpsertUserContactsRequest
 import com.noljanolja.server.core.rest.request.UpsertUserRequest
-import com.noljanolja.server.core.rest.response.GetUsersResponseData
 import com.noljanolja.server.core.service.UserService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -44,10 +43,12 @@ class UserHandler(
             .ok()
             .bodyValueAndAwait(
                 body = Response(
-                    data = GetUsersResponseData(
-                        users = users,
-                        pagination = Pagination(page, pageSize, total)
-                    )
+                    data = users,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = total
+                    ),
                 )
             )
     }
@@ -108,15 +109,16 @@ class UserHandler(
         val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
         val upsertUserContactsRequest = request.awaitBodyOrNull<UpsertUserContactsRequest>()
             ?: throw RequestBodyRequired
-        val updatedUserIds = userService.upsertUserContacts(userId, upsertUserContactsRequest.contacts.flatMap { localContact ->
-            localContact.phones.mapNotNull { phone ->
-                UserContact(
-                    id = 0,
-                    name = localContact.name,
-                    phone = phone,
-                ).takeIf { phone.isNotBlank() }
-            }
-        }.distinctBy { it.phone.orEmpty() })
+        val updatedUserIds =
+            userService.upsertUserContacts(userId, upsertUserContactsRequest.contacts.flatMap { localContact ->
+                localContact.phones.mapNotNull { phone ->
+                    UserContact(
+                        id = 0,
+                        name = localContact.name,
+                        phone = phone,
+                    ).takeIf { phone.isNotBlank() }
+                }
+            }.distinctBy { it.phone.orEmpty() })
         val users = userService.getUsersByIds(updatedUserIds)
         return ServerResponse
             .ok()

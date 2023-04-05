@@ -26,13 +26,21 @@ class VideoService(
     suspend fun getVideos(
         page: Int,
         pageSize: Int,
-    ): List<Video> {
-        val videos = videoRepo.findAllBy(PageRequest.of(page - 1, pageSize)).toList()
+        isHighlighted: Boolean? = null,
+    ): Pair<List<Video>, Long> {
+        val videos = videoRepo.findAllBy(
+            isHighlighted = isHighlighted,
+            offset = (page - 1) * pageSize,
+            limit = pageSize,
+        ).toList()
+        val total = videoRepo.countAllBy(
+            isHighlighted = isHighlighted,
+        )
         val channels = channelRepo.findAllById(videos.map { it.channelId }.toSet()).toList()
-        return videos.map { videoModel ->
+        return Pair(videos.map { videoModel ->
             videoModel.channel = channels.find { it.id == videoModel.channelId }!!
             videoModel.toVideo()
-        }
+        }, total)
     }
 
     suspend fun deleteVideo(
@@ -69,6 +77,7 @@ class VideoService(
                 channelId = videoInfo.channelId
                 duration = videoInfo.duration
                 durationMs = videoInfo.durationMs
+                isHighlighted = videoInfo.isHighlighted
             })
         ).apply {
             this.channel = channel

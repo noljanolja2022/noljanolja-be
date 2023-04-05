@@ -3,7 +3,6 @@ package com.noljanolja.server.consumer.adapter.core
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
-import com.noljanolja.server.consumer.adapter.core.response.GetUsersResponseData
 import com.noljanolja.server.consumer.exception.CoreServiceError
 import com.noljanolja.server.consumer.model.StickerPack
 import org.springframework.beans.factory.annotation.Qualifier
@@ -45,7 +44,10 @@ class CoreApi(
                 queryParam("page", page)
                 queryParam("pageSize", pageSize)
                 queryParamIfPresent("friendId", Optional.ofNullable(friendId))
-                queryParamIfPresent("phoneNumber", Optional.ofNullable(phoneNumber?.let { UriUtils.encode(it, StandardCharsets.UTF_8) }))
+                queryParamIfPresent(
+                    "phoneNumber",
+                    Optional.ofNullable(phoneNumber?.let { UriUtils.encode(it, StandardCharsets.UTF_8) })
+                )
             }.build()
         }
         .retrieve()
@@ -57,8 +59,8 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<GetUsersResponseData>>().data?.let {
-            it.users to it.pagination
+        .awaitBody<Response<List<CoreUser>>>().let {
+            Pair(it.data!!, it.pagination!!)
         }
 
     suspend fun getUserDetails(

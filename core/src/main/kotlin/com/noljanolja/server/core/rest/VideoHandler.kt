@@ -2,6 +2,7 @@ package com.noljanolja.server.core.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
+import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
 import com.noljanolja.server.core.service.VideoService
@@ -41,11 +42,21 @@ class VideoHandler(
         val page = request.queryParamOrNull("page")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_QUERY_PARAM_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 }
             ?: DEFAULT_QUERY_PARAM_PAGE_SIZE
-        val videos = videoService.getVideos(page, pageSize)
+        val isHighlighted = request.queryParamOrNull("isHighlighted")?.toBoolean()
+        val (videos, total) = videoService.getVideos(
+            isHighlighted = isHighlighted,
+            page = page,
+            pageSize = pageSize,
+        )
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
-                    data = videos
+                    data = videos,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = total,
+                    )
                 )
             )
     }

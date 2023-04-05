@@ -262,6 +262,7 @@ CREATE TABLE IF NOT EXISTS `videos`
     `like_count`      BIGINT       NOT NULL,
     `favorite_count`  BIGINT       NOT NULL,
     `comment_count`   BIGINT       NOT NULL,
+    `is_highlighted`  TINYINT      NOT NULL,
     `channel_id`      VARCHAR(255) NOT NULL REFERENCES `messages`(`id`) ON DELETE CASCADE,
     `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
