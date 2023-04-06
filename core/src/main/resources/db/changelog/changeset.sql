@@ -267,3 +267,23 @@ CREATE TABLE IF NOT EXISTS `videos`
     `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `member_info`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `member_info`;
+
+CREATE TABLE IF NOT EXISTS `member_info`
+(
+    `id`                        VARCHAR(36)         NOT NULL PRIMARY KEY,
+    `point`                     BIGINT              NOT NULL DEFAULT 0,
+    `current_tier`              ENUM ('BRONZE', 'SILVER', 'GOLD', 'DIAMOND') NOT NULL DEFAULT 'BRONZE',
+    `current_tier_min_point`    BIGINT              NULL,
+    `next_tier`                 ENUM ('BRONZE', 'SILVER', 'GOLD', 'DIAMOND') NULL,
+    `next_tier_min_point`       BIGINT              NULL,
+    `expiry_points`             TEXT                NULL
+    ) ENGINE = InnoDB;
+
+INSERT INTO `member_info` (id)
+SELECT id FROM `users`

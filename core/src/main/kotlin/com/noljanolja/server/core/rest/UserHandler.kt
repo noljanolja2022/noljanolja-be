@@ -11,6 +11,7 @@ import com.noljanolja.server.core.model.UserPreferences
 import com.noljanolja.server.core.rest.request.UpsertUserContactsRequest
 import com.noljanolja.server.core.rest.request.UpsertUserRequest
 import com.noljanolja.server.core.service.UserService
+import com.noljanolja.server.loyalty.service.LoyaltyService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.util.UriUtils
@@ -19,6 +20,7 @@ import java.nio.charset.StandardCharsets
 @Component
 class UserHandler(
     private val userService: UserService,
+    private val loyaltyService: LoyaltyService
 ) {
     companion object {
         private const val DEFAULT_PAGE = 1
@@ -88,6 +90,9 @@ class UserHandler(
             preferences = upsertUserRequest.preferences ?: UserPreferences(),
         )
         val user = userService.upsertUser(upsertUser, existingUser == null)
+        if (existingUser == null) {
+            loyaltyService.upsertMember(user.id)
+        }
         return ServerResponse
             .ok()
             .bodyValueAndAwait(

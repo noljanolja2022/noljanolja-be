@@ -3,4 +3,5 @@
  */
 object BuildModules {
     const val SERVER_COMMON = ":common"
+    const val SERVER_LOYALTY = ":loyalty"
 }

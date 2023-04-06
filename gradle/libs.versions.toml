@@ -86,6 +86,19 @@ serverCommonTest = [
     "reactor-test",
 ]
 
+serverLoyalty = [
+    "spring-boot-r2dbc",
+    "r2dbc-proxy",
+]
+
+serverLoyaltyRuntime = [
+]
+
+serverLoyaltyTest = [
+    "spring-boot-test",
+    "reactor-test",
+]
+
 serverCore = [
     "spring-boot-r2dbc",
     "r2dbc-proxy",
