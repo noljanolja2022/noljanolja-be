@@ -23,7 +23,8 @@ class VideoRouter(
             "{videoId}".nest {
                 DELETE("", videoHandler::deleteVideo)
                 GET("", videoHandler::getVideoDetails)
-                PUT("view", videoHandler::viewVideo)
+                POST("views", videoHandler::viewVideo)
+                POST("likes", videoHandler::likeVideo)
             }
         }
     }

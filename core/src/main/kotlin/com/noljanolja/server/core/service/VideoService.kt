@@ -14,6 +14,7 @@ import java.time.LocalDate
 class VideoService(
     private val videoRepo: VideoRepo,
     private val videoViewCountRepo: VideoViewCountRepo,
+    private val videoUserRepo: VideoUserRepo,
     private val channelRepo: ChannelRepo,
 ) {
     suspend fun getVideoDetails(
@@ -22,6 +23,7 @@ class VideoService(
         return videoRepo.findById(id)?.apply {
             channel = channelRepo.findById(channelId)!!
             viewCount = videoViewCountRepo.getTotalViewCount(id)
+            likeCount = videoUserRepo.getTotalLike(id)
         }?.toVideo() ?: throw Error.VideoNotFound
     }
 
@@ -42,6 +44,7 @@ class VideoService(
         return Pair(videos.map { videoModel ->
             videoModel.channel = channels.find { it.id == videoModel.channelId }!!
             videoModel.viewCount = videoViewCountRepo.getTotalViewCount(videoModel.id)
+            videoModel.likeCount = videoUserRepo.getTotalLike(videoModel.id)
             videoModel.toVideo()
         }, total)
     }
@@ -74,7 +77,6 @@ class VideoService(
                 url = videoInfo.url
                 publishedAt = videoInfo.publishedAt
                 thumbnail = videoInfo.thumbnail
-                likeCount = videoInfo.likeCount
                 commentCount = videoInfo.commentCount
                 favoriteCount = videoInfo.favoriteCount
                 channelId = videoInfo.channelId
@@ -96,6 +98,7 @@ class VideoService(
             .apply {
                 this.channel = channel
                 this.viewCount = videoViewCountRepo.getTotalViewCount(id)
+                this.likeCount = videoUserRepo.getTotalLike(id)
             }.toVideo()
     }
 
@@ -121,7 +124,25 @@ class VideoService(
             limit = limit,
         ).toList().map {
             it.viewCount = videoViewCountRepo.getTotalViewCount(it.id)
+            it.likeCount = videoUserRepo.getTotalLike(it.id)
             it.toVideo()
         }
+    }
+
+    suspend fun likeVideo(
+        videoId: String,
+        userId: String,
+    ) {
+        videoUserRepo.save(
+            videoUserRepo.findByVideoIdAndUserId(
+                videoId = videoId,
+                userId = userId,
+            )?.apply { isLiked = !isLiked }
+                ?: VideoUserModel(
+                    videoId = videoId,
+                    userId = userId,
+                    isLiked = true,
+                )
+        )
     }
 }

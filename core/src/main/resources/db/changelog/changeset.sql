@@ -277,7 +277,6 @@ CREATE TABLE IF NOT EXISTS `videos`
     `published_at`    DATETIME     NOT NULL,
     `duration`        VARCHAR(255) NOT NULL,
     `duration_ms`     BIGINT       NOT NULL,
-    `like_count`      BIGINT       NOT NULL,
     `favorite_count`  BIGINT       NOT NULL,
     `comment_count`   BIGINT       NOT NULL,
     `is_highlighted`  TINYINT      NOT NULL,
@@ -306,6 +305,25 @@ CREATE TABLE IF NOT EXISTS `video_view_counts`
 
 CREATE INDEX idx_video_view_counts_created_at ON video_view_counts(created_at);
 
+-- -----------------------------------------------------
+-- Table `video_users`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `video_users`;
+
+CREATE TABLE IF NOT EXISTS `video_users`
+(
+    `id`              BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `video_id`        VARCHAR(255) NOT NULL,
+    `user_id`         VARCHAR(255) NOT NULL,
+    `is_liked`        TINYINT      NOT NULL,
+    `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
 --changeset nguyenbrother9x@gmail.com:7
 
 -- -----------------------------------------------------
@@ -323,7 +341,4 @@ CREATE TABLE IF NOT EXISTS `member_info`
     `next_tier`                 ENUM ('BRONZE', 'SILVER', 'GOLD', 'DIAMOND') NULL,
     `next_tier_min_point`       BIGINT              NULL,
     `expiry_points`             TEXT                NULL
-    ) ENGINE = InnoDB;
-
-INSERT INTO `member_info` (id)
-SELECT id FROM `users`
+) ENGINE = InnoDB;

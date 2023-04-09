@@ -6,6 +6,7 @@ import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.model.Video
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
+import com.noljanolja.server.core.rest.request.LikeVideoRequest
 import com.noljanolja.server.core.service.VideoService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -101,6 +102,21 @@ class VideoHandler(
                 body = Response(
                     data = videos
                 )
+            )
+    }
+
+    suspend fun likeVideo(request: ServerRequest): ServerResponse {
+        val videoId = request.pathVariable("videoId").takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("videoId")
+        val userId = request.awaitBodyOrNull<LikeVideoRequest>()?.userId?.takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("userId")
+        videoService.likeVideo(
+            videoId = videoId,
+            userId = userId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
             )
     }
 }

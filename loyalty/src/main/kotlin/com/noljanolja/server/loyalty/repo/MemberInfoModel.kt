@@ -2,6 +2,8 @@ package com.noljanolja.server.loyalty.repo
 
 import com.noljanolja.server.loyalty.model.MemberInfo
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Transient
+import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 
@@ -22,9 +24,15 @@ class MemberInfoModel(
     val nextTierMinPoint: Long? = null,
     @Column("expiry_points")
     val expiryPoints: String = "[]"
-)  {
+) : Persistable<String> {
+    @Transient
+    var isNewRecord = false
 
-    fun toMemberInfo() : MemberInfo {
+    override fun isNew(): Boolean = isNewRecord
+
+    override fun getId() = memberId
+
+    fun toMemberInfo(): MemberInfo {
         return MemberInfo(
             memberId, point, currentTier, currentTierMinPoint, nextTier, nextTierMinPoint
         )
