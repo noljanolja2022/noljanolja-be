@@ -40,6 +40,9 @@ data class VideoModel(
     @Column("channel_id")
     var channelId: String = "",
 
+    @Column("category_id")
+    var categoryId: String = "",
+
     @Column("is_highlighted")
     var isHighlighted: Boolean = false,
 
@@ -68,10 +71,13 @@ data class VideoModel(
     var commentCount: Long = 0
 
     @Transient
-    var channel: ChannelModel = ChannelModel()
+    var channel: VideoChannelModel = VideoChannelModel()
 
     @Transient
     var comments: List<VideoCommentModel> = listOf()
+
+    @Transient
+    var category: VideoCategoryModel = VideoCategoryModel()
 }
 
 fun VideoModel.toVideo() = Video(
@@ -87,9 +93,8 @@ fun VideoModel.toVideo() = Video(
     favoriteCount = favoriteCount,
     commentCount = commentCount,
     isHighlighted = isHighlighted,
-    channelId = channelId,
-    channelTitle = channel.title,
-    channelThumbnail = channel.thumbnail,
+    channel = channel.toVideoChannel(),
+    category = category.toVideoCategory(),
     comments = comments.map { it.toVideoComment() },
 )
 

@@ -4,5 +4,6 @@ import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ChannelRepo: CoroutineCrudRepository<ChannelModel, String> {
+interface VideoCategoryRepo : CoroutineCrudRepository<VideoCategoryModel, String> {
+
 }

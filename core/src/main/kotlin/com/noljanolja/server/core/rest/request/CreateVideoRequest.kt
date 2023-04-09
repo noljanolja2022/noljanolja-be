@@ -14,7 +14,17 @@ data class CreateVideoRequest(
     val favoriteCount: Long,
     val commentCount: Long,
     val isHighlighted: Boolean = false,
-    val channelId: String,
-    val channelTitle: String,
-    val channelThumbnail: String,
-)
+    val channel: Channel,
+    val category: Category,
+) {
+    data class Channel(
+        val id: String,
+        val title: String,
+        val thumbnail: String,
+    )
+
+    data class Category(
+        val id: String,
+        val title: String,
+    )
+}

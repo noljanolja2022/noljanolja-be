@@ -14,9 +14,19 @@ data class Video(
     val likeCount: Long,
     val favoriteCount: Long,
     val commentCount: Long,
-    val channelId: String,
-    val channelTitle: String,
-    val channelThumbnail: String,
     val isHighlighted: Boolean,
-    val comments: List<VideoComment> = listOf()
-)
+    val comments: List<VideoComment> = listOf(),
+    val channel: Channel,
+    val category: Category,
+) {
+    data class Channel(
+        val id: String,
+        val title: String,
+        val thumbnail: String,
+    )
+
+    data class Category(
+        val id: String,
+        val title: String,
+    )
+}

@@ -1,5 +1,6 @@
 package com.noljanolja.server.core.repo.media
 
+import com.noljanolja.server.core.model.Video
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
@@ -9,8 +10,8 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 
-@Table("channels")
-data class ChannelModel(
+@Table("video_channels")
+data class VideoChannelModel(
     @Id
     @Column("id")
     val _id: String = "",
@@ -28,7 +29,7 @@ data class ChannelModel(
     @Column("updated_at")
     @LastModifiedDate
     val updatedAt: Instant = Instant.now(),
-): Persistable<String> {
+) : Persistable<String> {
     @Transient
     var isNewRecord: Boolean = false
 
@@ -36,3 +37,9 @@ data class ChannelModel(
 
     override fun isNew() = isNewRecord
 }
+
+fun VideoChannelModel.toVideoChannel() = Video.Channel(
+    id = id,
+    title = title,
+    thumbnail = thumbnail,
+)

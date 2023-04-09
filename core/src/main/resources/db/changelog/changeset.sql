@@ -248,16 +248,30 @@ CREATE FULLTEXT INDEX idx_original_name ON attachments(original_name);
 --changeset tranhieu956230@gmail.com:6
 
 -- -----------------------------------------------------
--- Table `channels`
+-- Table `video_channels`
 -- -----------------------------------------------------
 
-DROP TABLE IF EXISTS `channels`;
+DROP TABLE IF EXISTS `video_channels`;
 
-CREATE TABLE IF NOT EXISTS `channels`
+CREATE TABLE IF NOT EXISTS `video_channels`
 (
     `id`            VARCHAR(255) NOT NULL PRIMARY KEY,
     `title`         VARCHAR(255) NOT NULL,
     `thumbnail`     VARCHAR(255) NOT NULL,
+    `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `video_categories`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `video_categories`;
+
+CREATE TABLE IF NOT EXISTS `video_categories`
+(
+    `id`            VARCHAR(255) NOT NULL PRIMARY KEY,
+    `title`         VARCHAR(255) NOT NULL,
     `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
@@ -280,10 +294,12 @@ CREATE TABLE IF NOT EXISTS `videos`
     `favorite_count`  BIGINT       NOT NULL,
     `is_highlighted`  TINYINT      NOT NULL,
     `channel_id`      VARCHAR(255) NOT NULL,
+    `category_id`     VARCHAR(255) NOT NULL,
     `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
+    FOREIGN KEY (channel_id) REFERENCES video_channels(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES video_categories(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------

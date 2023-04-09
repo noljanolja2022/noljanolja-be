@@ -20,8 +20,9 @@ class VideoService(
     private val videoViewCountRepo: VideoViewCountRepo,
     private val videoUserRepo: VideoUserRepo,
     private val videoCommentRepo: VideoCommentRepo,
+    private val videoChannelRepo: VideoChannelRepo,
+    private val videoCategoryRepo: VideoCategoryRepo,
     private val userRepo: UserRepo,
-    private val channelRepo: ChannelRepo,
 ) {
     suspend fun getVideoDetails(
         videoId: String,
@@ -36,7 +37,8 @@ class VideoService(
             }
         }
         return videoRepo.findById(videoId)?.apply {
-            channel = channelRepo.findById(channelId)!!
+            channel = videoChannelRepo.findById(channelId)!!
+            category = videoCategoryRepo.findById(categoryId)!!
             viewCount = videoViewCountRepo.getTotalViewCount(videoId)
             likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(videoId)
             commentCount = videoCommentRepo.countAllByVideoId(videoId)
@@ -48,18 +50,23 @@ class VideoService(
         page: Int,
         pageSize: Int,
         isHighlighted: Boolean? = null,
+        categoryId: String? = null,
     ): Pair<List<Video>, Long> {
         val videos = videoRepo.findAllBy(
             isHighlighted = isHighlighted,
+            categoryId = categoryId,
             offset = (page - 1) * pageSize,
             limit = pageSize,
         ).toList()
         val total = videoRepo.countAllBy(
             isHighlighted = isHighlighted,
+            categoryId = categoryId,
         )
-        val channels = channelRepo.findAllById(videos.map { it.channelId }.toSet()).toList()
+        val channels = videoChannelRepo.findAllById(videos.map { it.channelId }.toSet()).toList()
+        val categories = videoCategoryRepo.findAllById(videos.map { it.categoryId }.toSet()).toList()
         return Pair(videos.map { videoModel ->
-            videoModel.channel = channels.find { it.id == videoModel.channelId }!!
+            videoModel.channel = channels.first { it.id == videoModel.channelId }
+            videoModel.category = categories.first { it.id == videoModel.categoryId }
             videoModel.viewCount = videoViewCountRepo.getTotalViewCount(videoModel.id)
             videoModel.likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(videoModel.id)
             videoModel.commentCount = videoCommentRepo.countAllByVideoId(videoModel.id)
@@ -77,14 +84,20 @@ class VideoService(
     suspend fun upsertVideo(
         videoInfo: CreateVideoRequest,
     ): Video {
-        val channel = channelRepo.save(
-            (channelRepo.findById(videoInfo.channelId)
-                ?: ChannelModel(videoInfo.channelId).apply {
-                    this.isNewRecord = true
-                }).apply {
-                title = videoInfo.channelTitle
-                thumbnail = videoInfo.channelThumbnail
-            }
+        val channel = videoChannelRepo.save(
+            (videoChannelRepo.findById(videoInfo.channel.id)
+                ?: VideoChannelModel(videoInfo.channel.id).apply { this.isNewRecord = true })
+                .apply {
+                    title = videoInfo.channel.title
+                    thumbnail = videoInfo.channel.thumbnail
+                }
+        )
+        val category = videoCategoryRepo.save(
+            (videoCategoryRepo.findById(videoInfo.category.id)
+                ?: VideoCategoryModel(videoInfo.category.id).apply { this.isNewRecord = true })
+                .apply {
+                    title = videoInfo.category.title
+                }
         )
         var isNewModel = false
         return videoRepo.save(
@@ -96,7 +109,8 @@ class VideoService(
                 publishedAt = videoInfo.publishedAt
                 thumbnail = videoInfo.thumbnail
                 favoriteCount = videoInfo.favoriteCount
-                channelId = videoInfo.channelId
+                channelId = videoInfo.channel.id
+                categoryId = videoInfo.category.id
                 duration = videoInfo.duration
                 durationMs = videoInfo.durationMs
                 isHighlighted = videoInfo.isHighlighted
@@ -114,6 +128,7 @@ class VideoService(
             }
             .apply {
                 this.channel = channel
+                this.category = category
                 this.viewCount = videoViewCountRepo.getTotalViewCount(id)
                 this.likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(id)
                 this.commentCount = videoCommentRepo.countAllByVideoId(id)
@@ -142,7 +157,8 @@ class VideoService(
             days = days,
             limit = limit,
         ).toList().map {
-            it.channel = channelRepo.findById(it.channelId)!!
+            it.channel = videoChannelRepo.findById(it.channelId)!!
+            it.category = videoCategoryRepo.findById(it.categoryId)!!
             it.viewCount = videoViewCountRepo.getTotalViewCount(it.id)
             it.likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(it.id)
             it.commentCount = videoCommentRepo.countAllByVideoId(it.id)
