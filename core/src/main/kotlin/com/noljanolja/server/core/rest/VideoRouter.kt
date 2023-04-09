@@ -18,10 +18,12 @@ class VideoRouter(
         (VIDEO_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             POST("", videoHandler::upsertVideo)
             GET("", videoHandler::getVideos)
+            GET("trending", videoHandler::getTrendingVideos)
 
             "{videoId}".nest {
                 DELETE("", videoHandler::deleteVideo)
                 GET("", videoHandler::getVideoDetails)
+                PUT("view", videoHandler::viewVideo)
             }
         }
     }

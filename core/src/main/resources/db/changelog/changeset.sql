@@ -3,7 +3,6 @@
 --changeset itanchi.dev@gmail.com:1
 
 SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
 
 -- -----------------------------------------------------
 -- Table `users`
@@ -67,11 +66,14 @@ DROP TABLE IF EXISTS `user_contacts`;
 CREATE TABLE IF NOT EXISTS `user_contacts`
 (
     `id`           BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `user_id`      VARCHAR(36)  NOT NULL REFERENCES users (`id`) ON DELETE CASCADE,
-    `contact_id`   BIGINT       NOT NULL REFERENCES contacts (`id`) ON DELETE CASCADE,
+    `user_id`      VARCHAR(36)  NOT NULL,
+    `contact_id`   BIGINT       NOT NULL,
     `contact_name` VARCHAR(255) NOT NULL,
     `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (contact_id) REFERENCES contacts (id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 CREATE UNIQUE INDEX `idx_user_contact` ON `user_contacts` (`user_id`, `contact_id`);
@@ -83,11 +85,13 @@ CREATE UNIQUE INDEX `idx_user_contact` ON `user_contacts` (`user_id`, `contact_i
 CREATE TABLE `user_devices`
 (
     `id`           BIGINT                     NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `user_id`      VARCHAR(36)                NOT NULL REFERENCES users (`id`) ON DELETE CASCADE,
+    `user_id`      VARCHAR(36)                NOT NULL,
     `device_type`  ENUM ('MOBILE', 'DESKTOP') NOT NULL,
     `device_token` VARCHAR(255)               NOT NULL,
     `created_at`   DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`   DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`   DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX `idx_user_device_type` ON `user_devices` (`user_id`, `device_type`);
@@ -109,11 +113,13 @@ CREATE TABLE IF NOT EXISTS `conversations`
 (
     `id`                BIGINT                  NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `title`             VARCHAR(255)            NOT NULL,
-    `creator_id`        VARCHAR(36)             NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    `creator_id`        VARCHAR(36)             NOT NULL,
     `type`              ENUM('SINGLE', 'GROUP') NOT NULL,
     `image_url`         VARCHAR(255)            NOT NULL,
     `created_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------
@@ -126,11 +132,14 @@ CREATE TABLE IF NOT EXISTS `messages`
 (
     `id`                BIGINT                  NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `message`           TEXT                    NOT NULL,
-    `sender_id`         VARCHAR(36)             NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    `conversation_id`   BIGINT                  NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+    `sender_id`         VARCHAR(36)             NOT NULL,
+    `conversation_id`   BIGINT                  NOT NULL,
     `type`              ENUM('PLAINTEXT', 'STICKER', 'GIF', 'PHOTO', 'DOCUMENT') NOT NULL,
     `created_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------
@@ -142,8 +151,11 @@ DROP TABLE IF EXISTS `conversations_participants`;
 CREATE TABLE IF NOT EXISTS `conversations_participants`
 (
     `id`                BIGINT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `participant_id`    VARCHAR(36) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    `conversation_id`   BIGINT      NOT NULL REFERENCES conversations(id) ON DELETE CASCADE
+    `participant_id`    VARCHAR(36) NOT NULL,
+    `conversation_id`   BIGINT      NOT NULL,
+
+    FOREIGN KEY (participant_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 CREATE UNIQUE INDEX `idx_conversation_participant` ON `conversations_participants` (`conversation_id`, `participant_id`);
@@ -159,11 +171,14 @@ DROP TABLE IF EXISTS `message_status`;
 CREATE TABLE IF NOT EXISTS `message_status`
 (
     `id`           BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `user_id`      VARCHAR(36)  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    `message_id`   BIGINT       NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+    `user_id`      VARCHAR(36)  NOT NULL,
+    `message_id`   BIGINT       NOT NULL,
     `status`       ENUM('SEEN') NOT NULL,
     `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 CREATE UNIQUE INDEX `idx_user_message_status` ON `message_status` (`user_id`, `message_id`, `status`);
@@ -194,11 +209,13 @@ DROP TABLE IF EXISTS `stickers`;
 CREATE TABLE IF NOT EXISTS `stickers`
 (
     `id`           BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `pack_id`      BIGINT       NOT NULL REFERENCES `sticker_packs` (`id`) ON DELETE CASCADE,
+    `pack_id`      BIGINT       NOT NULL,
     `image_file`   VARCHAR(128) NOT NULL,
     `emojis`       VARCHAR(128) NOT NULL,
     `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (pack_id) REFERENCES sticker_packs(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 CREATE UNIQUE INDEX `idx_id_pack` ON `stickers` (`id`, `pack_id`);
@@ -214,14 +231,16 @@ DROP TABLE IF EXISTS `attachments`;
 CREATE TABLE IF NOT EXISTS `attachments`
 (
     `id`            BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `message_id`    BIGINT       NOT NULL REFERENCES `messages`(`id`) ON DELETE CASCADE,
+    `message_id`    BIGINT       NOT NULL,
     `name`          VARCHAR(255) NOT NULL,
     `original_name` VARCHAR(255) NOT NULL,
     `size`          BIGINT       NOT NULL,
     `md5`           VARCHAR(255) NOT NULL,
     `type`          VARCHAR(255) NOT NULL,
     `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 CREATE FULLTEXT INDEX idx_original_name ON attachments(original_name);
@@ -258,15 +277,36 @@ CREATE TABLE IF NOT EXISTS `videos`
     `published_at`    DATETIME     NOT NULL,
     `duration`        VARCHAR(255) NOT NULL,
     `duration_ms`     BIGINT       NOT NULL,
-    `view_count`      BIGINT       NOT NULL,
     `like_count`      BIGINT       NOT NULL,
     `favorite_count`  BIGINT       NOT NULL,
     `comment_count`   BIGINT       NOT NULL,
     `is_highlighted`  TINYINT      NOT NULL,
-    `channel_id`      VARCHAR(255) NOT NULL REFERENCES `messages`(`id`) ON DELETE CASCADE,
+    `channel_id`      VARCHAR(255) NOT NULL,
     `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `video_view_counts`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `video_view_counts`;
+
+CREATE TABLE IF NOT EXISTS `video_view_counts`
+(
+    `id`              BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `video_id`        VARCHAR(255) NOT NULL,
+    `view_count`      BIGINT       NOT NULL,
+    `created_at`      DATE         NOT NULL DEFAULT (CURRENT_DATE),
+
+    FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+CREATE INDEX idx_video_view_counts_created_at ON video_view_counts(created_at);
+
+--changeset nguyenbrother9x@gmail.com:7
 
 -- -----------------------------------------------------
 -- Table `member_info`

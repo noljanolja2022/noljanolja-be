@@ -4,6 +4,7 @@ import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
+import com.noljanolja.server.core.model.Video
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
 import com.noljanolja.server.core.service.VideoService
 import org.springframework.stereotype.Component
@@ -69,6 +70,36 @@ class VideoHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = video
+                )
+            )
+    }
+
+    suspend fun viewVideo(request: ServerRequest): ServerResponse {
+        val videoId = request.pathVariable("videoId").takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("videoId")
+        videoService.viewVideo(videoId)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
+    suspend fun getTrendingVideos(request: ServerRequest): ServerResponse {
+        val days = when (request.queryParamOrNull("duration")) {
+            "day" -> 1
+            "week" -> 7
+            "month" -> 30
+            else -> throw InvalidParamsException("duration")
+        }
+        val limit = request.queryParamOrNull("limit")?.toIntOrNull()?.takeIf { it > 0 } ?: 10
+        val videos = videoService.getTrendingVideos(
+            days = days,
+            limit = limit,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = videos
                 )
             )
     }

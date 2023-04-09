@@ -34,9 +34,6 @@ data class VideoModel(
     @Column("duration_ms")
     var durationMs: Long = 0,
 
-    @Column("view_count")
-    var viewCount: Long = 0,
-
     @Column("like_count")
     var likeCount: Long = 0,
 
@@ -66,6 +63,9 @@ data class VideoModel(
     override fun getId() = _id
 
     override fun isNew() = isNewRecord
+
+    @Transient
+    var viewCount: Long = 0
 
     @Transient
     var channel: ChannelModel = ChannelModel()

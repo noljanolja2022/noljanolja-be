@@ -5,14 +5,15 @@ import com.noljanolja.server.core.model.Video
 import com.noljanolja.server.core.repo.media.*
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
 import kotlinx.coroutines.flow.toList
-import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Component
 @Transactional
 class VideoService(
     private val videoRepo: VideoRepo,
+    private val videoViewCountRepo: VideoViewCountRepo,
     private val channelRepo: ChannelRepo,
 ) {
     suspend fun getVideoDetails(
@@ -20,6 +21,7 @@ class VideoService(
     ): Video {
         return videoRepo.findById(id)?.apply {
             channel = channelRepo.findById(channelId)!!
+            viewCount = videoViewCountRepo.getTotalViewCount(id)
         }?.toVideo() ?: throw Error.VideoNotFound
     }
 
@@ -39,6 +41,7 @@ class VideoService(
         val channels = channelRepo.findAllById(videos.map { it.channelId }.toSet()).toList()
         return Pair(videos.map { videoModel ->
             videoModel.channel = channels.find { it.id == videoModel.channelId }!!
+            videoModel.viewCount = videoViewCountRepo.getTotalViewCount(videoModel.id)
             videoModel.toVideo()
         }, total)
     }
@@ -62,16 +65,16 @@ class VideoService(
                 thumbnail = videoInfo.channelThumbnail
             }
         )
+        var isNewModel = false
         return videoRepo.save(
             ((videoRepo.findById(videoInfo.id) ?: VideoModel(
                 _id = videoInfo.id,
-            ).apply { isNewRecord = true }).apply {
+            ).apply { isNewRecord = true; isNewModel = true }).apply {
                 title = videoInfo.title
                 url = videoInfo.url
                 publishedAt = videoInfo.publishedAt
                 thumbnail = videoInfo.thumbnail
                 likeCount = videoInfo.likeCount
-                viewCount = videoInfo.viewCount
                 commentCount = videoInfo.commentCount
                 favoriteCount = videoInfo.favoriteCount
                 channelId = videoInfo.channelId
@@ -79,8 +82,46 @@ class VideoService(
                 durationMs = videoInfo.durationMs
                 isHighlighted = videoInfo.isHighlighted
             })
-        ).apply {
-            this.channel = channel
-        }.toVideo()
+        )
+            .also {
+                if (isNewModel) {
+                    videoViewCountRepo.save(
+                        VideoViewCountModel(
+                            videoId = videoInfo.id,
+                            viewCount = 0,
+                        )
+                    )
+                }
+            }
+            .apply {
+                this.channel = channel
+                this.viewCount = videoViewCountRepo.getTotalViewCount(id)
+            }.toVideo()
+    }
+
+    suspend fun viewVideo(
+        videoId: String,
+    ) {
+        val viewCountModel = videoViewCountRepo.findNewestVideoById(videoId)
+            ?.takeIf { it.createdAt == LocalDate.now() }
+            ?: VideoViewCountModel(
+                videoId = videoId,
+                viewCount = 0,
+            )
+        viewCountModel.viewCount++
+        videoViewCountRepo.save(viewCountModel)
+    }
+
+    suspend fun getTrendingVideos(
+        days: Int = 1,
+        limit: Int = 10,
+    ): List<Video> {
+        return videoViewCountRepo.findTopTrendingVideos(
+            days = days,
+            limit = limit,
+        ).toList().map {
+            it.viewCount = videoViewCountRepo.getTotalViewCount(it.id)
+            it.toVideo()
+        }
     }
 }

@@ -12,7 +12,6 @@ data class CreateVideoRequest(
     val durationMs: Long,
     val likeCount: Long,
     val favoriteCount: Long,
-    val viewCount: Long,
     val commentCount: Long,
     val isHighlighted: Boolean = false,
     val channelId: String,
