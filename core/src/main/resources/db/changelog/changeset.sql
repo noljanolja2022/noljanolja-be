@@ -278,7 +278,6 @@ CREATE TABLE IF NOT EXISTS `videos`
     `duration`        VARCHAR(255) NOT NULL,
     `duration_ms`     BIGINT       NOT NULL,
     `favorite_count`  BIGINT       NOT NULL,
-    `comment_count`   BIGINT       NOT NULL,
     `is_highlighted`  TINYINT      NOT NULL,
     `channel_id`      VARCHAR(255) NOT NULL,
     `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -322,6 +321,25 @@ CREATE TABLE IF NOT EXISTS `video_users`
 
     FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `video_comments`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `video_comments`;
+
+CREATE TABLE IF NOT EXISTS `video_comments`
+(
+    `id`              BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `video_id`        VARCHAR(255) NOT NULL,
+    `commenter_id`    VARCHAR(255) NOT NULL,
+    `comment`         TEXT         NOT NULL,
+    `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE,
+    FOREIGN KEY (commenter_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 --changeset nguyenbrother9x@gmail.com:7

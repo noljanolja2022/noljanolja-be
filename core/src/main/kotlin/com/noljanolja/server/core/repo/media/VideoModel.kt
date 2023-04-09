@@ -37,9 +37,6 @@ data class VideoModel(
     @Column("favorite_count")
     var favoriteCount: Long = 0,
 
-    @Column("comment_count")
-    var commentCount: Long = 0,
-
     @Column("channel_id")
     var channelId: String = "",
 
@@ -68,7 +65,13 @@ data class VideoModel(
     var likeCount: Long = 0
 
     @Transient
+    var commentCount: Long = 0
+
+    @Transient
     var channel: ChannelModel = ChannelModel()
+
+    @Transient
+    var comments: List<VideoCommentModel> = listOf()
 }
 
 fun VideoModel.toVideo() = Video(
@@ -87,5 +90,6 @@ fun VideoModel.toVideo() = Video(
     channelId = channelId,
     channelTitle = channel.title,
     channelThumbnail = channel.thumbnail,
+    comments = comments.map { it.toVideoComment() },
 )
 

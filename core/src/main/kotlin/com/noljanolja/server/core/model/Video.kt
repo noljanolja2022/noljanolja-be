@@ -18,4 +18,5 @@ data class Video(
     val channelTitle: String,
     val channelThumbnail: String,
     val isHighlighted: Boolean,
+    val comments: List<VideoComment> = listOf()
 )

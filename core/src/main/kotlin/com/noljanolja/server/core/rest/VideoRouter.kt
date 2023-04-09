@@ -25,6 +25,8 @@ class VideoRouter(
                 GET("", videoHandler::getVideoDetails)
                 POST("views", videoHandler::viewVideo)
                 POST("likes", videoHandler::likeVideo)
+                GET("comments", videoHandler::getVideoComments)
+                POST("comments", videoHandler::createVideoComment)
             }
         }
     }

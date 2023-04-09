@@ -11,12 +11,7 @@ interface VideoUserRepo : CoroutineCrudRepository<VideoUserModel, Long> {
         userId: String,
     ): VideoUserModel?
 
-    @Query(
-        """
-            SELECT COUNT(*) FROM video_users WHERE video_id = :videoId AND is_liked = true
-        """
-    )
-    suspend fun getTotalLike(
+    suspend fun countAllByIsLikedIsTrueAndVideoId(
         videoId: String
     ): Long
 }
