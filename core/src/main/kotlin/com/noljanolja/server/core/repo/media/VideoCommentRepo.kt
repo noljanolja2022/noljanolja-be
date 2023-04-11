@@ -12,7 +12,7 @@ interface VideoCommentRepo : CoroutineCrudRepository<VideoCommentModel, Long> {
         pageable: Pageable,
     ): Flow<VideoCommentModel>
 
-    fun findAllByVideoIdAndIdBeforeOrderById(
+    fun findAllByVideoIdAndIdBeforeOrderByIdDesc(
         videoId: String,
         beforeCommentId: Long,
         pageable: Pageable

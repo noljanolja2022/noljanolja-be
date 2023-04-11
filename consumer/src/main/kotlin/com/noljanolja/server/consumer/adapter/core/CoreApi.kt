@@ -454,4 +454,128 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<String>>().data
+
+    suspend fun likeVideo(
+        videoId: String,
+        payload: LikeVideoRequest,
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/videos/{videoId}/likes").build(videoId)
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
+    suspend fun postComment(
+        videoId: String,
+        payload: PostCommentRequest,
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/videos/{videoId}/comments").build(videoId)
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreVideoComment>>().data!!
+
+    suspend fun getVideos(
+        page: Int,
+        pageSize: Int,
+        isHighlighted: Boolean? = null,
+        categoryId: String? = null,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/videos")
+                .queryParamIfPresent("isHighlighted", Optional.ofNullable(isHighlighted))
+                .queryParamIfPresent("categoryId", Optional.ofNullable(categoryId))
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreVideo>>>().let {
+            Pair(it.data!!, it.pagination!!.total)
+        }
+
+    suspend fun getVideoDetails(
+        videoId: String
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/videos/{videoId}")
+                .build(videoId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreVideo>>().data!!
+
+    suspend fun getVideoComments(
+        videoId: String,
+        beforeCommentId: Long,
+        limit: Int? = null,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/videos/{videoId}/comments")
+                .queryParam("beforeCommentId", beforeCommentId)
+                .queryParamIfPresent("limit", Optional.ofNullable(limit))
+                .build(videoId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreVideoComment>>>().data!!
+
+    suspend fun getTrendingVideos(
+        days: Int,
+        limit: Int? = null,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/videos/trending")
+                .queryParam("days", days)
+                .queryParamIfPresent("limit", Optional.ofNullable(limit))
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreVideo>>>().data!!
 }

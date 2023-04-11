@@ -4,7 +4,7 @@ import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
-import com.noljanolja.server.core.rest.request.CreateCommentRequest
+import com.noljanolja.server.core.rest.request.PostCommentRequest
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
 import com.noljanolja.server.core.rest.request.LikeVideoRequest
 import com.noljanolja.server.core.service.VideoService
@@ -90,12 +90,8 @@ class VideoHandler(
     }
 
     suspend fun getTrendingVideos(request: ServerRequest): ServerResponse {
-        val days = when (request.queryParamOrNull("duration")) {
-            "day" -> 1
-            "week" -> 7
-            "month" -> 30
-            else -> throw InvalidParamsException("duration")
-        }
+        val days = request.queryParamOrNull("days")?.toIntOrNull()?.takeIf { it > 0 }
+            ?: throw InvalidParamsException("days")
         val limit = request.queryParamOrNull("limit")?.toIntOrNull()?.takeIf { it > 0 } ?: 10
         val videos = videoService.getTrendingVideos(
             days = days,
@@ -124,11 +120,11 @@ class VideoHandler(
             )
     }
 
-    suspend fun createVideoComment(request: ServerRequest): ServerResponse {
+    suspend fun postComment(request: ServerRequest): ServerResponse {
         val videoId = request.pathVariable("videoId").takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("videoId")
-        val payload = request.awaitBodyOrNull<CreateCommentRequest>() ?: throw RequestBodyRequired
-        val comment = videoService.createVideoComment(
+        val payload = request.awaitBodyOrNull<PostCommentRequest>() ?: throw RequestBodyRequired
+        val comment = videoService.postComment(
             comment = payload.comment,
             commenterId = payload.commenterId,
             videoId = videoId,

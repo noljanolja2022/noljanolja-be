@@ -21,6 +21,17 @@ class MediaRouter(
                 GET("/{stickerPackId}", mediaHandler::getStickerPack)
                 GET("/{stickerPackId}/{stickerFileName}", mediaHandler::getSticker)
             }
+            "videos".nest {
+                GET("", mediaHandler::getVideos)
+                GET("trending", mediaHandler::getTrendingVideos)
+
+                "{videoId}".nest {
+                    GET("", mediaHandler::getVideoDetails)
+                    POST("likes", mediaHandler::likeVideo)
+                    POST("comments", mediaHandler::postComment)
+                    GET("comments", mediaHandler::getVideoComments)
+                }
+            }
         }
     }
 }

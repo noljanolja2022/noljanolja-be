@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
-  description: | 
-      Changelog - 6/4/2023:
-        - Add API to add/remove member from group
-        - Add API assign admin of a group
+  description: |
+    Changelog - 6/4/2023:
+      - Add API to add/remove member from group
+      - Add API assign admin of a group
   version: 1.0.3
   title: NoljaNolja Swagger
   contact:
@@ -24,11 +24,11 @@ tags:
 paths:
   /api/v1/users/me:
     get:
-      tags: [User]
+      tags: [ User ]
       summary: Get Current logged-in user info
       description: Return user info with preference/setting
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         "200":
           description: On success
@@ -42,11 +42,11 @@ paths:
                       data:
                         $ref: "#/components/schemas/User"
     put:
-      tags: [User]
+      tags: [ User ]
       summary: Update Current logged-in user info
       description: Return updated user info with preference/setting
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -77,7 +77,7 @@ paths:
                       data:
                         $ref: "#/components/schemas/User"
     post:
-      tags: [User]
+      tags: [ User ]
       summary: Update current user info using file
       description: Upload corresponding file to cloud, and update current user info if necessary. Return data related to uploaded file
       security:
@@ -88,11 +88,11 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [field, files]
+              required: [ field, files ]
               properties:
                 field:
                   type: string
-                  enum: [AVATAR]
+                  enum: [ AVATAR ]
                 files:
                   type: array
                   items:
@@ -111,7 +111,7 @@ paths:
                       data:
                         $ref: "#/components/schemas/UserFileUpload"
     delete:
-      tags: [User]
+      tags: [ User ]
       summary: Delete user
       description: This will remove user on both on firebase and noljanolja
       security:
@@ -125,7 +125,7 @@ paths:
                 $ref: "#/components/schemas/BaseResponse"
   /api/v1/users:
     get:
-      tags: [User]
+      tags: [ User ]
       summary: Find users
       description: Return list of users based on query provided
       security:
@@ -152,7 +152,7 @@ paths:
                           $ref: "#/components/schemas/User"
   /api/v1/users/me/contacts:
     get:
-      tags: [User]
+      tags: [ User ]
       summary: Get all contacts of current user
       security:
         - bearerAuth: [ ]
@@ -180,7 +180,7 @@ paths:
                         items:
                           $ref: "#/components/schemas/User"
     post:
-      tags: [User]
+      tags: [ User ]
       summary: Sync contact list
       description: This will sync data from user contact list to user friend list in server
       security:
@@ -239,7 +239,7 @@ paths:
                 $ref: "#/components/schemas/BaseResponse"
   /api/v1/conversations:
     get:
-      tags: [Conversation]
+      tags: [ Conversation ]
       summary: Get list of conversation of current user
       description: Include recent participants and sender
       security:
@@ -270,7 +270,7 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [title, participantIds, type]
+              required: [ title, participantIds, type ]
               properties:
                 title:
                   type: string
@@ -297,7 +297,7 @@ paths:
                         $ref: "#/components/schemas/Conversation"
   /api/v1/conversations/{conversationId}:
     get:
-      tags: [Conversation]
+      tags: [ Conversation ]
       summary: Get conversation detail
       description: Include all participants, and many recent messages
       security:
@@ -522,11 +522,11 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [message, type]
+              required: [ message, type ]
               properties:
                 message:
                   type: string
-                  description: | 
+                  description: |
                     The content of the message. Format varies depending on the type.  
                     Examples:
                     - PLAINTEXT: Hi this is a message
@@ -597,7 +597,7 @@ paths:
                 format: binary
   /api/v1/media/sticker-packs:
     get:
-      tags: [Media]
+      tags: [ Media ]
       summary: Retrieve sticker packs of current user
       description: Currently retrieve all available sticker packs
       security:
@@ -654,6 +654,198 @@ paths:
       responses:
         "200":
           description: On success, this should trigger a download
+  /api/v1/media/videos:
+    get:
+      tags: [ Video ]
+      summary: Querying for videos
+      description: Querying for videos matching certain criteria
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            $ref: '#/components/schemas/page'
+        - name: pageSize
+          in: query
+          schema:
+            $ref: '#/components/schemas/pageSize'
+        - name: isHighlighted
+          in: query
+          schema:
+            type: boolean
+          required: false
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+          required: false
+      responses:
+        "200":
+          description: Return a list of videos matching the query params
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Video"
+  /api/v1/media/videos/trending:
+    get:
+      tags: [ Video ]
+      summary: Get trending videos
+      description: Get trending videos
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: duration
+          in: query
+          schema:
+            type: string
+            enum:
+              - day
+              - week
+              - month
+          required: true
+        - name: limit
+          in: query
+          schema:
+            $ref: '#/components/schemas/pageSize'
+          required: false
+      responses:
+        "200":
+          description: Return a list of trending videos
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Video"
+  /api/v1/media/videos/{videoId}/comments:
+    get:
+      tags: [ Video ]
+      summary: Get video comments
+      description: Get video comments
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            $ref: '#/components/schemas/pageSize'
+        - name: beforeCommentId
+          in: query
+          schema:
+            type: boolean
+          description: Return comments that are older than a comment. For example, beforeCommentId = 7 would return comment id 6, 5, 4,...
+          required: true
+        - name: videoId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Return a list of comments of the video
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/VideoComment"
+    post:
+      tags: [ Video ]
+      summary: Post a comment
+      description: Post a comment
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: videoId
+          in: path
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                  required: true
+      responses:
+        "200":
+          description: Return the created comment
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/VideoComment"
+  /api/v1/media/videos/{videoId}/likes:
+    post:
+      tags: [ Video ]
+      summary: Like a video
+      description: Like a video
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: videoId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Return the created comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+  /api/v1/media/videos/{videoId}:
+    get:
+      tags: [ Video ]
+      summary: Get video details
+      description: Get video details
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: videoId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Return details of the video
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Video"
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -665,7 +857,7 @@ components:
   schemas:
     BaseResponse:
       type: object
-      required: [code, message]
+      required: [ code, message ]
       properties:
         code:
           type: integer
@@ -673,7 +865,7 @@ components:
           type: string
     User:
       type: object
-      required: [id]
+      required: [ id ]
       properties:
         id:
           type: string
@@ -862,3 +1054,76 @@ components:
       type: integer
       description: the size of each batch. Use in conjunction with pageSize
       example: 100
+    Video:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+        publishedAt:
+          type: string
+          format: date-time
+        title:
+          type: string
+        thumbnail:
+          type: string
+        duration:
+          type: string
+          description: |
+            If the video is at least one hour long, the duration is in the format PT#H#M#S, 
+            in which the # preceding the letter H specifies the length of the video in hours and all of the other details are the same as described above.
+            If the video is at least one day long, the letters P and T are separated, and the value's format is P#DT#H#M#S. 
+            Please refer to the ISO 8601 specification for complete details.
+        durationMs:
+          type: number
+          format: int64
+        viewCount:
+          type: number
+        likeCount:
+          type: number
+        commentCount:
+          type: number
+        favoriteCount:
+          type: number
+        isHighlighted:
+          type: boolean
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideoComment'
+        channel:
+          type: object
+          properties:
+            id:
+              type: string
+            title:
+              type: string
+            thumbnail:
+              type: string
+        category:
+          type: object
+          properties:
+            id:
+              type: string
+            title:
+              type: string
+    VideoComment:
+      type: object
+      required:
+        - id
+        - comment
+        - commenter
+      properties:
+        id:
+          type: number
+          format: int64
+        comment:
+          type: string
+        commenter:
+          type: object
+          properties:
+            name:
+              type: string
+            avatar:
+              type: string

@@ -27,7 +27,7 @@ class VideoService(
     suspend fun getVideoDetails(
         videoId: String,
     ): Video {
-        if (!videoRepo.existsById(videoId)) throw Error.VideoNotFound
+        val video = videoRepo.findById(videoId) ?: throw Error.VideoNotFound
         val comments = videoCommentRepo.findAllByVideoIdOrderByIdDesc(videoId, Pageable.ofSize(10)).toList()
         if (comments.isNotEmpty()) {
             val commenterIds = comments.mapTo(mutableSetOf()) { it.commenterId }
@@ -36,14 +36,14 @@ class VideoService(
                 comment.commenter = commenters.first { it.id == comment.commenterId }
             }
         }
-        return videoRepo.findById(videoId)?.apply {
+        return video.apply {
             channel = videoChannelRepo.findById(channelId)!!
             category = videoCategoryRepo.findById(categoryId)!!
             viewCount = videoViewCountRepo.getTotalViewCount(videoId)
             likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(videoId)
             commentCount = videoCommentRepo.countAllByVideoId(videoId)
             this.comments = comments
-        }?.toVideo() ?: throw Error.VideoNotFound
+        }.toVideo()
     }
 
     suspend fun getVideos(
@@ -184,7 +184,7 @@ class VideoService(
         )
     }
 
-    suspend fun createVideoComment(
+    suspend fun postComment(
         comment: String,
         commenterId: String,
         videoId: String,
@@ -208,7 +208,7 @@ class VideoService(
         limit: Int,
     ): List<VideoComment> {
         if (!videoRepo.existsById(videoId)) throw Error.VideoNotFound
-        val comments = videoCommentRepo.findAllByVideoIdAndIdBeforeOrderById(
+        val comments = videoCommentRepo.findAllByVideoIdAndIdBeforeOrderByIdDesc(
             videoId = videoId,
             beforeCommentId = beforeCommentId,
             pageable = Pageable.ofSize(limit),
