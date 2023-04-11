@@ -40,6 +40,13 @@ class ConversationRouter(
                 "/attachments".nest {
                     GET("{attachmentId}", conversationHandler::downloadConversationAttachment)
                 }
+
+                "/participants".nest {
+                    PUT("", conversationHandler::addMemberToConversation)
+                    DELETE("", conversationHandler::removeMemberFromConversation)
+                }
+
+                PUT("/admin", conversationHandler::assignAdminToConversation)
             }
         }
     }

@@ -1,13 +1,16 @@
 package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
+import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.Conversation
+import com.noljanolja.server.consumer.model.Message
 import com.noljanolja.server.consumer.rest.request.Attachments
 import com.noljanolja.server.consumer.rest.request.FileAttachment
-import com.noljanolja.server.consumer.model.Message
+import com.noljanolja.server.consumer.rest.request.UpdateAdminOfConversationReq
+import com.noljanolja.server.consumer.rest.request.UpdateMemberOfConversationRequest
 import com.noljanolja.server.consumer.service.ConversationService
 import com.noljanolja.server.consumer.service.GoogleStorageService
 import com.noljanolja.server.consumer.utils.getAttachmentPath
@@ -30,6 +33,7 @@ class ConversationHandler(
     companion object {
         const val QUERY_PARAM_CONVERSATION_ID = "conversationId"
         const val QUERY_PARAM_MESSAGE_ID = "messageId"
+        const val QUERY_PARAM_PARTICIPANT_ID = "participantIds"
         const val DOWNLOAD_FILE_HEADER = "Noljanolja-File-Download"
         const val MAX_ATTACHMENTS_SIZE = 10
     }
@@ -221,5 +225,40 @@ class ConversationHandler(
             .bodyValueAndAwait(
                 InputStreamResource(resourceInfo.data)
             )
+    }
+
+    suspend fun addMemberToConversation(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val req = request.awaitBodyOrNull<UpdateMemberOfConversationRequest>() ?: throw RequestBodyRequired
+        conversationService.addMemberToConversation(
+            AuthUserHolder.awaitUser().id,
+            conversationId,
+            req.participantIds
+        )
+        return ServerResponse.ok().bodyValueAndAwait(Response<Nothing>())
+    }
+
+    suspend fun removeMemberFromConversation(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val participantIds = request.queryParamOrNull(QUERY_PARAM_PARTICIPANT_ID) ?: throw InvalidParamsException(
+            QUERY_PARAM_PARTICIPANT_ID
+        )
+        conversationService.removeMemberFromConversation(
+            AuthUserHolder.awaitUser().id,
+            conversationId,
+            participantIds.split(",")
+        )
+        return ServerResponse.ok().bodyValueAndAwait(Response<Nothing>())
+    }
+
+    suspend fun assignAdminToConversation(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val req = request.awaitBodyOrNull<UpdateAdminOfConversationReq>() ?: throw RequestBodyRequired
+        val res =
+            conversationService.updateAdminOfConversation(AuthUserHolder.awaitUser().id, conversationId, req.assigneeId)
+        return ServerResponse.ok().bodyValueAndAwait(Response(data = res))
     }
 }

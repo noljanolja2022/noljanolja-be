@@ -7,6 +7,8 @@ data class Message(
     val conversationId: Long = 0,
     val message: String = "",
     val sender: User,
+    val leftParticipants: List<User> = emptyList(),
+    val joinParticipants: List<User> = emptyList(),
     val type: Type,
     val seenBy: List<String> = listOf(),
     val createdAt: Instant = Instant.now(),
@@ -19,6 +21,9 @@ data class Message(
         GIF,
         PHOTO,
         DOCUMENT,
+        EVENT_UPDATED,
+        EVENT_LEFT,
+        EVENT_JOINED
     }
 
     enum class Status {

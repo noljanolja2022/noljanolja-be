@@ -5,6 +5,8 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.exception.CoreServiceError
 import com.noljanolja.server.consumer.model.StickerPack
+import com.noljanolja.server.consumer.rest.request.CoreUpdateAdminOfConversationReq
+import com.noljanolja.server.consumer.rest.request.CoreUpdateMemberOfConversationReq
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
@@ -393,4 +395,63 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<StickerPack>>().data
+
+    suspend fun addMemberToConversation(
+        conversationId: Long,
+        payload: CoreUpdateMemberOfConversationReq
+    ) = webClient.put()
+        .uri { builder ->
+            builder.path("$CONVERSATION_ENDPOINT/$conversationId/participants").build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<String>>>().data
+
+    suspend fun removeMemberFromConversation(
+        conversationId: Long,
+        payload: CoreUpdateMemberOfConversationReq
+    ) = webClient.delete()
+        .uri { builder ->
+            builder.path("$CONVERSATION_ENDPOINT/$conversationId/participants")
+                .queryParam("userId", payload.userId)
+                .queryParam("participantIds", payload.participantIds.joinToString(","))
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<String>>>().data
+
+    suspend fun setAdminToConversation(
+        conversationId: Long,
+        payload: CoreUpdateAdminOfConversationReq
+    ) = webClient.put()
+        .uri { builder ->
+            builder.path("$CONVERSATION_ENDPOINT/$conversationId/admin").build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<String>>().data
 }

@@ -373,6 +373,22 @@ CREATE TABLE IF NOT EXISTS `member_info`
     `current_tier`              ENUM ('BRONZE', 'SILVER', 'GOLD', 'DIAMOND') NOT NULL DEFAULT 'BRONZE',
     `current_tier_min_point`    BIGINT              NULL,
     `next_tier`                 ENUM ('BRONZE', 'SILVER', 'GOLD', 'DIAMOND') NULL,
-    `next_tier_min_point`       BIGINT              NULL,
-    `expiry_points`             TEXT                NULL
+    `next_tier_min_point`       BIGINT              NULL
 ) ENGINE = InnoDB;
+
+INSERT INTO `member_info` (id)
+SELECT id FROM `users`;
+
+ALTER TABLE `conversations`
+    ADD COLUMN `admin_id` VARCHAR(36) NOT NULL DEFAULT '';
+
+UPDATE `conversations` SET `admin_id`=`creator_id`;
+
+ALTER TABLE `conversations` ADD FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE `messages`
+    MODIFY COLUMN `type` ENUM('PLAINTEXT', 'STICKER', 'GIF', 'PHOTO', 'DOCUMENT', 'EVENT_UPDATED', 'EVENT_LEFT', 'EVENT_JOINED') NOT NULL;
+
+ALTER TABLE `messages`
+    ADD COLUMN `left_participant_ids` VARCHAR(255) NULL,
+    ADD COLUMN `join_participant_ids` VARCHAR(255) NULL;

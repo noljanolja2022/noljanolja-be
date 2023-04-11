@@ -5,3 +5,13 @@ data class UpdateConversationRequest(
     val imageUrl: String?,
     val participantIds: Set<String>?,
 )
+
+data class UpdateConversationParticipantsRequest(
+    val userId: String,
+    val participantIds: List<String> = emptyList()
+)
+
+data class UpdateConversationAdminRequest(
+    val adminId: String,
+    val assigneeId: String,
+)

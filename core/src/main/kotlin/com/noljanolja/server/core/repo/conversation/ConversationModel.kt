@@ -29,6 +29,9 @@ data class ConversationModel(
     @Column("creator_id")
     val creatorId: String,
 
+    @Column("admin_id")
+    var adminId: String,
+
     @Column("image_url")
     var imageUrl: String = "",
 
@@ -48,12 +51,16 @@ data class ConversationModel(
 
     @Transient
     var creator: UserModel = UserModel()
+
+    @Transient
+    var admin: UserModel = UserModel()
 }
 
 fun ConversationModel.toConversation(objectMapper: ObjectMapper) = Conversation(
     id = id,
     title = title,
     creator = creator.toUser(objectMapper),
+    admin = admin.toUser(objectMapper),
     type = type,
     messages = messages.map { it.toMessage(objectMapper) },
     participants = participants.map { it.toUser(objectMapper) },

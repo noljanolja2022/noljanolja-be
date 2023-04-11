@@ -15,5 +15,5 @@ data class ConversationParticipantModel(
     var participantId: String,
 
     @Column("conversation_id")
-    var conversationId: Long,
+    var conversationId: Long
 )

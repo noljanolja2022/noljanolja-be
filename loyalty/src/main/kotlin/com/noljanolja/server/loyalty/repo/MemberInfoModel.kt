@@ -21,9 +21,7 @@ class MemberInfoModel(
     @Column("next_tier")
     val nextTier: MemberInfo.Tier? = null,
     @Column("next_tier_min_point")
-    val nextTierMinPoint: Long? = null,
-    @Column("expiry_points")
-    val expiryPoints: String = "[]"
+    val nextTierMinPoint: Long? = null
 ) : Persistable<String> {
     @Transient
     var isNewRecord = false

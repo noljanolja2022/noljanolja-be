@@ -1,10 +1,9 @@
 openapi: 3.0.0
 info:
   description: | 
-      Changelog - 25/3/2023:
-        - Add API find users by phone number
-        - Add API get users contact list
-        - Update API sync contact list
+      Changelog - 6/4/2023:
+        - Add API to add/remove member from group
+        - Add API assign admin of a group
   version: 1.0.3
   title: NoljaNolja Swagger
   contact:
@@ -14,6 +13,8 @@ tags:
     description: Operation relate to current user
   - name: Conversation
     description: Operation relate to conversation in general
+  - name: Conversation Participant
+    description: Modifying member of a conversation
   - name: Push Token
     description: Operation relate to push token
   - name: Message
@@ -322,7 +323,10 @@ paths:
     put:
       tags: [ Conversation ]
       summary: Update conversation
-      description: Update a conversation
+      description: |
+        On success, will also fire socket depending on the info provided   
+        Type *EVENT_UPDATED* + content *TITLE* if updating title   
+        Type *EVENT_UPDATED* + content *AVATAR* if updating title
       security:
         - bearerAuth: [ ]
       parameters:
@@ -359,6 +363,112 @@ paths:
                     properties:
                       data:
                         $ref: "#/components/schemas/Conversation"
+  /api/v1/conversations/{conversationId}/participants:
+    put:
+      tags: [ 'Conversation Participant' ]
+      summary: Add member to a conversation
+      description: Provide ids of the participants to be added to a conversation
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                participantIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: On success, return ids of the participants added to this conversation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+    delete:
+      tags: [ 'Conversation Participant' ]
+      summary: Remove member from a conversation
+      description: |
+        Provide ids of the participants to be removed from a conversation   
+        To remove oneself (basically leave) a conversation, provide your own id   
+        If you are not removing yourself, you need to be group admin to initiate this operation
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+        - in: query
+          name: participantIds
+          schema:
+            type: string
+          description: the ids of the member, separated by ","
+      responses:
+        "200":
+          description: On success, return ids of the participants removed from this conversation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+  /api/v1/conversations/{conversationId}/admin:
+    put:
+      tags: [ 'Conversation Participant' ]
+      summary: Assign a person to be admin of a conversation
+      description: Provide id of the new admin
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                assigneeId:
+                  type: string
+      responses:
+        "200":
+          description: On success, return id of the new admin
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
   /api/v1/conversations/{conversationId}/messages:
     get:
       tags: [ Message ]
@@ -522,7 +632,6 @@ paths:
       responses:
         "200":
           description: On success, download a zip file with name `stickerPackId`.zip. The zip file will include a tray image, all sticker images, and a content.json metadata file for this sticker pack
-
   /api/v1/media/sticker-packs/{stickerPackId}/{stickerFile}:
     get:
       tags: [ Media ]
@@ -638,6 +747,8 @@ components:
           type: string
         creator:
           $ref: "#/components/schemas/User"
+        admin:
+          $ref: "#/components/schemas/User"
         type:
           $ref: "#/components/schemas/ConversationType"
         messages:
@@ -681,7 +792,10 @@ components:
           type: string
     MessageType:
       type: string
-      enum: [ PLAINTEXT, STICKER, GIF, PHOTO, DOCUMENT ]
+      enum: [ PLAINTEXT, STICKER, GIF, PHOTO, DOCUMENT, EVENT_UPDATED, EVENT_LEFT, EVENT_JOIN ]
+      description: |
+        EVENT_ type are special messageType, that will be returned to client via socket
+        Everything else are for client to send.
     Attachment:
       type: object
       properties:

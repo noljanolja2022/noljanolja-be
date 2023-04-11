@@ -82,6 +82,19 @@ class NoTokenProvidedException(
     cause = cause,
 )
 
+// 403 exceptions
+
+/**
+ * Default Not Found exception
+ */
+class DefaultForbiddenException(
+    cause: Throwable?,
+) : BaseException(
+    code = 403_000,
+    message = "No permission",
+    cause = cause,
+)
+
 // 404 exceptions
 
 /**

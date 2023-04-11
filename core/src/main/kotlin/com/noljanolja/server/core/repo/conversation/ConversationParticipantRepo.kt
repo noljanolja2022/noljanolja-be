@@ -12,4 +12,6 @@ interface ConversationParticipantRepo : CoroutineCrudRepository<ConversationPart
     fun findAllByConversationId(conversationId: Long): Flow<ConversationParticipantModel>
 
     suspend fun deleteAllByParticipantIdIn(ids: List<String>)
+
+    suspend fun deleteAllByParticipantIdInAndConversationId(ids: List<String>, conversationId: Long)
 }

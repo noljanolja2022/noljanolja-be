@@ -8,6 +8,8 @@ data class Message(
     val message: String = "",
     val type: Type,
     val sender: User,
+    val leftParticipants: List<User> = emptyList(),
+    val joinParticipants: List<User> = emptyList(),
     val seenBy: List<String> = listOf(),
     val attachments: List<Attachment> = listOf(),
     var localId: String = "",
@@ -30,5 +32,8 @@ data class Message(
         GIF,
         PHOTO,
         DOCUMENT,
+        EVENT_UPDATED,
+        EVENT_LEFT,
+        EVENT_JOINED
     }
 }

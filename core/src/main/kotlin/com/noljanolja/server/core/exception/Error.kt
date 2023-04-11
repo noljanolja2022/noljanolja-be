@@ -8,18 +8,20 @@ sealed class Error(
     cause: Throwable?,
 ) : BaseException(code, message, cause) {
     companion object {
+        const val NO_PERMISSION_TO_UPDATE_PARTICIPANTS = 403_001
         const val CONVERSATION_NOT_FOUND = 404_002
         const val MESSAGE_NOT_FOUND = 404_003
         const val ATTACHMENT_NOT_FOUND = 404_004
         const val VIDEO_NOT_FOUND = 404_005
+        const val STICKER_PACK_NOT_FOUND = 404_006
+        const val STICKERS_NOT_FOUND = 404_007
         const val USER_NOT_PARTICIPATE_IN_CONVERSATION = 400_001
         const val INVALID_PARTICIPANTS_SIZE = 400_002
         const val PARTICIPANTS_NOT_FOUND = 400_003
         const val UNSUPPORTED_MESSAGE_TYPE = 400_004
         const val INVALID_PHONE_NUMBER = 400_005
         const val MESSAGE_NOT_BELONG_TO_CONVERSATION = 400_006
-        const val STICKER_PACK_NOT_FOUND = 400_010
-        const val STICKERS_NOT_FOUND = 400_011
+        const val PARTICIPANT_REMOVAL_FAILED = 400_007
     }
 
     object ConversationNotFound : Error(
@@ -91,6 +93,18 @@ sealed class Error(
     object StickersNotFound : Error(
         STICKERS_NOT_FOUND,
         "Stickers requested not found",
+        null
+    )
+
+    object NoPermissionToUpdateParticipants: Error(
+        NO_PERMISSION_TO_UPDATE_PARTICIPANTS,
+        "No permission to update conversation participants",
+        null
+    )
+
+    object CannotRemoveParticipants: Error(
+        PARTICIPANT_REMOVAL_FAILED,
+        "Unable to update. Admin can't quit the conversation before assigning new one",
         null
     )
 }

@@ -6,6 +6,7 @@ data class Conversation(
     val id: Long,
     val title: String,
     val creator: User,
+    val admin: User,
     val type: Type,
     val messages: List<Message>,
     val participants: List<User>,

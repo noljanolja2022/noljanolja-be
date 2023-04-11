@@ -18,6 +18,7 @@ class ConversationHandler(
         const val QUERY_PARAM_CONVERSATION_ID = "conversationId"
         const val QUERY_PARAM_MESSAGE_ID = "messageId"
         const val QUERY_PARAM_USER_ID = "userId"
+        const val QUERY_PARAM_PARTICIPANT_ID = "participantIds"
     }
 
     suspend fun getConversations(request: ServerRequest): ServerResponse {
@@ -202,5 +203,43 @@ class ConversationHandler(
                     data = attachment,
                 )
             )
+    }
+
+    suspend fun addMemberToConversation(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val payload = request.awaitBodyOrNull<UpdateConversationParticipantsRequest>() ?: throw RequestBodyRequired
+        val updatedParticipantIds =
+            conversationService.addConversationParticipants(conversationId, payload.userId, payload.participantIds)
+        return ServerResponse.ok().bodyValueAndAwait(
+            Response(
+                data = updatedParticipantIds
+            )
+        )
+    }
+
+    suspend fun removeMemberFromConversation(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val participantIds = request.queryParamOrNull(QUERY_PARAM_PARTICIPANT_ID) ?: throw InvalidParamsException(QUERY_PARAM_PARTICIPANT_ID)
+        val userId = request.queryParamOrNull(QUERY_PARAM_USER_ID) ?: throw InvalidParamsException(QUERY_PARAM_USER_ID)
+        conversationService.removeConversationMember(conversationId, userId, participantIds.split(","))
+        return ServerResponse.ok().bodyValueAndAwait(
+            Response(
+                data = participantIds.split(",")
+            )
+        )
+    }
+
+    suspend fun assignConversationAdmin(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
+            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val payload = request.awaitBodyOrNull<UpdateConversationAdminRequest>() ?: throw RequestBodyRequired
+        val newAdminId = conversationService.assignConversationAdmin(conversationId, payload.adminId, payload.assigneeId)
+        return ServerResponse.ok().bodyValueAndAwait(
+            Response(
+                data = newAdminId
+            )
+        )
     }
 }

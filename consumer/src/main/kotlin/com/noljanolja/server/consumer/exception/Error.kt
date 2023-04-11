@@ -43,6 +43,7 @@ sealed class Error(
         const val EXCEED_MAX_ATTACHMENTS_SIZE = 400_011
         const val INVALID_CONTENT_TYPE = 400_012
         const val CANNOT_UPDATE_CONVERSATION = 400_013
+        const val CANNOT_UPDATE_CONVERSATION_PARTICIPANT = 403_001
     }
 
     object FileExceedMaxSize : BaseException(
@@ -72,6 +73,12 @@ sealed class Error(
     object CannotUpdateConversation: BaseException(
         CANNOT_UPDATE_CONVERSATION,
         "Cannot update conversation",
+        null,
+    )
+
+    object NoPermissionToUpdateConversationParticipant: BaseException(
+        CANNOT_UPDATE_CONVERSATION_PARTICIPANT,
+        "Cannot update conversation participant",
         null,
     )
 }

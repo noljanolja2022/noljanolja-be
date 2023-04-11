@@ -20,10 +20,16 @@ data class MessageModel(
     val id: Long = 0,
 
     @Column("message")
-    val message: String,
+    var message: String,
 
     @Column("sender_id")
     val senderId: String,
+
+    @Column("left_participant_ids")
+    var leftParticipantIds: String? = null,
+
+    @Column("join_participant_ids")
+    var joinParticipantIds: String? = null,
 
     @Column("conversation_id")
     val conversationId: Long,
@@ -46,6 +52,12 @@ data class MessageModel(
     var seenBy: List<String> = listOf()
 
     @Transient
+    var leftParticipants: List<UserModel> = emptyList()
+
+    @Transient
+    var joinParticipants: List<UserModel> = emptyList()
+
+    @Transient
     var attachments: List<AttachmentModel> = listOf()
 }
 
@@ -54,6 +66,8 @@ fun MessageModel.toMessage(objectMapper: ObjectMapper) = Message(
     conversationId = conversationId,
     message = message,
     sender = sender.toUser(objectMapper),
+    leftParticipants = leftParticipants.map { it.toUser(objectMapper) },
+    joinParticipants = joinParticipants.map { it.toUser(objectMapper) },
     type = type,
     seenBy = seenBy,
     createdAt = createdAt,

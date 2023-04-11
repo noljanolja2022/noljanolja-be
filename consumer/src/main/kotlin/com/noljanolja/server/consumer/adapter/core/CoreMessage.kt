@@ -8,6 +8,8 @@ data class CoreMessage(
     val conversationId: Long = 0,
     val message: String = "",
     val sender: CoreUser,
+    val leftParticipants: List<CoreUser> = emptyList(),
+    val joinParticipants: List<CoreUser> = emptyList(),
     val type: Type,
     val seenBy: List<String> = listOf(),
     val createdAt: Instant = Instant.now(),
@@ -20,6 +22,9 @@ data class CoreMessage(
         GIF,
         PHOTO,
         DOCUMENT,
+        EVENT_UPDATED,
+        EVENT_LEFT,
+        EVENT_JOINED
     }
 }
 
@@ -28,6 +33,8 @@ fun CoreMessage.toConsumerMessage() = Message(
     conversationId = conversationId,
     message = message,
     sender = sender.toConsumerUser(),
+    leftParticipants = leftParticipants.map { it.toConsumerUser() },
+    joinParticipants = joinParticipants.map { it.toConsumerUser() },
     type = Message.Type.valueOf(type.name),
     seenBy = seenBy,
     attachments = attachments.map { it.toConsumerAttachment() },

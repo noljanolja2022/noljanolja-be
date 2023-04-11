@@ -6,6 +6,9 @@ import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
 import com.noljanolja.server.consumer.rest.request.Attachments
+import com.noljanolja.server.consumer.rest.request.ConversationUpdateType
+import com.noljanolja.server.consumer.rest.request.CoreUpdateAdminOfConversationReq
+import com.noljanolja.server.consumer.rest.request.CoreUpdateMemberOfConversationReq
 import com.noljanolja.server.consumer.utils.getAttachmentPath
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -15,6 +18,7 @@ import org.apache.tika.Tika
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
 import java.time.Instant
+import java.util.*
 import com.noljanolja.server.consumer.adapter.core.CoreConversation.Type as CoreConversationType
 
 @Component
@@ -112,7 +116,7 @@ class ConversationService(
                 limitSize = MAX_IMAGE_SIZE
             ).path
         }
-        return coreApi.updateConversation(
+        val res = coreApi.updateConversation(
             payload = UpdateConversationRequest(
                 title = title,
                 imageUrl = newPath,
@@ -120,6 +124,31 @@ class ConversationService(
             ),
             conversationId = conversationId,
         ).toConsumerConversation()
+        if (title != null || image != null) {
+            withContext(Dispatchers.Default) {
+                if (title != null) {
+                    launch {
+                        createEventMessage(
+                            userId,
+                            ConversationUpdateType.TITLE.name,
+                            Message.Type.EVENT_UPDATED,
+                            conversationId,
+                        )
+                    }
+                }
+                if (image != null) {
+                    launch {
+                        createEventMessage(
+                            userId,
+                            ConversationUpdateType.AVATAR.name,
+                            Message.Type.EVENT_UPDATED,
+                            conversationId,
+                        )
+                    }
+                }
+            }
+        }
+        return res
     }
 
     suspend fun createMessage(
@@ -193,6 +222,29 @@ class ConversationService(
         savedMessage.apply {
             this.localId = localId
         }
+    }
+
+    suspend fun createEventMessage(
+        userId: String,
+        message: String,
+        type: Message.Type,
+        conversationId: Long,
+    ) {
+        coreApi.saveMessage(
+            request = SaveMessageRequest(
+                message = message,
+                type = CoreMessage.Type.valueOf(type.name),
+                senderId = userId,
+            ),
+            conversationId = conversationId,
+        ).toConsumerMessage()
+        val conversation = coreApi.getConversationDetail(
+            userId = userId,
+            conversationId = conversationId,
+        ).toConsumerConversation().apply {
+            this.messages.firstOrNull()?.localId = UUID.randomUUID().toString()
+        }
+        notifyParticipants(conversation)
     }
 
     fun getLimitSize(
@@ -272,12 +324,85 @@ class ConversationService(
         ).toConsumerAttachment()
     }
 
-    private fun notifyParticipants(
+    suspend fun addMemberToConversation(
+        currentUserId: String,
+        conversationId: Long,
+        newParticipantIds: List<String>
+    ): List<String> {
+        val res = coreApi.addMemberToConversation(
+            conversationId, CoreUpdateMemberOfConversationReq(
+                currentUserId, newParticipantIds
+            )
+        ) ?: emptyList()
+        if (res.isNotEmpty()) {
+            withContext(Dispatchers.Default) {
+                createEventMessage(
+                    currentUserId,
+                    res.joinToString(","),
+                    Message.Type.EVENT_JOINED,
+                    conversationId,
+                )
+            }
+        }
+        return newParticipantIds
+    }
+
+    suspend fun removeMemberFromConversation(
+        currentUserId: String,
+        conversationId: Long,
+        participantIds: List<String>
+    ): List<String> {
+        val res = coreApi.removeMemberFromConversation(
+            conversationId, CoreUpdateMemberOfConversationReq(
+                currentUserId, participantIds
+            )
+        )?: emptyList()
+
+        withContext(Dispatchers.Default) {
+            createEventMessage(
+                currentUserId,
+                res.joinToString(","),
+                Message.Type.EVENT_LEFT,
+                conversationId,
+            )
+        }
+        return participantIds
+    }
+
+    suspend fun updateAdminOfConversation(
+        currentUserId: String,
+        conversationId: Long,
+        newAdminId: String
+    ): String {
+        val res = coreApi.setAdminToConversation(
+            conversationId, CoreUpdateAdminOfConversationReq(
+                currentUserId, newAdminId
+            )
+        )
+        withContext(Dispatchers.Default) {
+            createEventMessage(
+                currentUserId,
+                ConversationUpdateType.ADMIN.name,
+                Message.Type.EVENT_UPDATED,
+                conversationId,
+            )
+        }
+        return res ?: newAdminId
+    }
+
+    private suspend fun notifyParticipants(
         conversation: Conversation,
     ) {
-        val participantIds = conversation.participants.map { it.id }
-        participantIds.forEach {
-            pubSubService.publish(conversation = conversation, topic = getTopic(it))
+        val participantIds = conversation.participants.map { it.id }.toMutableList()
+        if (conversation.messages.firstOrNull()?.leftParticipants?.isNotEmpty() == true) {
+            participantIds.addAll(conversation.messages.first().leftParticipants.map { it.id })
+        }
+        withContext(Dispatchers.Default) {
+            participantIds.distinct().forEach {
+                launch {
+                    pubSubService.publish(conversation = conversation, topic = getTopic(it))
+                }
+            }
         }
     }
 
