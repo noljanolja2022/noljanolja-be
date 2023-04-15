@@ -1,5 +1,6 @@
 package com.noljanolja.server.core.repo.conversation
 
+import com.noljanolja.server.core.model.Conversation
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
@@ -15,4 +16,6 @@ interface ConversationRepo : CoroutineCrudRepository<ConversationModel, Long> {
         ORDER BY conversations.updated_at DESC
     """)
      fun findAllByUserId(userId: String): Flow<ConversationModel>
+
+     fun findAllByCreatorIdAndType(userId: String, type: Conversation.Type) : Flow<ConversationModel>
 }

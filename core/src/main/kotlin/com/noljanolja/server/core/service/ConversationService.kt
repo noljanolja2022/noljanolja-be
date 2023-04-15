@@ -142,6 +142,16 @@ class ConversationService(
     ): Conversation {
         if (participantIds.size != userRepo.findAllById(participantIds).toList().size)
             throw Error.ParticipantsNotFound
+        if (type == Conversation.Type.SINGLE) {
+            val existingConversation = conversationRepo.findAllByCreatorIdAndType(creatorId, type).toList()
+            if (existingConversation.isNotEmpty()) {
+                return existingConversation.first().apply {
+                    this.creator = userRepo.findById(creatorId)!!
+                    getAdminOfConversationModel(this)
+                    this.participants = userRepo.findAllById(participantIds).toList()
+                }.toConversation(objectMapper)
+            }
+        }
         val conversation = conversationRepo.save(
             ConversationModel(
                 title = title,
