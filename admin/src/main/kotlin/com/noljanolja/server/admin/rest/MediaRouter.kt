@@ -19,6 +19,11 @@ class MediaRouter(
             "/sticker-packs".nest {
                 POST("", mediaHandler::createStickerPack)
             }
+            "/videos".nest {
+                GET("", mediaHandler::getVideo)
+                POST("", mediaHandler::createVideo)
+                DELETE("/{id}", mediaHandler::deleteVideo)
+            }
         }
     }
 }

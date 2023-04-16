@@ -4,3 +4,7 @@ services:
       baseUrl: ${CORE_BASE_URL}
     - id: AUTH
       baseUrl: ${AUTH_BASE_URL}
+    - id: YOUTUBE
+      baseUrl: ${YOUTUBE_BASE_URL}
+      extra:
+        apiKey: ${YOUTUBE_API_KEY}

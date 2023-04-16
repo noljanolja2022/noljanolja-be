@@ -3,6 +3,7 @@ package com.noljanolja.server.admin.adapter.core
 
 import com.noljanolja.server.admin.model.CoreServiceError
 import com.noljanolja.server.admin.model.StickerPack
+import com.noljanolja.server.admin.model.Video
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatusCode
@@ -20,6 +21,7 @@ class CoreApi(
     companion object {
         const val USERS_ENDPOINT = "/api/v1/users"
         const val STICKER_PACK_ENDPOINT = "/api/v1/media/sticker-packs"
+        const val VIDEO_ENDPOINT = "/api/v1/media/videos"
     }
 
     suspend fun getUser(
@@ -41,8 +43,8 @@ class CoreApi(
 
     suspend fun createStickerPack(
         stickerPack: StickerPack
-    ) : Long? = webClient.post()
-        .uri { builder -> builder.path(STICKER_PACK_ENDPOINT).build()}
+    ): Long? = webClient.post()
+        .uri { builder -> builder.path(STICKER_PACK_ENDPOINT).build() }
         .bodyValue(stickerPack)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
@@ -54,4 +56,59 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Long>>().data
+
+    suspend fun getVideo(
+        page: Int,
+        pageSize: Int
+    ): List<Video>? = webClient.get()
+        .uri { builder ->
+            builder.path(VIDEO_ENDPOINT)
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<Video>>>().data
+
+    suspend fun createVideo(
+        request: CoreCreateVideoRequest
+    ): Video? = webClient.post()
+        .uri { builder -> builder.path(VIDEO_ENDPOINT).build() }
+        .bodyValue(request)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Video>>().data
+
+    suspend fun deleteVideo(
+        videoId: String
+    ) = webClient.delete()
+        .uri { builder ->
+            builder.path("$VIDEO_ENDPOINT/${videoId}")
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
 }
