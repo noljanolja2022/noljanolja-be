@@ -153,10 +153,19 @@ class VideoService(
         days: Int = 1,
         limit: Int = 10,
     ): List<Video> {
-        return videoViewCountRepo.findTopTrendingVideos(
+        val trendingVideos = videoViewCountRepo.findTopTrendingVideos(
             days = days,
             limit = limit,
-        ).toList().map {
+        ).toList().toMutableList()
+        if (trendingVideos.size < limit) {
+            trendingVideos.addAll(
+                videoRepo.findAllByIdNotIn(
+                    ids = trendingVideos.map { it.id },
+                    pageable = Pageable.ofSize(limit - trendingVideos.size)
+                ).toList()
+            )
+        }
+        return trendingVideos.map {
             it.channel = videoChannelRepo.findById(it.channelId)!!
             it.category = videoCategoryRepo.findById(it.categoryId)!!
             it.viewCount = videoViewCountRepo.getTotalViewCount(it.id)

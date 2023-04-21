@@ -8,6 +8,11 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
+    fun findAllByIdNotIn(
+        ids: List<String>,
+        pageable: Pageable,
+    ): Flow<VideoModel>
+
     @Query(
         """
             SELECT * FROM videos WHERE 
