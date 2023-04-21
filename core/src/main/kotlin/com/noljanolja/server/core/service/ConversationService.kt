@@ -142,7 +142,7 @@ class ConversationService(
     ): Conversation {
         if (participantIds.size != userRepo.findAllById(participantIds).toList().size)
             throw Error.ParticipantsNotFound
-        if (type == Conversation.Type.SINGLE) {
+        if (type == Conversation.Type.SINGLE && participantIds.size == 1) {
             val existingConversation = conversationRepo.findAllByCreatorIdAndType(creatorId, type).toList()
             if (existingConversation.isNotEmpty()) {
                 return existingConversation.first().apply {

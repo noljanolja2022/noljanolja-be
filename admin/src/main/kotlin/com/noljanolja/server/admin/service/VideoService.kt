@@ -6,6 +6,7 @@ import com.noljanolja.server.admin.adapter.youtube.YoutubeApi
 import com.noljanolja.server.admin.model.Video
 import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.common.exception.DefaultInternalErrorException
+import com.noljanolja.server.common.rest.Response
 import org.springframework.stereotype.Component
 import java.net.URL
 
@@ -29,8 +30,8 @@ class VideoService(
         return coreApi.createVideo(req)
     }
 
-    suspend fun getVideo(page: Int, pageSize: Int): List<Video> {
-        val res = coreApi.getVideo(page, pageSize) ?: emptyList()
+    suspend fun getVideo(page: Int, pageSize: Int): Response<List<Video>> {
+        val res = coreApi.getVideo(page, pageSize)
         return res
     }
 

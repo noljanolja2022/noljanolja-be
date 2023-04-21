@@ -60,7 +60,7 @@ class CoreApi(
     suspend fun getVideo(
         page: Int,
         pageSize: Int
-    ): List<Video>? = webClient.get()
+    ): Response<List<Video>> = webClient.get()
         .uri { builder ->
             builder.path(VIDEO_ENDPOINT)
                 .queryParam("page", page)
@@ -76,7 +76,7 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<List<Video>>>().data
+        .awaitBody<Response<List<Video>>>()
 
     suspend fun createVideo(
         request: CoreCreateVideoRequest

@@ -50,9 +50,9 @@ data class YoutubeVideo(
         val channelTitle: String,
         val tags: List<String>,
         val categoryId: String,
-        val liveBroadcastContent: String,
-        val localized: YoutubeLocalizedData,
-        val defaultAudioLanguage: String
+        val liveBroadcastContent: String?,
+        val localized: YoutubeLocalizedData?,
+        val defaultAudioLanguage: String?
     )
 }
 

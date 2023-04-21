@@ -33,9 +33,11 @@ class MediaHandler(
         private const val QUERY_PAGE = "page"
         private const val QUERY_PAGE_SIZE = "pageSize"
     }
-    suspend fun createStickerPack(request: ServerRequest) : ServerResponse {
+
+    suspend fun createStickerPack(request: ServerRequest): ServerResponse {
         val reqData = request.multipartData().awaitFirstOrNull() ?: throw RequestBodyRequired
-        val stickerZip = (reqData["file"]?.firstOrNull() as? FilePart) ?: throw DefaultBadRequestException(Exception("Invalid file input"))
+        val stickerZip = (reqData["file"]?.firstOrNull() as? FilePart)
+            ?: throw DefaultBadRequestException(Exception("Invalid file input"))
         var localFile: File? = null
         var stickerPackDir: File? = null
         try {
@@ -57,7 +59,8 @@ class MediaHandler(
             FileUtils.processFileAsByteArray(
                 createdStickerPack.stickers.map {
                     File(stickerPackDir.absoluteFile.path + File.separator + it.imageFile)
-                }.filter { it.exists() } + File(stickerPackDir.absoluteFile.path + File.separator + createdStickerPack.trayImageFile)
+                }
+                    .filter { it.exists() } + File(stickerPackDir.absoluteFile.path + File.separator + createdStickerPack.trayImageFile)
             ) { file, byteBuffer ->
                 googleStorageService.uploadFile(
                     path = "${GoogleStorageService.STICKER_BUCKET}/${createdStickerPack.id}/${file.name}",
@@ -76,20 +79,25 @@ class MediaHandler(
         }
     }
 
-    suspend fun createVideo(request: ServerRequest) : ServerResponse {
+    suspend fun createVideo(request: ServerRequest): ServerResponse {
         val reqBody = request.awaitBodyOrNull<VideoCreationReq>() ?: throw RequestBodyRequired
         val res = videoService.createVideo(reqBody.youtubeUrl, reqBody.isHighlighted)
         return ServerResponse.ok().bodyValueAndAwait(Response(data = res))
     }
 
-    suspend fun getVideo(request: ServerRequest) : ServerResponse {
+    suspend fun getVideo(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull(QUERY_PAGE)?.toIntOrNull() ?: 1
         val pageSize = request.queryParamOrNull(QUERY_PAGE_SIZE)?.toIntOrNull() ?: 10
         val res = videoService.getVideo(page, pageSize)
-        return ServerResponse.ok().bodyValueAndAwait(Response(data = res))
+        return ServerResponse.ok().bodyValueAndAwait(
+            Response(
+                data = res.data,
+                pagination = res.pagination
+            )
+        )
     }
 
-    suspend fun deleteVideo(request: ServerRequest) : ServerResponse {
+    suspend fun deleteVideo(request: ServerRequest): ServerResponse {
         val videoId = request.pathVariable(PATH_ID).takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException(PATH_ID)
         videoService.deleteVideo(videoId)
