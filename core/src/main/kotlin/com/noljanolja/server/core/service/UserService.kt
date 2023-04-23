@@ -27,7 +27,7 @@ class UserService(
 ) {
 
     suspend fun getUsersByIds(
-        userIds: List<String>
+        userIds: List<String>,
     ): List<User> {
         return userRepo.findAllById(userIds).map { it.toUser(objectMapper) }.toList()
     }
@@ -36,7 +36,7 @@ class UserService(
         page: Int,
         pageSize: Int,
         friendId: String?,
-        phoneNumber: String?
+        phoneNumber: String?,
     ): Pair<List<User>, Long> = coroutineScope {
         // friendId does not exist -> Find all
         if (!friendId.isNullOrBlank()) {
@@ -81,9 +81,12 @@ class UserService(
     ): User? = userRepo.findById(userId)?.toUser(objectMapper)
 
     suspend fun upsertUser(user: User, isNewUser: Boolean = false): User {
-        val userModel = user.toUserModel(objectMapper, isNewUser)
-        val res = userRepo.save(userModel)
-        return res.toUser(objectMapper)
+        return userRepo.save(
+            user.toUserModel(
+                objectMapper = objectMapper,
+                isNewUser = isNewUser
+            )
+        ).toUser(objectMapper)
     }
 
     suspend fun deleteUser(

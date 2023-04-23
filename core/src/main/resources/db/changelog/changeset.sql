@@ -368,16 +368,13 @@ DROP TABLE IF EXISTS `member_info`;
 
 CREATE TABLE IF NOT EXISTS `member_info`
 (
-    `id`                        VARCHAR(36)         NOT NULL PRIMARY KEY,
-    `point`                     BIGINT              NOT NULL DEFAULT 0,
-    `current_tier`              ENUM ('BRONZE', 'SILVER', 'GOLD', 'DIAMOND') NOT NULL DEFAULT 'BRONZE',
-    `current_tier_min_point`    BIGINT              NULL,
-    `next_tier`                 ENUM ('BRONZE', 'SILVER', 'GOLD', 'DIAMOND') NULL,
-    `next_tier_min_point`       BIGINT              NULL
+    `id`                 VARCHAR(36)      NOT NULL PRIMARY KEY,
+    `accumulated_points` BIGINT           NOT NULL,
+    `available_points`   BIGINT           NOT NULL
 ) ENGINE = InnoDB;
 
-INSERT INTO `member_info` (id)
-SELECT id FROM `users`;
+INSERT INTO `member_info` (id, name)
+SELECT id, name FROM `users`;
 
 ALTER TABLE `conversations`
     ADD COLUMN `admin_id` VARCHAR(36) NOT NULL DEFAULT '';
@@ -392,3 +389,37 @@ ALTER TABLE `messages`
 ALTER TABLE `messages`
     ADD COLUMN `left_participant_ids` VARCHAR(255) NULL,
     ADD COLUMN `join_participant_ids` VARCHAR(255) NULL;
+
+--changeset tranhieu956230@gmail.com:8
+
+-- -----------------------------------------------------
+-- Table `tier_configs`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `tier_configs`;
+
+CREATE TABLE IF NOT EXISTS `tier_configs`
+(
+    `id`              BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `tier`            ENUM ('BRONZE', 'SILVER', 'GOLD', 'DIAMOND') NOT NULL DEFAULT 'BRONZE',
+    `min_point`       BIGINT       NOT NULL,
+    `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `transactions`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `transactions`;
+
+CREATE TABLE IF NOT EXISTS `transactions`
+(
+    `id`              BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `member_id`       VARCHAR(36)  NOT NULL,
+    `amount`          BIGINT       NOT NULL,
+    `reason`          VARCHAR(255) NOT NULL,
+    `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (member_id) REFERENCES member_info(id) ON DELETE CASCADE
+) ENGINE = InnoDB;

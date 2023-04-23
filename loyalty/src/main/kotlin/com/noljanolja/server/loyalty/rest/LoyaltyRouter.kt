@@ -7,7 +7,7 @@ import org.springframework.web.reactive.function.server.coRouter
 
 @Configuration
 class LoyaltyRouter(
-    private val loyaltyHandler: LoyaltyHandler
+    private val loyaltyHandler: LoyaltyHandler,
 ) {
     companion object {
         const val LOYALTY_ROUTES = "/api/v1/loyalty"
@@ -16,8 +16,12 @@ class LoyaltyRouter(
     @Bean
     fun loyaltyRoutes() = coRouter {
         (LOYALTY_ROUTES and accept(MediaType.APPLICATION_JSON)).nest {
-            GET("/{memberId}", loyaltyHandler::getMemberInfo)
-            POST("", loyaltyHandler::updateMemberInfo)
+            "member".nest {
+                GET("/{memberId}", loyaltyHandler::getMemberInfo)
+                PUT("/{memberId}/points", loyaltyHandler::addTransaction)
+                GET("/{memberId}/points", loyaltyHandler::getTransactions)
+                POST("", loyaltyHandler::updateMemberInfo)
+            }
         }
     }
 }
