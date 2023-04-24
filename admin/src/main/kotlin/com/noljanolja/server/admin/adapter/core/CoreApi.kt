@@ -41,6 +41,20 @@ class CoreApi(
         }
         .awaitBody<Response<CoreUser>>().data
 
+    suspend fun getStickerPacks() =
+        webClient.get()
+        .uri { builder -> builder.path(STICKER_PACK_ENDPOINT).build() }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<StickerPack>>>()
+
     suspend fun createStickerPack(
         stickerPack: StickerPack
     ): Long? = webClient.post()
@@ -60,7 +74,7 @@ class CoreApi(
     suspend fun getVideo(
         page: Int,
         pageSize: Int
-    ): Response<List<Video>> = webClient.get()
+    ) = webClient.get()
         .uri { builder ->
             builder.path(VIDEO_ENDPOINT)
                 .queryParam("page", page)

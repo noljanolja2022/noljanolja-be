@@ -32,12 +32,12 @@ data class YoutubeVideo(
     )
 
     data class ContentDetail(
-        val duration: String ,
+        val duration: String,
         val dimension: String?,
         val definition: String?,
         val caption: Boolean = false,
-        val licensedContent: Boolean= false,
-        val contentRating: Any,
+        val licensedContent: Boolean = false,
+        val contentRating: Any?,
         val projection: String?,
     )
 
@@ -48,7 +48,7 @@ data class YoutubeVideo(
         val description: String,
         val thumbnails: YoutubeThumbnail,
         val channelTitle: String,
-        val tags: List<String>,
+        val tags: List<String> = emptyList(),
         val categoryId: String,
         val liveBroadcastContent: String?,
         val localized: YoutubeLocalizedData?,
@@ -58,13 +58,13 @@ data class YoutubeVideo(
 
 data class YoutubeChannel(
     val kind: String,
-    val etag: String= "",
+    val etag: String = "",
     val id: String,
     val snippet: Snippet,
 ) {
     data class Snippet(
-        val title: String= "",
-        val description: String= "",
+        val title: String = "",
+        val description: String = "",
         val customUrl: String = "",
         val publishedAt: Instant,
         val thumbnails: YoutubeThumbnail,
@@ -83,7 +83,7 @@ data class YoutubeVideoCategory(
     data class Snippet(
         val channelId: String,
         val title: String,
-        val assignable: Boolean
+        val assignable: Boolean = false
     )
 }
 
@@ -100,12 +100,12 @@ data class YoutubeThumbnail(
         val height: Int,
     )
 
-    fun getDefaultThumbnail() : String {
+    fun getDefaultThumbnail(): String {
         return standard?.url ?: high?.url ?: default.url
     }
 }
 
 data class YoutubeLocalizedData(
     val title: String,
-    val description: String
+    val description: String?
 )

@@ -17,6 +17,7 @@ class MediaRouter(
     fun mediaRoutes() = coRouter {
         (MEDIA_ROUTE and accept(MediaType.MULTIPART_FORM_DATA)).nest {
             "/sticker-packs".nest {
+                GET("", mediaHandler::getStickerPacks)
                 POST("", mediaHandler::createStickerPack)
             }
             "/videos".nest {

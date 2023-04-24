@@ -34,6 +34,18 @@ class MediaHandler(
         private const val QUERY_PAGE_SIZE = "pageSize"
     }
 
+    suspend fun getStickerPacks(request: ServerRequest): ServerResponse {
+        val res = stickerService.getStickerPacks()
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                Response(
+                    data = res.data,
+                    pagination = res.pagination
+                )
+            )
+    }
+
     suspend fun createStickerPack(request: ServerRequest): ServerResponse {
         val reqData = request.multipartData().awaitFirstOrNull() ?: throw RequestBodyRequired
         val stickerZip = (reqData["file"]?.firstOrNull() as? FilePart)
