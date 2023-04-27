@@ -24,7 +24,7 @@ class ScheduledTasks(
     }
 
     @Scheduled(cron = "0 0 11 * * ?")
-    suspend fun updateUsersBalance() {
+    fun updateUsersBalance() {
         val start = Instant.now().toEpochMilli()
         logger.info("Begin updating users balance")
         memberInfoRepo.findAll().onEach {
