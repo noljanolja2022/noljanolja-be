@@ -1,9 +1,8 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 6/4/2023:
-      - Add API to add/remove member from group
-      - Add API assign admin of a group
+    Changelog - 29/4/2023:
+      - Add API to fetch watching video list
   version: 1.0.3
   title: NoljaNolja Swagger
   contact:
@@ -694,6 +693,27 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/Video"
+  /api/v1/media/videos/watching:
+    get:
+      tags: [ Video ]
+      summary: Querying for watching videos
+      description: Only return videos that user watched, but not finished watching
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: Return a list of videos, with currentProgress indicating where user stopped watching last time
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Video"
   /api/v1/media/videos/trending:
     get:
       tags: [ Video ]
@@ -1076,6 +1096,9 @@ components:
             If the video is at least one day long, the letters P and T are separated, and the value's format is P#DT#H#M#S. 
             Please refer to the ISO 8601 specification for complete details.
         durationMs:
+          type: number
+          format: int64
+        currentProgress:
           type: number
           format: int64
         viewCount:

@@ -1,8 +1,8 @@
 package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.consumer.adapter.core.CoreApi
-import com.noljanolja.server.consumer.adapter.core.request.PostCommentRequest
 import com.noljanolja.server.consumer.adapter.core.request.LikeVideoRequest
+import com.noljanolja.server.consumer.adapter.core.request.PostCommentRequest
 import com.noljanolja.server.consumer.adapter.core.toConsumerVideo
 import com.noljanolja.server.consumer.adapter.core.toConsumerVideoComment
 import com.noljanolja.server.consumer.model.StickerPack
@@ -60,6 +60,12 @@ class MediaService(
         ).let {
             Pair(it.first.map { it.toConsumerVideo() }, it.second)
         }
+    }
+
+    suspend fun getVideos(
+        videoIds: List<String>
+    ): List<Video> {
+        return coreApi.getVideos(videoIds).data?.map { it.toConsumerVideo() } ?: emptyList()
     }
 
     suspend fun getTrendingVideos(

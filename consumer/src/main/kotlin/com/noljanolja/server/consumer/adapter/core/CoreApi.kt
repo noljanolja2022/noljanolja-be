@@ -518,6 +518,25 @@ class CoreApi(
             Pair(it.data!!, it.pagination!!.total)
         }
 
+    suspend fun getVideos(
+        videoIds: List<String>
+    )= webClient.get()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/videos/watching")
+                .queryParam("videoIds", videoIds.joinToString(","))
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreVideo>>>()
+
     suspend fun getVideoDetails(
         videoId: String
     ) = webClient.get()

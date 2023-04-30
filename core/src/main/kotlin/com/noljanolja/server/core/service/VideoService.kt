@@ -74,6 +74,20 @@ class VideoService(
         }, total)
     }
 
+    suspend fun getVideosByIds(ids: List<String>): List<Video> {
+        val videos = videoRepo.findAllById(ids).toList()
+        val channels = videoChannelRepo.findAllById(videos.map { it.channelId }.toSet()).toList()
+        val categories = videoCategoryRepo.findAllById(videos.map { it.categoryId }.toSet()).toList()
+        return videos.map { videoModel ->
+            videoModel.channel = channels.first { it.id == videoModel.channelId }
+            videoModel.category = categories.first { it.id == videoModel.categoryId }
+            videoModel.viewCount = videoViewCountRepo.getTotalViewCount(videoModel.id)
+            videoModel.likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(videoModel.id)
+            videoModel.commentCount = videoCommentRepo.countAllByVideoId(videoModel.id)
+            videoModel.toVideo()
+        }
+    }
+
     suspend fun deleteVideo(
         id: String,
     ) {

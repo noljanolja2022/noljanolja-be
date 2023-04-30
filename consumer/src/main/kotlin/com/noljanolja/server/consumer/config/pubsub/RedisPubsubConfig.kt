@@ -2,6 +2,7 @@ package com.noljanolja.server.consumer.config.pubsub
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.noljanolja.server.consumer.model.Conversation
+import com.noljanolja.server.consumer.model.VideoProgress
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory
@@ -20,6 +21,13 @@ class RedisPubSubConfig(
     fun reactiveRedisTemplate(
         factory: ReactiveRedisConnectionFactory,
     ): ReactiveRedisTemplate<String, Conversation> {
+        return buildRedisTemplate(factory)
+    }
+
+    @Bean
+    fun videoRedisTemplate(
+        factory: ReactiveRedisConnectionFactory,
+    ): ReactiveRedisTemplate<String, VideoProgress> {
         return buildRedisTemplate(factory)
     }
 

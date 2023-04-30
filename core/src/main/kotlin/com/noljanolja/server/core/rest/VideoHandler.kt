@@ -4,9 +4,9 @@ import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
-import com.noljanolja.server.core.rest.request.PostCommentRequest
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
 import com.noljanolja.server.core.rest.request.LikeVideoRequest
+import com.noljanolja.server.core.rest.request.PostCommentRequest
 import com.noljanolja.server.core.service.VideoService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -65,6 +65,15 @@ class VideoHandler(
                     )
                 )
             )
+    }
+
+    suspend fun getWatchingVideos(request: ServerRequest): ServerResponse {
+        val videoIds = request.queryParamOrNull("videoIds") ?: ""
+        val data = videoService.getVideosByIds(videoIds.split(","))
+        return ServerResponse.ok()
+            .bodyValueAndAwait(Response(
+                data = data
+            ))
     }
 
     suspend fun getVideoDetails(request: ServerRequest): ServerResponse {

@@ -1,27 +1,21 @@
 package com.noljanolja.server.consumer.rsocket
 
 import com.noljanolja.server.consumer.model.Conversation
+import com.noljanolja.server.consumer.model.VideoProgress
 import com.noljanolja.server.consumer.service.ConversationPubSubService
-import io.rsocket.core.RSocketServer
-import io.rsocket.core.Resume
+import com.noljanolja.server.consumer.service.VideoPubSubService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.awaitFirst
-import org.springframework.boot.rsocket.server.RSocketServerCustomizer
-import org.springframework.context.annotation.Profile
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.rsocket.RSocketRequester
-import org.springframework.messaging.rsocket.annotation.ConnectMapping
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Controller
-import javax.annotation.PreDestroy
-
 
 @Controller
-class ConversationController(
+class SocketController(
     private val pubsubService: ConversationPubSubService,
+    private val videoPubSubService: VideoPubSubService
 ) {
-    private fun getTopic(userId: String) = "conversations-$userId"
 
     /**
      * Stream conversation message. Message data will be in the following format:
@@ -45,6 +39,18 @@ class ConversationController(
         }?.doFinally {
             println("Client $userId DISCONNECTED")
         }?.subscribe()
-        return pubsubService.subscribe(getTopic(userId))
+        return pubsubService.subscribe(ConversationPubSubService.getTopic(userId))
+    }
+
+    @MessageMapping("v1/videos")
+    suspend fun listenVideoProgress(request: VideoProgress) {
+        val userId = ReactiveSecurityContextHolder.getContext().awaitFirst().authentication.name
+        videoPubSubService.saveProgress(userId, request)
+    }
+
+    @MessageMapping("")
+    suspend fun test(request: VideoProgress) {
+        val userId = ReactiveSecurityContextHolder.getContext().awaitFirst().authentication.name
+        videoPubSubService.saveProgress(userId, request)
     }
 }

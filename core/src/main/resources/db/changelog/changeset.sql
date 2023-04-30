@@ -118,8 +118,9 @@ CREATE TABLE IF NOT EXISTS `conversations`
     `image_url`         VARCHAR(255)            NOT NULL,
     `created_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE
+    `admin_id`          VARCHAR(36)             NOT NULL DEFAULT '',
+    FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------
@@ -134,10 +135,11 @@ CREATE TABLE IF NOT EXISTS `messages`
     `message`           TEXT                    NOT NULL,
     `sender_id`         VARCHAR(36)             NOT NULL,
     `conversation_id`   BIGINT                  NOT NULL,
-    `type`              ENUM('PLAINTEXT', 'STICKER', 'GIF', 'PHOTO', 'DOCUMENT') NOT NULL,
+    `type`              ENUM('PLAINTEXT', 'STICKER', 'GIF', 'PHOTO', 'DOCUMENT', 'EVENT_UPDATED', 'EVENT_LEFT', 'EVENT_JOINED') NOT NULL,
     `created_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
+    `left_participant_ids` VARCHAR(255)         NULL,
+    `join_participant_ids` VARCHAR(255)         NULL,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
@@ -375,20 +377,6 @@ CREATE TABLE IF NOT EXISTS `member_info`
 
 INSERT INTO `member_info` (id, name)
 SELECT id, name FROM `users`;
-
-ALTER TABLE `conversations`
-    ADD COLUMN `admin_id` VARCHAR(36) NOT NULL DEFAULT '';
-
-UPDATE `conversations` SET `admin_id`=`creator_id`;
-
-ALTER TABLE `conversations` ADD FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE;
-
-ALTER TABLE `messages`
-    MODIFY COLUMN `type` ENUM('PLAINTEXT', 'STICKER', 'GIF', 'PHOTO', 'DOCUMENT', 'EVENT_UPDATED', 'EVENT_LEFT', 'EVENT_JOINED') NOT NULL;
-
-ALTER TABLE `messages`
-    ADD COLUMN `left_participant_ids` VARCHAR(255) NULL,
-    ADD COLUMN `join_participant_ids` VARCHAR(255) NULL;
 
 --changeset tranhieu956230@gmail.com:8
 

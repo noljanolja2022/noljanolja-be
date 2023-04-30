@@ -1,6 +1,5 @@
 package com.noljanolja.server.consumer.model
 
-import com.noljanolja.server.consumer.adapter.core.CoreVideoComment
 import java.time.Instant
 
 data class Video(
@@ -11,6 +10,7 @@ data class Video(
     val thumbnail: String,
     val duration: String,
     val durationMs: Long,
+    var currentProgressMs: Long? = null,
     val viewCount: Long,
     val likeCount: Long,
     val favoriteCount: Long,
@@ -30,4 +30,15 @@ data class Video(
         val id: String,
         val title: String,
     )
+}
+
+data class VideoProgress(
+    val videoId: String,
+    val event: VideoProgressEvent,
+    val durationMs: Long = 0,
+    val trackIntervalMs: Long = 10000,
+)
+
+enum class VideoProgressEvent {
+    PLAY, PAUSE, FINISH
 }

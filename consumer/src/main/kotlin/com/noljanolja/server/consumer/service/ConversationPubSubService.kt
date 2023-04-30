@@ -14,6 +14,10 @@ class ConversationPubSubService(
     private val reactiveTemplate: ReactiveRedisTemplate<String, Conversation>,
     private val reactiveMsgListenerContainer: ReactiveRedisMessageListenerContainer
 ) {
+
+    companion object {
+        fun getTopic(userId: String) = "conversations-$userId"
+    }
     fun publish(
         topic: String,
         conversation: Conversation,

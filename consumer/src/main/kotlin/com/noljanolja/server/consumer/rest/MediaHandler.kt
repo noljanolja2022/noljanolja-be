@@ -12,8 +12,10 @@ import com.noljanolja.server.consumer.model.ResourceInfo
 import com.noljanolja.server.consumer.rest.request.PostCommentRequest
 import com.noljanolja.server.consumer.service.GoogleStorageService
 import com.noljanolja.server.consumer.service.MediaService
+import com.noljanolja.server.consumer.service.VideoPubSubService
 import com.noljanolja.server.consumer.utils.getStickerPath
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.ContentDisposition
@@ -25,6 +27,7 @@ import java.util.zip.ZipOutputStream
 @Component
 class MediaHandler(
     private val googleStorageService: GoogleStorageService,
+    private val videoPubSubService: VideoPubSubService,
     private val mediaService: MediaService,
     private val objectMapper: ObjectMapper,
 ) {
@@ -151,6 +154,23 @@ class MediaHandler(
                         pageSize = pageSize,
                         total = total,
                     )
+                )
+            )
+    }
+
+    suspend fun getWatchingVideos(serverRequest: ServerRequest): ServerResponse {
+        val userId = AuthUserHolder.awaitUser().id
+        val videoProgressIds = videoPubSubService.getWatchingVideos(userId).toList()
+        val data = mediaService.getVideos(videoProgressIds)
+        val currentProgress = videoPubSubService.getWatchingProgress(userId, videoProgressIds)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = data.map { video ->
+                        video.apply {
+                            currentProgressMs = currentProgress.firstOrNull { it.videoId == video.id }?.durationMs
+                        }
+                    },
                 )
             )
     }
