@@ -1,4 +1,4 @@
-package com.noljanolja.server.loyalty.model
+package com.noljanolja.server.consumer.model
 
 import java.time.Instant
 

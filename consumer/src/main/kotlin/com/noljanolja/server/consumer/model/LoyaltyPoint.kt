@@ -1,8 +1,8 @@
-package com.noljanolja.server.loyalty.model
+package com.noljanolja.server.consumer.model
 
 import java.time.Instant
 
-data class Transaction(
+data class LoyaltyPoint(
     val id: Long,
     val reason: String,
     val amount: Long,

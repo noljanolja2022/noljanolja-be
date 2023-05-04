@@ -29,6 +29,7 @@ class CoreApi(
         const val GET_CONVERSATION_DETAIL_ENDPOINT = "/api/v1/conversations/{conversationId}"
         const val MESSAGE_ENDPOINT = "/api/v1/conversations/{conversationId}/messages"
         const val MEDIA_ENDPOINT = "/api/v1/media"
+        const val LOYALTY_ENDPOINT = "/api/v1/loyalty"
 
         val coreErrorsMapping = mapOf(
             404_001 to CoreServiceError.UserNotFound
@@ -520,7 +521,7 @@ class CoreApi(
 
     suspend fun getVideos(
         videoIds: List<String>
-    )= webClient.get()
+    ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/videos/watching")
                 .queryParam("videoIds", videoIds.joinToString(","))
@@ -597,4 +598,45 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreVideo>>>().data!!
+
+    suspend fun getLoyaltyPoints(
+        userId: String,
+        page: Int,
+        pageSize: Int,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$LOYALTY_ENDPOINT/{memberId}/points")
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .build(userId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreLoyaltyPoint>>>().let {
+            Pair(it.data!!, it.pagination!!)
+        }
+
+    suspend fun getMemberInfo(
+        userId: String,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$LOYALTY_ENDPOINT/{memberId}").build(userId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreMemberInfo>>().data!!
 }

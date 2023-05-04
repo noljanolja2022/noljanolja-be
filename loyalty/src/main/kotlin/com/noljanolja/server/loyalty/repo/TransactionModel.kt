@@ -31,4 +31,5 @@ fun TransactionModel.toTransaction() = Transaction(
     id = id,
     amount = amount,
     reason = reason,
+    createdAt = createdAt,
 )

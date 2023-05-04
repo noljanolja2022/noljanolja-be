@@ -43,5 +43,7 @@ fun VideoCommentModel.toVideoComment() = VideoComment(
     commenter = VideoComment.VideoCommenter(
         name = commenter.name,
         avatar = commenter.avatar.orEmpty(),
-    )
+    ),
+    createdAt = createdAt,
+    updatedAt = updatedAt,
 )

@@ -866,6 +866,55 @@ paths:
                     properties:
                       data:
                         $ref: "#/components/schemas/Video"
+  /api/v1/loyalty/me:
+    get:
+      tags: [ Loyalty ]
+      summary: Get my member info
+      description: Get my member info
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: Return my member info
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/MemberInfo"
+  /api/v1/loyalty/points:
+    get:
+      tags: [ Loyalty ]
+      summary: Get my loyalty points
+      description: Get my loyalty points
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            $ref: "#/components/schemas/page"
+        - in: query
+          name: pageSize
+          schema:
+            $ref: "#/components/schemas/pageSize"
+      responses:
+        "200":
+          description: Return my loyalty points
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/LoyaltyPoint"
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -1137,6 +1186,8 @@ components:
         - id
         - comment
         - commenter
+        - createdAt
+        - updatedAt
       properties:
         id:
           type: number
@@ -1150,3 +1201,53 @@ components:
               type: string
             avatar:
               type: string
+        createdAt:
+          type: string
+          format: datetime
+          description: in date format
+          example: 2023-03-10 04:04:43
+        updatedAt:
+          type: string
+          format: datetime
+          description: in date format
+          example: 2023-03-10 04:04:43
+    MemberInfo:
+      type: object
+      properties:
+        memberId:
+          type: string
+        point:
+          type: number
+          format: int64
+          description: Total spendable points
+        currentTier:
+          $ref: '#/components/schemas/LoyaltyTier'
+        currentTierMinPoint:
+          type: number
+          format: int64
+        nextTier:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/LoyaltyTier'
+        nextTierMinPoint:
+          type: number
+          format: int64
+          nullable: true
+    LoyaltyPoint:
+      type: object
+      properties:
+        id:
+          type: string
+        reason:
+          type: string
+        amount:
+          type: number
+          format: int64
+        createdAt:
+          type: string
+          format: datetime
+          description: in date format
+          example: 2023-03-10 04:04:43
+    LoyaltyTier:
+      type: string
+      enum: [ BRONZE, SILVER, GOLD, DIAMOND ]
