@@ -11,3 +11,6 @@ springdoc:
     url: /swagger.yaml
   cache:
     disabled: false
+logging:
+  level:
+    root: ${LOG_LEVEL}
