@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets
 @Component
 class YoutubeApi(
     @Qualifier("youtubeWebClient") private val webClient: WebClient,
-    private val serviceConfig: ServiceConfig,
+    serviceConfig: ServiceConfig,
 ) {
     companion object {
         const val VIDEO_ENDPOINT = "/v3/videos"

@@ -45,12 +45,12 @@ class SocketController(
     @MessageMapping("v1/videos")
     suspend fun listenVideoProgress(request: VideoProgress) {
         val userId = ReactiveSecurityContextHolder.getContext().awaitFirst().authentication.name
+        println("Received track video request from userId: $userId with event ${request.event}")
         videoPubSubService.saveProgress(userId, request)
     }
 
     @MessageMapping("")
     suspend fun test(request: VideoProgress) {
-        val userId = ReactiveSecurityContextHolder.getContext().awaitFirst().authentication.name
-        videoPubSubService.saveProgress(userId, request)
+        println("Received track video request for videoId: ${request.videoId}")
     }
 }

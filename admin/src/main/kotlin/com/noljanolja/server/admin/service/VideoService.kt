@@ -25,7 +25,6 @@ class VideoService(
             ?: throw DefaultInternalErrorException(Exception("Unable to retrieve category of the video"))
         val youtubeChannel = youtubeApi.fetchChannelDetail(youtubeVideo.snippet.channelId).items.firstOrNull()
             ?: throw DefaultInternalErrorException(Exception("Unable to retrieve channel of the video"))
-        println("Now I am here")
         val req = CoreCreateVideoRequest.fromYoutubeVideo(youtubeUrl, youtubeVideo, youtubeChannel, youtubeCategory, isHighlighted)
         return coreApi.createVideo(req)
     }

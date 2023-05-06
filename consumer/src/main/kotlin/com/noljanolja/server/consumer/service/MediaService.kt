@@ -5,6 +5,7 @@ import com.noljanolja.server.consumer.adapter.core.request.LikeVideoRequest
 import com.noljanolja.server.consumer.adapter.core.request.PostCommentRequest
 import com.noljanolja.server.consumer.adapter.core.toConsumerVideo
 import com.noljanolja.server.consumer.adapter.core.toConsumerVideoComment
+import com.noljanolja.server.consumer.adapter.youtube.YoutubeApi
 import com.noljanolja.server.consumer.model.StickerPack
 import com.noljanolja.server.consumer.model.Video
 import com.noljanolja.server.consumer.model.VideoComment
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component
 @Component
 class MediaService(
     private val coreApi: CoreApi,
+    private val youtubeApi: YoutubeApi
 ) {
     suspend fun getAllStickerPacks(userId: String): List<StickerPack> {
         return coreApi.getAllStickerPacksFromUser(userId)!!
@@ -36,7 +38,12 @@ class MediaService(
         comment: String,
         userId: String,
         videoId: String,
+        youtubeBearer: String? = null
     ): VideoComment {
+        if (youtubeBearer != null) {
+            val youtubeRes = youtubeApi.addToplevelComment(videoId, youtubeBearer, comment)
+            println("Posted comment success with id ${youtubeRes.id}")
+        }
         return coreApi.postComment(
             videoId = videoId,
             payload = PostCommentRequest(

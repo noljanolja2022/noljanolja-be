@@ -33,9 +33,7 @@ class VideoPubSubService(
 //                } else {
 //
 //                }
-                if (progress.durationMs == 0L) {
-                    userVideoProgressRedisTemplate.opsForSet().addAndAwait(userId, progress.videoId)
-                }
+                userVideoProgressRedisTemplate.opsForSet().addAndAwait(userId, progress.videoId)
             }
 
             VideoProgressEvent.PAUSE -> {
@@ -46,7 +44,6 @@ class VideoPubSubService(
             }
 
             VideoProgressEvent.FINISH -> {
-//                videoRedisTemplate.opsForValue().getAndAwait(getProgressKey(userId, progress.videoId))
                 videoRedisTemplate.opsForValue().deleteAndAwait(getProgressKey(userId, progress.videoId))
                 userVideoProgressRedisTemplate.opsForSet().removeAndAwait(userId, progress.videoId)
             }

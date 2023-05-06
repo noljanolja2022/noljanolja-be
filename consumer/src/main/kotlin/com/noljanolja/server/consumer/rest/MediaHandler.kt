@@ -9,6 +9,7 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.common.utils.addFileToZipStream
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.ResourceInfo
+import com.noljanolja.server.consumer.model.Video
 import com.noljanolja.server.consumer.rest.request.PostCommentRequest
 import com.noljanolja.server.consumer.service.GoogleStorageService
 import com.noljanolja.server.consumer.service.MediaService
@@ -124,6 +125,7 @@ class MediaHandler(
             comment = payload.comment,
             userId = userId,
             videoId = videoId,
+            youtubeBearer = payload.youtubeToken
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -161,6 +163,12 @@ class MediaHandler(
     suspend fun getWatchingVideos(serverRequest: ServerRequest): ServerResponse {
         val userId = AuthUserHolder.awaitUser().id
         val videoProgressIds = videoPubSubService.getWatchingVideos(userId).toList()
+        if (videoProgressIds.isEmpty()) {
+            return ServerResponse.ok()
+                .bodyValueAndAwait(
+                    body = Response(data = listOf<Video>())
+                )
+        }
         val data = mediaService.getVideos(videoProgressIds)
         val currentProgress = videoPubSubService.getWatchingProgress(userId, videoProgressIds)
         return ServerResponse.ok()

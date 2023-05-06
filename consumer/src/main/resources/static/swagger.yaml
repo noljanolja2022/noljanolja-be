@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 29/4/2023:
-      - Add API to fetch watching video list
+    Changelog - 1/5/2023:
+      - Update Post comment API to allow post comment directly to youtube
   version: 1.0.3
   title: NoljaNolja Swagger
   contact:
@@ -790,7 +790,7 @@ paths:
     post:
       tags: [ Video ]
       summary: Post a comment
-      description: Post a comment
+      description: Post a comment. If a token (without the perfix Bearer) is supplied, will attempt to post a comment on youtube directly as well.
       security:
         - bearerAuth: [ ]
       parameters:
@@ -809,6 +809,10 @@ paths:
                 comment:
                   type: string
                   required: true
+                youtubeToken:
+                  type: string
+                  required: false
+                  description: the exchange token with sufficient scope to post a comment on youtube video
       responses:
         "200":
           description: Return the created comment
