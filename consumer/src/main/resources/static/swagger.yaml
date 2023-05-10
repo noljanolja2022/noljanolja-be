@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 1/5/2023:
-      - Update Post comment API to allow post comment directly to youtube
+    Changelog - 9/5/2023:
+      - Update Loyalty API
   version: 1.0.3
   title: NoljaNolja Swagger
   contact:
@@ -221,10 +221,8 @@ paths:
           application/json:
             schema:
               type: object
-              required: [ userId, deviceToken, deviceType ]
+              required: [ deviceToken, deviceType ]
               properties:
-                userId:
-                  type: string
                 deviceToken:
                   type: string
                 deviceType:

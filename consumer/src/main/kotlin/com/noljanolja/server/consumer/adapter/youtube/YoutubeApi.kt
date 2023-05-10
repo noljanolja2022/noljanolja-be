@@ -2,7 +2,6 @@ package com.noljanolja.server.consumer.adapter.youtube
 
 import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.common.exception.DefaultInternalErrorException
-import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.config.service.ServiceConfig
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatusCode
@@ -55,9 +54,13 @@ class YoutubeApi(
         )
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
-            println("Post comment to youtube failed with videoId $videoId")
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                DefaultBadRequestException(Error(response.message))
+            it.bodyToMono<YoutubeError>().mapNotNull { response ->
+                println("Comment to youtube failed. VideoId: $videoId, message: ${response.error.message}")
+                if (response.error.code == "403" &&
+                    response.error.message =="The caller's YouTube account is not connected to Google+") {
+                    com.noljanolja.server.consumer.exception.Error.NoYoutubeAccountToComment
+                }
+                DefaultBadRequestException(Error(response.error.message))
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {

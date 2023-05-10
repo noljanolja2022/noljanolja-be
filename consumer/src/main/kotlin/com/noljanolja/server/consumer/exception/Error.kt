@@ -43,6 +43,7 @@ sealed class Error(
         const val EXCEED_MAX_ATTACHMENTS_SIZE = 400_011
         const val INVALID_CONTENT_TYPE = 400_012
         const val CANNOT_UPDATE_CONVERSATION = 400_013
+        const val CANNOT_COMMENT_YOUTUBE = 400_014
         const val CANNOT_UPDATE_CONVERSATION_PARTICIPANT = 403_001
     }
 
@@ -80,5 +81,11 @@ sealed class Error(
         CANNOT_UPDATE_CONVERSATION_PARTICIPANT,
         "Cannot update conversation participant",
         null,
+    )
+
+    object NoYoutubeAccountToComment: BaseException(
+        CANNOT_COMMENT_YOUTUBE,
+        "User has no youtube account setup to make comment. Please setup first and try again",
+        null
     )
 }

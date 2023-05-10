@@ -27,3 +27,21 @@ data class YoutubeSnippet(
     val videoId: String? = null,
     val topLevelComment: TopLevelComment? = null
 )
+
+data class YoutubeError(
+    val error: YoutubeErrorDetail
+) {
+    data class YoutubeErrorDetail(
+        val code: String,
+        val message: String = "",
+        val errors: List<YoutubeErrorCause> = emptyList()
+    )
+
+    data class YoutubeErrorCause(
+        val message: String = "",
+        val domain: String = "",
+        val reason: String = "",
+        val location: String = "",
+        val locationType: String = ""
+    )
+}
