@@ -10,12 +10,12 @@ class LoyaltyRouter(
     private val loyaltyHandler: LoyaltyHandler,
 ) {
     companion object {
-        const val MEDIA_ROUTE = "/api/v1/loyalty"
+        const val LOYALTY_ROUTE = "/api/v1/loyalty"
     }
 
     @Bean
     fun loyaltyRoutes() = coRouter {
-        (MediaRouter.MEDIA_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
+        (LOYALTY_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             "/me".nest {
                 GET("", loyaltyHandler::getMyMemberInfo)
                 GET("/points", loyaltyHandler::getMyLoyaltyPoints)

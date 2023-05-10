@@ -605,7 +605,7 @@ class CoreApi(
         pageSize: Int,
     ) = webClient.get()
         .uri { builder ->
-            builder.path("$LOYALTY_ENDPOINT/{memberId}/points")
+            builder.path("$LOYALTY_ENDPOINT/member/{memberId}/points")
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
                 .build(userId)
@@ -627,7 +627,7 @@ class CoreApi(
         userId: String,
     ) = webClient.get()
         .uri { builder ->
-            builder.path("$LOYALTY_ENDPOINT/{memberId}").build(userId)
+            builder.path("$LOYALTY_ENDPOINT/member/{memberId}").build(userId)
         }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
