@@ -41,6 +41,24 @@ class CoreApi(
         }
         .awaitBody<Response<CoreUser>>().data
 
+    suspend fun upsertUser(
+        user: CoreUser,
+    ): CoreUser = webClient.post()
+        .uri { builder ->
+            builder.path(USERS_ENDPOINT).build()
+        }
+        .bodyValue(user)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreUser>>().data!!
+
     suspend fun getStickerPacks() =
         webClient.get()
         .uri { builder -> builder.path(STICKER_PACK_ENDPOINT).build() }

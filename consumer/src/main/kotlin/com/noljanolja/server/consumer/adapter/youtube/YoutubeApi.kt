@@ -55,12 +55,12 @@ class YoutubeApi(
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<YoutubeError>().mapNotNull { response ->
-                println("Comment to youtube failed. VideoId: $videoId, message: ${response.error.message}")
+                println("Comment to youtube failed. VideoId: $videoId, message: ${response.error.message} with code ${response.error.code}")
                 if (response.error.code == "403" &&
-                    response.error.message =="The caller's YouTube account is not connected to Google+") {
+                    response.error.message =="The caller's YouTube account is not connected to Google+.") {
                     com.noljanolja.server.consumer.exception.Error.NoYoutubeAccountToComment
-                }
-                DefaultBadRequestException(Error(response.error.message))
+                } else
+                    DefaultBadRequestException(Error(response.error.message))
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {

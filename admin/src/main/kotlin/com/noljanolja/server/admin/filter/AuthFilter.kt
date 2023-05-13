@@ -37,7 +37,7 @@ class AuthFilter(
         if (!token.startsWith(BEARER_PREFIX)) {
             throw InvalidTokenProvidedException()
         }
-        val authUser = authApi.getUser(token) ?: throw CoreServiceError.UserNotFound
+        val authUser = authApi.getUser(token)?.apply { bearerToken = token } ?: throw CoreServiceError.UserNotFound
         if (authUser.roles.intersect(PRIVILEGED_ROLES).isEmpty()) {
             throw NoPrivilegeUser
         }

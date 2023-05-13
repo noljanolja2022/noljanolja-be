@@ -1,6 +1,7 @@
 package com.noljanolja.server.admin.adapter.auth
 
 import com.noljanolja.server.admin.model.CoreServiceError
+import com.noljanolja.server.admin.model.CreateUserRequest
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
@@ -36,4 +37,24 @@ class AuthApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<AuthUser>>().data
+
+    suspend fun createUser(
+        bearerToken: String,
+        createUserReq: CreateUserRequest
+    ): AuthUser = webClient.post()
+        .uri { builder ->
+            builder.path("$USERS_ENDPOINT/create").build()
+        }
+        .bodyValue(createUserReq)
+        .header(HttpHeaders.AUTHORIZATION, bearerToken)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<AuthUser>>().data!!
 }

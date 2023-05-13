@@ -73,13 +73,17 @@ data class UserModel(
 
     companion object {
         fun User.toUserModel(objectMapper: ObjectMapper, isNewUser: Boolean): UserModel {
-            val phoneNumber = parsePhoneNumber(phone) ?: throw Error.InvalidPhoneNumber
+            val phoneNumber = parsePhoneNumber(phone)
+            if (phoneNumber == null && phone.isNotEmpty()) {
+                throw Error.InvalidPhoneNumber
+            }
             return UserModel(
                 _id = id,
                 name = name,
                 avatar = avatar,
-                countryCode = phoneNumber.countryCode.toString(),
-                phoneNumber = phoneNumber.nationalNumber.toString(),
+                // need this here else toString will return "null"
+                countryCode = if (phoneNumber != null) phoneNumber.countryCode.toString() else "",
+                phoneNumber = if (phoneNumber != null) phoneNumber.nationalNumber.toString() else "",
                 email = email,
                 dob = dob,
                 gender = gender,

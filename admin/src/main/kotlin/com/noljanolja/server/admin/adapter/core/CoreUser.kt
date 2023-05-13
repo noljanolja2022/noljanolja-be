@@ -5,9 +5,9 @@ import java.time.Instant
 
 data class CoreUser(
     val id: String,
-    val name: String,
+    val name: String = "",
     val avatar: String? = null,
-    val phone: String,
+    val phone: String = "",
     val email: String? = null,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),

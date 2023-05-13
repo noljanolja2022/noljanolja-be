@@ -371,12 +371,12 @@ DROP TABLE IF EXISTS `member_info`;
 CREATE TABLE IF NOT EXISTS `member_info`
 (
     `id`                 VARCHAR(36)      NOT NULL PRIMARY KEY,
-    `accumulated_points` BIGINT           NOT NULL,
-    `available_points`   BIGINT           NOT NULL
+    `accumulated_points` BIGINT           NOT NULL DEFAULT 0,
+    `available_points`   BIGINT           NOT NULL DEFAULT 0
 ) ENGINE = InnoDB;
 
-INSERT INTO `member_info` (id, name)
-SELECT id, name FROM `users`;
+INSERT INTO `member_info` (id)
+SELECT id FROM `users`;
 
 --changeset tranhieu956230@gmail.com:8
 

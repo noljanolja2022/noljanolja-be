@@ -11,3 +11,9 @@ data class User(
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
 )
+
+data class CreateUserRequest(
+    val userName: String,
+    val password: String,
+    val role: String = "admin"
+)

@@ -1,5 +1,7 @@
 package com.noljanolja.server.admin.adapter.auth
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+
 data class AuthUser(
     val id: String,
     val name: String?,
@@ -14,4 +16,7 @@ data class AuthUser(
         STAFF,
         CONSUMER,
     }
+    @JsonIgnore
+    var bearerToken: String = ""
+
 }

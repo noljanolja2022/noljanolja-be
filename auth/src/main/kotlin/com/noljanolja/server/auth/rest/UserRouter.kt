@@ -18,6 +18,7 @@ class UserRouter(
         (USER_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             GET("", userHandler::getUser)
             GET("verify", userHandler::verifyToken)
+            POST("create", userHandler::createUser)
             DELETE("", userHandler::deleteUser)
         }
     }
