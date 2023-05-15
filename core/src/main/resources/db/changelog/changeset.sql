@@ -378,9 +378,6 @@ CREATE TABLE IF NOT EXISTS `member_info`
     `available_points`   BIGINT           NOT NULL DEFAULT 0
 ) ENGINE = InnoDB;
 
-INSERT INTO `member_info` (id)
-SELECT id FROM `users`;
-
 --changeset tranhieu956230@gmail.com:8
 
 -- -----------------------------------------------------
@@ -413,4 +410,75 @@ CREATE TABLE IF NOT EXISTS `transactions`
     `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (member_id) REFERENCES member_info(id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+--changeset tranhieu956230@gmail.com:9
+
+-- -----------------------------------------------------
+-- Table `chat_reward_configs`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `chat_reward_configs`;
+
+CREATE TABLE IF NOT EXISTS `chat_reward_configs`
+(
+    `id`                    BIGINT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `number_of_messages`    INT         NOT NULL,
+    `reward_point`          BIGINT      NOT NULL,
+    `max_apply_times`       INT,
+    `active`                TINYINT     NOT NULL,
+    `only_reward_creator`   TINYINT     NOT NULL,
+    `room_type`             ENUM('SINGLE', 'GROUP') NOT NULL,
+    `created_at`            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `video_reward_configs`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `video_reward_configs`;
+
+CREATE TABLE IF NOT EXISTS `video_reward_configs`
+(
+    `id`                BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `video_id`          VARCHAR(255) NOT NULL,
+    `active`            TINYINT      NOT NULL,
+    `max_apply_times`   INT,
+    `created_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `video_reward_progresses_configs`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `video_reward_progresses_configs`;
+
+CREATE TABLE IF NOT EXISTS `video_reward_progresses_configs`
+(
+    `id`            BIGINT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `config_id`     BIGINT      NOT NULL,
+    `progress`      DOUBLE      NOT NULL,
+    `reward_point`  BIGINT      NOT NULL,
+    `created_at`    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (config_id) REFERENCES video_reward_configs(id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `video_reward_records`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `video_reward_records`;
+
+CREATE TABLE IF NOT EXISTS `video_reward_records`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `user_id`           VARCHAR(255)    NOT NULL,
+    `config_id`         BIGINT          NOT NULL,
+    `reward_progress`   DOUBLE          NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;

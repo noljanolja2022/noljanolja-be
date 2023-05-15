@@ -10,6 +10,8 @@ tags:
     description: Operation relate to current user
   - name: Media
     description: Operation relate to media like stickers, emoji, etc.
+  - name: Reward
+    description: Config chat/video rewards.
 paths:
   /api/v1/users/me:
     get:
@@ -62,6 +64,188 @@ paths:
                       data:
                         type: number
                         description: the id of the generated sticker pack
+  /api/v1/reward/videos/configs:
+    get:
+      tags: [ Reward ]
+      summary: Get all reward configs for videos
+      description: Get all reward configs for videos
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/VideoRewardConfig"
+    put:
+      tags: [ Reward ]
+      summary: Upsert config for a video
+      description: Upsert config for a video
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                videoId:
+                  type: string
+                isActive:
+                  type: boolean
+                maxApplyTimes:
+                  type: number
+                  format: integer
+                  nullable: true
+                rewardProgresses:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      point:
+                        type: number
+                        format: integer
+                      progress:
+                        type: number
+                        format: double
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/VideoRewardConfig"
+  /api/v1/reward/videos/configs/{configId}:
+    get:
+      tags: [ Reward ]
+      summary: Get detail of reward config for a video
+      description: Get detail of reward config for a video
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: configId
+          schema:
+            type: number
+          description: the id of the config
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/VideoRewardConfig"
+    delete:
+      tags: [ Reward ]
+      summary: Delete a video config
+      description: Delete a video config
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: configId
+          schema:
+            type: number
+          description: the id of the config
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+  /api/v1/reward/chat/configs:
+    get:
+      tags: [ Reward ]
+      summary: Get reward configs for chat
+      description: Get reward configs for chat
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: roomType
+          schema:
+            type: string
+            enum: [SINGLE, GROUP]
+            nullable: true
+          description: get config by room type
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ChatRewardConfig"
+    put:
+      tags: [ Reward ]
+      summary: Upsert config for a video
+      description: Upsert config for a video
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roomType:
+                  type: string
+                  enum: [SINGLE, GROUP]
+                isActive:
+                  type: boolean
+                maxApplyTimes:
+                  type: number
+                  format: integer
+                  nullable: true
+                rewardPoint:
+                  type: number
+                  format: int64
+                numberOfMessages:
+                  type: number
+                  format: integer
+                onlyRewardCreator:
+                  type: boolean
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ChatRewardConfig"
+
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -105,3 +289,51 @@ components:
           type: string
           description: in date format
           example: 2023-03-10 04:04:43
+    VideoRewardConfig:
+      type: object
+      properties:
+        id:
+          type: number
+          format: int64
+        videoId:
+          type: string
+        isActive:
+          type: boolean
+        maxApplyTimes:
+          type: number
+          format: integer
+          nullable: true
+        rewardProgresses:
+          type: array
+          items:
+            type: object
+            properties:
+              progress:
+                type: number
+                format: double
+              point:
+                type: number
+                format: int64
+    ChatRewardConfig:
+      type: object
+      properties:
+        id:
+          type: number
+          format: int64
+        roomType:
+          type: string
+          enum: [ SINGLE, GROUP ]
+        isActive:
+          type: boolean
+        maxApplyTimes:
+          type: number
+          format: integer
+          nullable: true
+        onlyRewardCreator:
+          type: boolean
+        rewardPoint:
+          type: number
+          format: int64
+        numberOfMessages:
+          type: number
+          format: integer

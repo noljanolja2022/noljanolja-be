@@ -1,6 +1,8 @@
 package com.noljanolja.server.admin.adapter.core
 
 
+import com.noljanolja.server.admin.adapter.core.request.CoreUpsertChatConfigRequest
+import com.noljanolja.server.admin.adapter.core.request.CoreUpsertVideoConfigRequest
 import com.noljanolja.server.admin.model.CoreServiceError
 import com.noljanolja.server.admin.model.StickerPack
 import com.noljanolja.server.admin.model.Video
@@ -25,6 +27,7 @@ class CoreApi(
         const val USERS_ENDPOINT = "/api/v1/users"
         const val STICKER_PACK_ENDPOINT = "/api/v1/media/sticker-packs"
         const val VIDEO_ENDPOINT = "/api/v1/media/videos"
+        const val REWARD_ENDPOINT = "/api/v1/reward"
     }
 
     suspend fun getUser(
@@ -187,4 +190,120 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Nothing>>()
+
+    suspend fun getVideosRewardConfigs(
+        page: Int,
+        pageSize: Int,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/videos/configs")
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreVideoRewardConfig>>>().let {
+            Pair(it.data!!, it.pagination!!)
+        }
+
+    suspend fun getVideoRewardConfig(
+        configId: Long,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/videos/configs/{configId}")
+                .build(configId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreVideoRewardConfig>>().data!!
+
+    suspend fun upsertVideoRewardConfigs(
+        payload: CoreUpsertVideoConfigRequest,
+    ) = webClient.put()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/videos/configs")
+                .build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreVideoRewardConfig>>().data!!
+
+    suspend fun deleteVideoRewardConfigs(
+        configId: Long,
+    ) = webClient.delete()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/videos/configs/{configId}")
+                .build(configId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
+    suspend fun getChatConfigs(
+        roomType: String?
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/chat/configs")
+                .queryParamIfPresent("roomType", Optional.ofNullable(roomType))
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreChatRewardConfig>>().data!!
+
+    suspend fun upsertChatConfig(
+        payload: CoreUpsertChatConfigRequest,
+    ) = webClient.put()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/chat/configs")
+                .build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreChatRewardConfig>>().data!!
 }

@@ -186,3 +186,16 @@ serverAuthTest = [
     "mockwebserver",
     "mockk",
 ]
+
+serverReward = [
+    "spring-boot-r2dbc",
+    "r2dbc-proxy",
+]
+
+serverRewardRuntime = [
+]
+
+serverRewardTest = [
+    "spring-boot-test",
+    "reactor-test",
+]

@@ -5,11 +5,11 @@ import com.noljanolja.server.loyalty.model.MemberInfo
 import com.noljanolja.server.loyalty.model.Transaction
 import com.noljanolja.server.loyalty.repo.*
 import kotlinx.coroutines.flow.toList
-import org.springframework.context.annotation.Configuration
 import org.springframework.data.domain.PageRequest
+import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
-@Configuration
+@Component
 @Transactional
 class LoyaltyService(
     private val memberInfoRepo: MemberInfoRepo,
