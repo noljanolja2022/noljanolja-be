@@ -23,6 +23,9 @@ data class StickerPackModel(
 
     @Column("is_animated")
     val isAnimated: Boolean,
+
+    @Column("is_active")
+    val isActive: Boolean = true,
 )  {
     fun toStickerPack(stickers: List<Sticker>) :StickerPack {
         return StickerPack(

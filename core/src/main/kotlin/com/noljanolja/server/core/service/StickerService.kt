@@ -27,7 +27,7 @@ class StickerService(
     }
 
     suspend fun getStickerPacks(): List<StickerPack> {
-        val stickerPackModel = stickerPackRepo.findAll().toList()
+        val stickerPackModel = stickerPackRepo.findAllByIsActive().toList()
         val stickers = stickerRepo.findAll().toList()
         return stickerPackModel.map { pack ->
             pack.toStickerPack(stickers.filter { it.packId == pack.id }.map { it.toSticker() })
@@ -51,7 +51,7 @@ class StickerService(
         return createdPackModel.toStickerPack(stickers.toList())
     }
 
-    suspend fun deleteStickerPack(packId: Long) {
-        stickerPackRepo.deleteById(packId)
+    suspend fun disableStickerPack(packId: Long) {
+        stickerPackRepo.disableStickerPack(packId)
     }
 }

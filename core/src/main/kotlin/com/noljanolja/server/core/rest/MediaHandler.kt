@@ -43,7 +43,7 @@ class MediaHandler(
 
     suspend fun deleteStickerPack(serverRequest: ServerRequest): ServerResponse {
         val packId = serverRequest.pathVariable("packId").toLong()
-        stickerService.deleteStickerPack(packId)
+        stickerService.disableStickerPack(packId)
         return ServerResponse
             .ok()
             .bodyValueAndAwait(Response<Nothing>())

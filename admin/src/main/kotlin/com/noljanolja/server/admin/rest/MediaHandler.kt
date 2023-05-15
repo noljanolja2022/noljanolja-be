@@ -91,6 +91,13 @@ class MediaHandler(
         }
     }
 
+    suspend fun deleteStickerPack(request: ServerRequest): ServerResponse {
+        val stickerPackId = request.pathVariable(PATH_ID).takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException(PATH_ID)
+        stickerService.deleteStickerPack(stickerPackId)
+        return ServerResponse.ok().bodyValueAndAwait(Response<Nothing>())
+    }
+
     suspend fun createVideo(request: ServerRequest): ServerResponse {
         val reqBody = request.awaitBodyOrNull<VideoCreationReq>() ?: throw RequestBodyRequired
         val res = videoService.createVideo(reqBody.youtubeUrl, reqBody.isHighlighted)

@@ -6,6 +6,7 @@ import com.noljanolja.server.admin.adapter.core.CoreUser
 import com.noljanolja.server.admin.adapter.core.toAdminUser
 import com.noljanolja.server.admin.model.CreateUserRequest
 import com.noljanolja.server.admin.model.User
+import com.noljanolja.server.common.rest.Response
 import org.springframework.stereotype.Component
 
 @Component
@@ -20,12 +21,20 @@ class UserService(
 
     suspend fun createUser(
         token: String,
-        createUserReq: CreateUserRequest) : User?  {
+        createUserReq: CreateUserRequest
+    ): User? {
         val createdUser = authApi.createUser(token, createUserReq)
-        val coreUser = coreApi.upsertUser(CoreUser(
-            id = createdUser.id,
-            email = createdUser.email,
-        ))
+        val coreUser = coreApi.upsertUser(
+            CoreUser(
+                id = createdUser.id,
+                email = createdUser.email,
+            )
+        )
         return coreUser.toAdminUser()
+    }
+
+    suspend fun getUsers(page: Int, pageSize: Int, phoneNumber: String?): Response<List<CoreUser>> {
+        val res = coreApi.getUsers()
+        return res
     }
 }

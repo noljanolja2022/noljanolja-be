@@ -18,6 +18,8 @@ class UserRouter(
         (USERS_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             GET("/me", userHandler::getCurrentUser)
             POST("/manage", userHandler::createUser)
+
+            GET("", userHandler::getUsers)
         }
     }
 }

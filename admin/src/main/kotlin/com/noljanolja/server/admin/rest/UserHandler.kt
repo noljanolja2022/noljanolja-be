@@ -7,10 +7,7 @@ import com.noljanolja.server.common.exception.DefaultUnauthorizedException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.ServerRequest
-import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.awaitBodyOrNull
-import org.springframework.web.reactive.function.server.bodyValueAndAwait
+import org.springframework.web.reactive.function.server.*
 
 @Component
 class UserHandler(
@@ -34,6 +31,19 @@ class UserHandler(
             .ok()
             .bodyValueAndAwait(
                 Response(data = user)
+            )
+    }
+
+    suspend fun getUsers(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull()?.takeIf { it > 0 } ?: 1
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 }
+            ?: 10
+        val phoneNumber = request.queryParamOrNull("phoneNumber")
+        val searchUserRes = userService.getUsers(page, pageSize, phoneNumber)
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                Response(data = searchUserRes.data, pagination = searchUserRes.pagination)
             )
     }
 }

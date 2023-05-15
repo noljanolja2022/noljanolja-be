@@ -11,7 +11,10 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.bodyToMono
+import org.springframework.web.util.UriUtils
 import reactor.core.publisher.Mono
+import java.nio.charset.StandardCharsets
+import java.util.*
 
 
 @Component
@@ -41,6 +44,32 @@ class CoreApi(
         }
         .awaitBody<Response<CoreUser>>().data
 
+    suspend fun getUsers(
+        page: Int = 1,
+        pageSize: Int = 10,
+        phoneNumber: String? = null,
+    ): Response<List<CoreUser>> = webClient.get()
+        .uri { builder ->
+            builder.path(USERS_ENDPOINT)
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .queryParamIfPresent(
+                    "phoneNumber",
+                    Optional.ofNullable(phoneNumber?.let { UriUtils.encode(it, StandardCharsets.UTF_8) })
+                )
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreUser>>>()
+
     suspend fun upsertUser(
         user: CoreUser,
     ): CoreUser = webClient.post()
@@ -61,17 +90,17 @@ class CoreApi(
 
     suspend fun getStickerPacks() =
         webClient.get()
-        .uri { builder -> builder.path(STICKER_PACK_ENDPOINT).build() }
-        .retrieve()
-        .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
+            .uri { builder -> builder.path(STICKER_PACK_ENDPOINT).build() }
+            .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError) {
+                it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                    CoreServiceError.CoreServiceBadRequest(response.message)
+                }
             }
-        }
-        .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
-        }
-        .awaitBody<Response<List<StickerPack>>>()
+            .onStatus(HttpStatusCode::is5xxServerError) {
+                Mono.just(CoreServiceError.CoreServiceInternalError)
+            }
+            .awaitBody<Response<List<StickerPack>>>()
 
     suspend fun createStickerPack(
         stickerPack: StickerPack
@@ -88,6 +117,21 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Long>>().data
+
+    suspend fun deleteStickerPack(
+        stickerPackId: String
+    ) = webClient.delete()
+        .uri { builder -> builder.path("$STICKER_PACK_ENDPOINT/$stickerPackId").build() }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
 
     suspend fun getVideo(
         page: Int,

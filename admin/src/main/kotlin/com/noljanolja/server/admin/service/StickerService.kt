@@ -20,4 +20,8 @@ class StickerService(
             id = createdStickerId
         }
     }
+
+    suspend fun deleteStickerPack(stickerPackId: String) {
+        coreApi.deleteStickerPack(stickerPackId)
+    }
 }
