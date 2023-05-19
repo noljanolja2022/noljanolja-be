@@ -1182,6 +1182,34 @@ components:
               type: string
             title:
               type: string
+        earnedPoints:
+          type: number
+          format: int64
+        totalPoints:
+          type: number
+          format: int64
+        completed:
+          type: boolean
+          description: whether user has receive all the reward for this video
+        rewardProgresses:
+          type: array
+          items:
+            type: object
+            properties:
+              point:
+                type: number
+                format: int64
+              progressMs:
+                type: number
+                format: int64
+                description: reward progress in milliseconds
+              claimedAts:
+                type: array
+                items:
+                  type: string
+                  format: datetime
+              completed:
+                type: boolean
     VideoComment:
       type: object
       required:

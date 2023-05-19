@@ -10,4 +10,10 @@ interface VideoRewardRecordRepo : CoroutineCrudRepository<VideoRewardRecordModel
         userId: String,
         configIds: List<Long>,
     ): Flow<VideoRewardRecordModel>
+
+    fun findAllByUserIdAndConfigIdAndVideoId(
+        userId: String,
+        configId: Long,
+        videoId: String,
+    ): Flow<VideoRewardRecordModel>
 }

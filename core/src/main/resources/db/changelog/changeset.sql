@@ -199,11 +199,9 @@ CREATE TABLE IF NOT EXISTS `sticker_packs`
     `name`                    VARCHAR(36)  NOT NULL,
     `publisher`               VARCHAR(128) NOT NULL,
     `tray_image_file`         VARCHAR(128) NOT NULL,
-    `is_active`     TINYINT(1)   NOT NULL DEFAULT 1,
-    `is_animated`   TINYINT(1)   NOT NULL DEFAULT 0
+    `is_active`               TINYINT(1)   NOT NULL DEFAULT 1,
+    `is_animated`             TINYINT(1)   NOT NULL DEFAULT 0
 ) ENGINE = InnoDB;
-
-ALTER TABLE `sticker_packs` ADD  is_active     TINYINT(1)  NOT NULL DEFAULT 1;
 
 -- -----------------------------------------------------
 -- Table `stickers`
@@ -425,7 +423,7 @@ CREATE TABLE IF NOT EXISTS `chat_reward_configs`
     `id`                    BIGINT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `number_of_messages`    INT         NOT NULL,
     `reward_point`          BIGINT      NOT NULL,
-    `max_apply_times`       INT,
+    `max_apply_times`       INT         NOT NULL,
     `active`                TINYINT     NOT NULL,
     `only_reward_creator`   TINYINT     NOT NULL,
     `room_type`             ENUM('SINGLE', 'GROUP') NOT NULL,
@@ -444,7 +442,7 @@ CREATE TABLE IF NOT EXISTS `video_reward_configs`
     `id`                BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `video_id`          VARCHAR(255) NOT NULL,
     `active`            TINYINT      NOT NULL,
-    `max_apply_times`   INT,
+    `max_apply_times`   INT          NOT NULL,
     `created_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
@@ -479,6 +477,8 @@ CREATE TABLE IF NOT EXISTS `video_reward_records`
     `user_id`           VARCHAR(255)    NOT NULL,
     `config_id`         BIGINT          NOT NULL,
     `reward_progress`   DOUBLE          NOT NULL,
+    `session_id`        VARCHAR(255)    NOT NULL,
+    `video_id`          VARCHAR(255)    NOT NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;

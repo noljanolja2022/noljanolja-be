@@ -19,6 +19,10 @@ data class Video(
     val comments: List<VideoComment> = listOf(),
     val channel: Channel,
     val category: Category,
+    val completed: Boolean = false,
+    val earnedPoints: Long = 0,
+    val totalPoints: Long = 0,
+    val rewardProgresses: List<RewardProgress> = listOf(),
 ) {
     data class Channel(
         val id: String,
@@ -29,6 +33,13 @@ data class Video(
     data class Category(
         val id: String,
         val title: String,
+    )
+
+    data class RewardProgress(
+        val progressMs: Long,
+        val point: Long,
+        val claimedAts: List<Instant>,
+        val completed: Boolean,
     )
 }
 

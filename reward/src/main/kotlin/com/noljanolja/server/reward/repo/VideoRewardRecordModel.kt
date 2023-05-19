@@ -22,6 +22,12 @@ data class VideoRewardRecordModel(
     @Column("reward_progress")
     val rewardProgress: Double,
 
+    @Column("session_id")
+    val sessionId: String,
+
+    @Column("video_id")
+    val videoId: String,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),

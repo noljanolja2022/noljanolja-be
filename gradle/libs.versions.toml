@@ -103,6 +103,7 @@ serverCore = [
     "spring-boot-r2dbc",
     "r2dbc-proxy",
     "libphonenumber",
+    "spring-boot-rsocket",
 ]
 
 serverCoreProcessor = [
@@ -152,7 +153,7 @@ serverConsumer = [
     "spring-security-messaging",
     "spring-boot-security",
     "spring-security-oauth2",
-    "apache-tika"
+    "apache-tika",
 ]
 
 serverConsumerProcessor = [
@@ -189,7 +190,7 @@ serverAuthTest = [
 
 serverReward = [
     "spring-boot-r2dbc",
-    "r2dbc-proxy",
+    "r2dbc-proxy"
 ]
 
 serverRewardRuntime = [

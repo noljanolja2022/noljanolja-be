@@ -105,7 +105,6 @@ paths:
                 maxApplyTimes:
                   type: number
                   format: integer
-                  nullable: true
                 rewardProgresses:
                   type: array
                   items:
@@ -224,7 +223,6 @@ paths:
                 maxApplyTimes:
                   type: number
                   format: integer
-                  nullable: true
                 rewardPoint:
                   type: number
                   format: int64
@@ -302,7 +300,6 @@ components:
         maxApplyTimes:
           type: number
           format: integer
-          nullable: true
         rewardProgresses:
           type: array
           items:
@@ -328,7 +325,6 @@ components:
         maxApplyTimes:
           type: number
           format: integer
-          nullable: true
         onlyRewardCreator:
           type: boolean
         rewardPoint:

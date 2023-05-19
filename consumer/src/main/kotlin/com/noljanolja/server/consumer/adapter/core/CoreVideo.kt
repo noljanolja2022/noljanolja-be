@@ -32,7 +32,9 @@ data class CoreVideo(
     )
 }
 
-fun CoreVideo.toConsumerVideo() = Video(
+fun CoreVideo.toConsumerVideo(
+    rewardRecords: CoreUserVideoRewardRecord? = null,
+) = Video(
     id = id,
     url = url,
     publishedAt = publishedAt,
@@ -54,5 +56,16 @@ fun CoreVideo.toConsumerVideo() = Video(
     category = Video.Category(
         id = category.id,
         title = category.title,
-    )
+    ),
+    earnedPoints = rewardRecords?.earnedPoints ?: 0,
+    totalPoints = rewardRecords?.totalPoints ?: 0,
+    completed = rewardRecords?.completed ?: false,
+    rewardProgresses = rewardRecords?.rewardProgresses.orEmpty().map {
+        Video.RewardProgress(
+            progressMs = it.progress.toLong() * this.durationMs,
+            point = it.point,
+            claimedAts = it.claimedAts,
+            completed = it.completed
+        )
+    }
 )

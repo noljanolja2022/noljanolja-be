@@ -1,8 +1,8 @@
-package com.noljanolja.server.reward.model
+package com.noljanolja.server.consumer.adapter.core
 
 import java.time.Instant
 
-data class UserVideoRewardRecord(
+data class CoreUserVideoRewardRecord(
     val videoId: String,
     val rewardProgresses: List<RewardProgress>,
     val completed: Boolean,

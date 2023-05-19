@@ -10,6 +10,7 @@ import com.noljanolja.server.common.utils.addFileToZipStream
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.ResourceInfo
 import com.noljanolja.server.consumer.model.Video
+import com.noljanolja.server.consumer.model.VideoProgress
 import com.noljanolja.server.consumer.rest.request.PostCommentRequest
 import com.noljanolja.server.consumer.service.GoogleStorageService
 import com.noljanolja.server.consumer.service.MediaService
@@ -146,6 +147,7 @@ class MediaHandler(
             page = page,
             pageSize = pageSize,
             categoryId = categoryId,
+            userId = AuthUserHolder.awaitUser().id,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -169,7 +171,10 @@ class MediaHandler(
                     body = Response(data = listOf<Video>())
                 )
         }
-        val data = mediaService.getVideos(videoProgressIds)
+        val data = mediaService.getVideos(
+            videoIds = videoProgressIds,
+            userId = AuthUserHolder.awaitUser().id,
+        )
         val currentProgress = videoPubSubService.getWatchingProgress(userId, videoProgressIds)
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -185,7 +190,10 @@ class MediaHandler(
 
     suspend fun getVideoDetails(serverRequest: ServerRequest): ServerResponse {
         val videoId = serverRequest.pathVariable("videoId")
-        val video = mediaService.getVideoDetails(videoId)
+        val video = mediaService.getVideoDetails(
+            videoId = videoId,
+            userId = AuthUserHolder.awaitUser().id,
+        )
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
@@ -205,6 +213,7 @@ class MediaHandler(
         val videos = mediaService.getTrendingVideos(
             days = days,
             limit = limit,
+            userId = AuthUserHolder.awaitUser().id,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -230,6 +239,19 @@ class MediaHandler(
                 body = Response(
                     data = comments,
                 )
+            )
+    }
+
+    suspend fun watchVideo(serverRequest: ServerRequest): ServerResponse {
+        val progress = serverRequest.awaitBodyOrNull<VideoProgress>() ?: throw RequestBodyRequired
+        val userId = AuthUserHolder.awaitUser().id
+        mediaService.watchVideo(
+            userId = userId,
+            videoProgress = progress,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
             )
     }
 }

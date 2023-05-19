@@ -1,39 +1,52 @@
 package com.noljanolja.server.consumer.service
 
+import com.noljanolja.server.consumer.adapter.core.CoreApi
+import com.noljanolja.server.consumer.adapter.core.toConsumerVideo
 import com.noljanolja.server.consumer.model.VideoProgress
 import com.noljanolja.server.consumer.model.VideoProgressEvent
+import com.noljanolja.server.consumer.rsocket.SocketRequester
+import com.noljanolja.server.consumer.rsocket.UserVideoProgress
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import org.springframework.data.redis.core.*
 import org.springframework.data.redis.listener.ReactiveRedisMessageListenerContainer
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class VideoPubSubService(
     private val videoRedisTemplate: ReactiveRedisTemplate<String, VideoProgress>,
     private val userVideoProgressRedisTemplate: ReactiveRedisTemplate<String, String>,
-    private val reactiveMsgListenerContainer: ReactiveRedisMessageListenerContainer
+    private val reactiveMsgListenerContainer: ReactiveRedisMessageListenerContainer,
+    private val coreApi: CoreApi,
+    private val socketRequester: SocketRequester,
 ) {
+    companion object {
+        const val SESSION_PREFIX = "session"
+    }
 
+    @OptIn(DelicateCoroutinesApi::class)
     suspend fun saveProgress(userId: String, progress: VideoProgress) {
+        // TODO Add validation of progress
+        // TODO Check if progress is actually coming from mobile app or from calling api
+        val videoDetails = coreApi.getVideoDetails(progress.videoId).toConsumerVideo()
+        val progressPercentage = progress.durationMs.toDouble() / videoDetails.durationMs
+        if (progressPercentage < 0 || progressPercentage > 1) return
+        val sessionKey = "$SESSION_PREFIX-$userId-${progress.videoId}"
+        var sessionId = userVideoProgressRedisTemplate.opsForValue().getAndAwait(sessionKey)
         when (progress.event) {
             VideoProgressEvent.PLAY -> {
                 videoRedisTemplate.opsForValue().setAndAwait(
                     getProgressKey(userId, progress.videoId),
                     progress
                 )
-//                val currentProgress =
-//                    videoRedisTemplate.opsForValue().getAndAwait(getProgressKey(userId, progress.videoId))
-//                if (currentProgress != null) {
-//                    if (progress.durationMs - currentProgress.durationMs > progress.trackIntervalMs) {
-//                        videoRedisTemplate.opsForValue().setAndAwait(
-//                            getProgressKey(userId, progress.videoId),
-//                            progress
-//                        )
-//                    }
-//                } else {
-//
-//                }
                 userVideoProgressRedisTemplate.opsForSet().addAndAwait(userId, progress.videoId)
+                if (sessionId == null) {
+                    sessionId = UUID.randomUUID().toString()
+                    userVideoProgressRedisTemplate.opsForValue().setAndAwait(sessionKey, sessionId)
+                }
             }
 
             VideoProgressEvent.PAUSE -> {
@@ -46,6 +59,19 @@ class VideoPubSubService(
             VideoProgressEvent.FINISH -> {
                 videoRedisTemplate.opsForValue().deleteAndAwait(getProgressKey(userId, progress.videoId))
                 userVideoProgressRedisTemplate.opsForSet().removeAndAwait(userId, progress.videoId)
+                userVideoProgressRedisTemplate.opsForValue().deleteAndAwait(sessionKey)
+            }
+        }
+        if (progress.event != VideoProgressEvent.PAUSE && !sessionId.isNullOrBlank()) {
+            GlobalScope.launch {
+                socketRequester.emitUserWatchVideo(
+                    UserVideoProgress(
+                        userId = userId,
+                        videoId = progress.videoId,
+                        sessionId = sessionId.toString(),
+                        progressPercentage = progressPercentage,
+                    )
+                )
             }
         }
     }

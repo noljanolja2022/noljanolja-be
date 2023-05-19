@@ -30,6 +30,7 @@ class CoreApi(
         const val MESSAGE_ENDPOINT = "/api/v1/conversations/{conversationId}/messages"
         const val MEDIA_ENDPOINT = "/api/v1/media"
         const val LOYALTY_ENDPOINT = "/api/v1/loyalty"
+        const val REWARD_ENDPOINT = "api/v1/reward"
 
         val coreErrorsMapping = mapOf(
             404_001 to CoreServiceError.UserNotFound
@@ -177,7 +178,7 @@ class CoreApi(
         .awaitBody<Response<Nothing>>()
 
     suspend fun createConversation(
-        request: CreateConversationRequest
+        request: CreateConversationRequest,
     ): CoreConversation = webClient.post()
         .uri { builder -> builder.path(CONVERSATION_ENDPOINT).build() }
         .bodyValue(request)
@@ -280,7 +281,7 @@ class CoreApi(
         userId: String,
         conversationId: Long,
         beforeMessageId: Long?,
-        afterMessageId: Long?
+        afterMessageId: Long?,
     ): List<CoreMessage> = webClient.get()
         .uri { builder ->
             builder.path(MESSAGE_ENDPOINT)
@@ -364,7 +365,7 @@ class CoreApi(
         .awaitBody<Response<CoreAttachment>>().data!!
 
     suspend fun getAllStickerPacksFromUser(
-        userId: String
+        userId: String,
     ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/sticker-packs").build()
@@ -381,7 +382,7 @@ class CoreApi(
         .awaitBody<Response<List<StickerPack>>>().data
 
     suspend fun getStickerPack(
-        stickerPackId: Long
+        stickerPackId: Long,
     ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/sticker-packs/$stickerPackId").build()
@@ -399,7 +400,7 @@ class CoreApi(
 
     suspend fun addMemberToConversation(
         conversationId: Long,
-        payload: CoreUpdateMemberOfConversationReq
+        payload: CoreUpdateMemberOfConversationReq,
     ) = webClient.put()
         .uri { builder ->
             builder.path("$CONVERSATION_ENDPOINT/$conversationId/participants").build()
@@ -418,7 +419,7 @@ class CoreApi(
 
     suspend fun removeMemberFromConversation(
         conversationId: Long,
-        payload: CoreUpdateMemberOfConversationReq
+        payload: CoreUpdateMemberOfConversationReq,
     ) = webClient.delete()
         .uri { builder ->
             builder.path("$CONVERSATION_ENDPOINT/$conversationId/participants")
@@ -439,7 +440,7 @@ class CoreApi(
 
     suspend fun setAdminToConversation(
         conversationId: Long,
-        payload: CoreUpdateAdminOfConversationReq
+        payload: CoreUpdateAdminOfConversationReq,
     ) = webClient.put()
         .uri { builder ->
             builder.path("$CONVERSATION_ENDPOINT/$conversationId/admin").build()
@@ -520,7 +521,7 @@ class CoreApi(
         }
 
     suspend fun getVideos(
-        videoIds: List<String>
+        videoIds: List<String>,
     ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/videos/watching")
@@ -539,7 +540,7 @@ class CoreApi(
         .awaitBody<Response<List<CoreVideo>>>()
 
     suspend fun getVideoDetails(
-        videoId: String
+        videoId: String,
     ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/videos/{videoId}")
@@ -639,4 +640,24 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreMemberInfo>>().data!!
+
+    suspend fun getUserVideoRewardProgresses(
+        userId: String,
+        videoIds: List<String>,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/videos/configs/users/{userId}")
+                .queryParam("videoIds", videoIds.joinToString(","))
+                .build(userId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreUserVideoRewardRecord>>>().data!!
 }

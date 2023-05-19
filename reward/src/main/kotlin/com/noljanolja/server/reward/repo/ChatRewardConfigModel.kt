@@ -21,7 +21,7 @@ data class ChatRewardConfigModel(
     var rewardPoint: Long = 0,
 
     @Column("max_apply_times")
-    var maxApplyTimes: Int? = null,
+    var maxApplyTimes: Int = 0,
 
     @Column("active")
     var isActive: Boolean = false,

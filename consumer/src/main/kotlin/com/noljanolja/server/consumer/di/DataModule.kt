@@ -7,12 +7,15 @@ import io.netty.handler.timeout.WriteTimeoutHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import org.springframework.messaging.rsocket.RSocketRequester
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.DefaultUriBuilderFactory
 import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
+import reactor.util.retry.Retry
+import java.net.URI
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
@@ -50,6 +53,19 @@ class DataModule {
     ): WebClient {
         val config = serviceConfig.configs.first { it.id == ServiceConfig.Config.ServiceID.YOUTUBE }
         return buildWebClient(webClientBuilder, config)
+    }
+
+    @Bean
+    fun coreRSocketRequester(
+        requesterBuilder: RSocketRequester.Builder,
+        serviceConfig: ServiceConfig,
+    ): RSocketRequester {
+        val coreBaseUrl = serviceConfig.configs.first { it.id == ServiceConfig.Config.ServiceID.CORE }.baseUrl
+        return requesterBuilder
+            .rsocketConnector {
+                it.reconnect(Retry.fixedDelay(10, Duration.ofSeconds(3)))
+            }
+            .websocket(URI("$coreBaseUrl/rsocket"))
     }
 
     private fun buildWebClient(

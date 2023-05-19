@@ -22,7 +22,7 @@ data class VideoRewardConfigModel(
     var isActive: Boolean = false,
 
     @Column("max_apply_times")
-    var maxApplyTimes: Int? = null,
+    var maxApplyTimes: Int = 0,
 
     @Column("created_at")
     @CreatedDate

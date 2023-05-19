@@ -39,12 +39,12 @@ sealed class Error(
 ) : BaseException(code, message, cause) {
     companion object {
         const val FILE_NOT_FOUND = 404_002
+        const val CANNOT_UPDATE_CONVERSATION_PARTICIPANT = 403_001
         const val FILE_EXCEED_MAX_SIZE = 400_010
         const val EXCEED_MAX_ATTACHMENTS_SIZE = 400_011
         const val INVALID_CONTENT_TYPE = 400_012
         const val CANNOT_UPDATE_CONVERSATION = 400_013
         const val CANNOT_COMMENT_YOUTUBE = 400_014
-        const val CANNOT_UPDATE_CONVERSATION_PARTICIPANT = 403_001
     }
 
     object FileExceedMaxSize : BaseException(
