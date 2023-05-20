@@ -887,7 +887,7 @@ paths:
                     properties:
                       data:
                         $ref: "#/components/schemas/MemberInfo"
-  /api/v1/loyalty/points:
+  /api/v1/loyalty/me/points:
     get:
       tags: [ Loyalty ]
       summary: Get my loyalty points
@@ -896,13 +896,27 @@ paths:
         - bearerAuth: [ ]
       parameters:
         - in: query
-          name: page
+          name: lastOffsetDate
           schema:
-            $ref: "#/components/schemas/page"
+            type: string
+            format: datetime
         - in: query
-          name: pageSize
+          name: type
           schema:
-            $ref: "#/components/schemas/pageSize"
+            type: string
+            enum: [all, received, spent]
+        - in: query
+          name: month
+          schema:
+            type: number
+            format: int32
+            description: Value 1 (January), 2 (February),.... 12 (December)
+        - in: query
+          name: year
+          schema:
+            type: number
+            format: int32
+            description: Value 2023 or 2022 or 2021....
       responses:
         "200":
           description: Return my loyalty points
@@ -1250,6 +1264,14 @@ components:
           type: number
           format: int64
           description: Total spendable points
+        accumulatedPointsToday:
+          type: number
+          format: int64
+          description: Total points accumulated today
+        exchangeablePoints:
+          type: number
+          format: int64
+          description: Total exchangeable points
         currentTier:
           $ref: '#/components/schemas/LoyaltyTier'
         currentTierMinPoint:
@@ -1273,6 +1295,9 @@ components:
         amount:
           type: number
           format: int64
+        status:
+          type: string
+          enum: [ COMPLETED, PENDING ]
         createdAt:
           type: string
           format: datetime
