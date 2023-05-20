@@ -9,7 +9,9 @@ data class MemberInfo(
     val currentTierMinPoint: Long?,
     val nextTier: Tier? = null,
     val nextTierMinPoint: Long?,
-    val expiryPoints: List<ExpiryPoint> = emptyList()
+    val expiryPoints: List<ExpiryPoint> = emptyList(),
+    val accumulatedPointsToday: Long,
+    val exchangeablePoints: Long,
 ) {
     enum class Tier {
         BRONZE, SILVER, GOLD, DIAMOND

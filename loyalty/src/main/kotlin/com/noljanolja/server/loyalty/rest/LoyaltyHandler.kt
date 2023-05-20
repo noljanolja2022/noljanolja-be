@@ -4,21 +4,19 @@ import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
+import com.noljanolja.server.loyalty.model.Transaction
 import com.noljanolja.server.loyalty.model.request.AddTransactionRequest
 import com.noljanolja.server.loyalty.model.request.UpsertMemberRequest
 import com.noljanolja.server.loyalty.service.LoyaltyService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
+import java.time.Instant
+import java.time.LocalDate
 
 @Component
 class LoyaltyHandler(
     private val loyaltyService: LoyaltyService,
 ) {
-    companion object {
-        const val DEFAULT_PAGE = 1
-        const val DEFAULT_PAGE_SIZE = 10
-    }
-
     suspend fun getMemberInfo(request: ServerRequest): ServerResponse {
         val memberId = request.pathVariable("memberId").ifBlank { throw InvalidParamsException("memberId") }
         val member = loyaltyService.getMember(memberId)
@@ -58,23 +56,34 @@ class LoyaltyHandler(
     }
 
     suspend fun getTransactions(request: ServerRequest): ServerResponse {
-        val page = request.queryParamOrNull("page")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_PAGE
-        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_PAGE_SIZE
+        val lastOffsetDate = request.queryParamOrNull("lastOffsetDate")?.let {
+            try {
+                Instant.parse(it)
+            } catch (err: Exception) {
+                null
+            }
+        }
+        val type = request.queryParamOrNull("type")?.let {
+            try {
+                Transaction.Type.valueOf(it)
+            } catch (err: Exception) {
+                null
+            }
+        }
+        val month = request.queryParamOrNull("month")?.toIntOrNull()?.takeIf { it in 1..12 }
+        val year = request.queryParamOrNull("year")?.toIntOrNull()?.takeIf { it > 0 }
         val memberId = request.pathVariable("memberId").ifBlank { throw InvalidParamsException("memberId") }
-        val (transactions, total) = loyaltyService.getTransactions(
+        val transactions = loyaltyService.getTransactions(
             memberId = memberId,
-            page = page,
-            pageSize = pageSize,
+            month = month,
+            year = year,
+            type = type,
+            lastOffsetDate = lastOffsetDate,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
                     data = transactions,
-                    pagination = Pagination(
-                        page = page,
-                        pageSize = pageSize,
-                        total = total,
-                    )
                 )
             )
     }

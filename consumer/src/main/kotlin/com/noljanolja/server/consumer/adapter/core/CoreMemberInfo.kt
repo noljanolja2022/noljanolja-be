@@ -10,7 +10,9 @@ data class CoreMemberInfo(
     val currentTierMinPoint: Long?,
     val nextTier: Tier? = null,
     val nextTierMinPoint: Long?,
-    val expiryPoints: List<ExpiryPoint> = emptyList()
+    val expiryPoints: List<ExpiryPoint> = emptyList(),
+    val accumulatedPointsToday: Long,
+    val exchangeablePoints: Long,
 ) {
     enum class Tier {
         BRONZE, SILVER, GOLD, DIAMOND
@@ -29,5 +31,7 @@ fun CoreMemberInfo.toConsumerMemberInfo() = MemberInfo(
     currentTierMinPoint = currentTierMinPoint,
     nextTier = nextTier?.name?.let { MemberInfo.Tier.valueOf(it) },
     nextTierMinPoint = nextTierMinPoint,
+    accumulatedPointsToday = accumulatedPointsToday,
+    exchangeablePoints = exchangeablePoints,
 )
 

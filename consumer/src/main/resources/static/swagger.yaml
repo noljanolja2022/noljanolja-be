@@ -904,7 +904,7 @@ paths:
           name: type
           schema:
             type: string
-            enum: [all, received, spent]
+            enum: [ALL, RECEIVED, SPENT]
         - in: query
           name: month
           schema:

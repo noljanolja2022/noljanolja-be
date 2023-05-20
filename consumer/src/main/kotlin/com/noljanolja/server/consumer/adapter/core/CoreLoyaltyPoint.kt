@@ -7,12 +7,18 @@ data class CoreLoyaltyPoint(
     val id: Long,
     val reason: String,
     val amount: Long,
+    val status: Status,
     val createdAt: Instant,
-)
+) {
+    enum class Status {
+        COMPLETED
+    }
+}
 
 fun CoreLoyaltyPoint.toConsumerLoyaltyPoint() = LoyaltyPoint(
     id = id,
     reason = reason,
     amount = amount,
     createdAt = createdAt,
+    status = LoyaltyPoint.Status.valueOf(status.name),
 )

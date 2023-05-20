@@ -6,5 +6,10 @@ data class LoyaltyPoint(
     val id: Long,
     val reason: String,
     val amount: Long,
+    val status: Status,
     val createdAt: Instant,
-)
+) {
+    enum class Status {
+        COMPLETED,
+    }
+}

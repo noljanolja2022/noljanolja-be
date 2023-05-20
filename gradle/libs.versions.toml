@@ -17,6 +17,7 @@ kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.re
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 
 kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.4.0" }
 
 spring-boot-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
 spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
@@ -89,6 +90,7 @@ serverCommonTest = [
 serverLoyalty = [
     "spring-boot-r2dbc",
     "r2dbc-proxy",
+    "kotlinx-datetime"
 ]
 
 serverLoyaltyRuntime = [
@@ -103,7 +105,7 @@ serverCore = [
     "spring-boot-r2dbc",
     "r2dbc-proxy",
     "libphonenumber",
-    "spring-boot-rsocket",
+    "spring-boot-rsocket"
 ]
 
 serverCoreProcessor = [

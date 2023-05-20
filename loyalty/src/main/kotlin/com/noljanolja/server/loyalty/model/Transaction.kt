@@ -6,5 +6,15 @@ data class Transaction(
     val id: Long,
     val reason: String,
     val amount: Long,
+    val status: Status = Status.COMPLETED,
     val createdAt: Instant,
-)
+) {
+    enum class Status {
+        COMPLETED,
+    }
+
+    enum class Type {
+        SPENT,
+        RECEIVED
+    }
+}

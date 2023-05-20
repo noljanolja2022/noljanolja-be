@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriUtils
 import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
+import java.time.Instant
 import java.util.*
 
 @Component
@@ -602,13 +603,17 @@ class CoreApi(
 
     suspend fun getLoyaltyPoints(
         userId: String,
-        page: Int,
-        pageSize: Int,
+        lastOffsetDate: Instant? = null,
+        type: String? = null,
+        month: Int? = null,
+        year: Int? = null,
     ) = webClient.get()
         .uri { builder ->
             builder.path("$LOYALTY_ENDPOINT/member/{memberId}/points")
-                .queryParam("page", page)
-                .queryParam("pageSize", pageSize)
+                .queryParamIfPresent("lastOffsetDate", Optional.ofNullable(lastOffsetDate?.toString()))
+                .queryParamIfPresent("type", Optional.ofNullable(type))
+                .queryParamIfPresent("month", Optional.ofNullable(month))
+                .queryParamIfPresent("year", Optional.ofNullable(year))
                 .build(userId)
         }
         .retrieve()
@@ -620,9 +625,7 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<List<CoreLoyaltyPoint>>>().let {
-            Pair(it.data!!, it.pagination!!)
-        }
+        .awaitBody<Response<List<CoreLoyaltyPoint>>>().data!!
 
     suspend fun getMemberInfo(
         userId: String,

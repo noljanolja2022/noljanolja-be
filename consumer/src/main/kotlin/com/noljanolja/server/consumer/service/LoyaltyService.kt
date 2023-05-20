@@ -4,6 +4,7 @@ import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.adapter.core.toConsumerLoyaltyPoint
 import com.noljanolja.server.consumer.adapter.core.toConsumerMemberInfo
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 class LoyaltyService(
@@ -15,13 +16,15 @@ class LoyaltyService(
 
     suspend fun getLoyaltyPoints(
         userId: String,
-        page: Int,
-        pageSize: Int,
+        lastOffsetDate: Instant? = null,
+        type: String? = null,
+        month: Int? = null,
+        year: Int? = null,
     ) = coreApi.getLoyaltyPoints(
         userId = userId,
-        page = page,
-        pageSize = pageSize,
-    ).let {
-        Pair(it.first.map { it.toConsumerLoyaltyPoint() }, it.second)
-    }
+        lastOffsetDate = lastOffsetDate,
+        type = type,
+        month = month,
+        year = year,
+    ).map { it.toConsumerLoyaltyPoint() }
 }
