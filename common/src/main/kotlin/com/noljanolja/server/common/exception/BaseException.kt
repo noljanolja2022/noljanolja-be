@@ -82,6 +82,14 @@ class NoTokenProvidedException(
     cause = cause,
 )
 
+class TokenExpiredException(
+    cause: Throwable? = null,
+) : BaseException(
+    code = 401_003,
+    message = "Token Expired",
+    cause = cause,
+)
+
 // 403 exceptions
 
 /**

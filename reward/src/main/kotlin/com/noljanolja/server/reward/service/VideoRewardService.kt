@@ -144,6 +144,16 @@ class VideoRewardService(
             rewardProgresses = videoRewardProgressConfigRepo.findAllByConfigId(this.id).toList()
         }?.toVideoRewardConfig() ?: throw Error.ConfigNotFound
 
+    suspend fun getVideoRewardConfig(
+        videoId: String
+    ): VideoRewardConfig? {
+        val res = (if (videoId == "global")
+            videoRewardConfigRepo.findByVideoId("")
+        else videoRewardConfigRepo.findByVideoId(videoId)) ?: return null
+        res.rewardProgresses = videoRewardProgressConfigRepo.findAllByConfigId(res.id).toList()
+        return res.toVideoRewardConfig()
+    }
+
     suspend fun deleteVideoConfig(
         configId: Long,
     ) = videoRewardConfigRepo.deleteById(configId)

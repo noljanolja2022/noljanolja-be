@@ -73,6 +73,19 @@ class RewardHandler(
             )
     }
 
+    suspend fun getVideoRewardConfigV2(request: ServerRequest): ServerResponse {
+        val videoId = request.pathVariable("videoId")
+        val video = videoRewardService.getVideoRewardConfig(
+            videoId = videoId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = video,
+                )
+            )
+    }
+
     suspend fun upsertVideoRewardConfigs(request: ServerRequest): ServerResponse {
         val payload = request.awaitBodyOrNull<UpsertVideoConfigRequest>() ?: throw RequestBodyRequired
         val newConfig = videoRewardService.upsertVideoRewardConfigs(

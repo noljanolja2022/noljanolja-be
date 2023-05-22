@@ -1,9 +1,6 @@
 package com.noljanolja.server.common.rest
 
-import com.noljanolja.server.common.exception.BaseException
-import com.noljanolja.server.common.exception.DefaultBadRequestException
-import com.noljanolja.server.common.exception.DefaultInternalErrorException
-import com.noljanolja.server.common.exception.DefaultNotFoundException
+import com.noljanolja.server.common.exception.*
 import org.springframework.boot.autoconfigure.web.WebProperties
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler
 import org.springframework.boot.web.reactive.error.ErrorAttributes
@@ -54,7 +51,7 @@ abstract class BaseExceptionsHandler(
             } else {
                 DefaultInternalErrorException(error.cause)
             }
-
+            is TokenExpiredException -> error
             is BaseException -> error
 
             else -> DefaultInternalErrorException(error.cause)

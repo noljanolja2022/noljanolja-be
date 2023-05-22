@@ -232,6 +232,24 @@ class CoreApi(
         }
         .awaitBody<Response<CoreVideoRewardConfig>>().data!!
 
+    suspend fun getVideoRewardConfig(
+        videoId: String,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("/api/v2/reward/videos/configs/{videoId}")
+                .build(videoId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreVideoRewardConfig>>().data
+
     suspend fun upsertVideoRewardConfigs(
         payload: CoreUpsertVideoConfigRequest,
     ) = webClient.put()

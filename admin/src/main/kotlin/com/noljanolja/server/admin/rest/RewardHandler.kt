@@ -6,6 +6,7 @@ import com.noljanolja.server.admin.rest.request.UpsertVideoConfigRequest
 import com.noljanolja.server.admin.service.RewardService
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
+import com.noljanolja.server.common.exception.TokenExpiredException
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import org.springframework.stereotype.Component
@@ -44,6 +45,19 @@ class RewardHandler(
         val configId = request.pathVariable("configId").toLongOrNull() ?: throw InvalidParamsException("configId")
         val video = rewardService.getVideoRewardConfigs(
             configId = configId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = video,
+                )
+            )
+    }
+
+    suspend fun getRewardConfigByVideo(request: ServerRequest): ServerResponse {
+        val videoId = request.pathVariable("videoId")
+        val video = rewardService.getVideoRewardConfig(
+            videoId = videoId,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

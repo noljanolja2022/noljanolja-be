@@ -27,5 +27,6 @@ class RewardRouter(
                 PUT("", rewardHandler::upsertChatConfig)
             }
         }
+        GET("/api/v2/reward/videos/configs/{videoId}", rewardHandler::getRewardConfigByVideo)
     }
 }

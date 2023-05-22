@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuthException
 import com.noljanolja.server.common.exception.DefaultUnauthorizedException
 import com.noljanolja.server.common.exception.InvalidTokenProvidedException
 import com.noljanolja.server.common.exception.NoTokenProvidedException
+import com.noljanolja.server.common.exception.TokenExpiredException
 import com.noljanolja.server.common.filter.BaseWebFilter
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.mono
@@ -40,7 +41,7 @@ class TokenFilter(
             firebaseAuth.verifyIdToken(token.substring(BEARER_PREFIX.length))
         } catch (error: FirebaseAuthException) {
             when (error.authErrorCode) {
-                AuthErrorCode.EXPIRED_ID_TOKEN -> throw DefaultUnauthorizedException(Error("Token is expired, please use a new token"))
+                AuthErrorCode.EXPIRED_ID_TOKEN -> throw TokenExpiredException(Error("Token is expired, please use a new token"))
 
                 else -> throw DefaultUnauthorizedException(
                     cause = error

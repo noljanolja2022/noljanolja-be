@@ -2,6 +2,7 @@ package com.noljanolja.server.admin.adapter.auth
 
 import com.noljanolja.server.admin.model.CoreServiceError
 import com.noljanolja.server.admin.model.CreateUserRequest
+import com.noljanolja.server.common.exception.TokenExpiredException
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
@@ -30,7 +31,10 @@ class AuthApi(
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
+                if (response.code == 401003) {
+                    TokenExpiredException()
+                } else
+                    CoreServiceError.CoreServiceBadRequest(response.message)
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
@@ -50,7 +54,10 @@ class AuthApi(
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
+                if (response.code == 401003) {
+                    TokenExpiredException()
+                } else
+                    CoreServiceError.CoreServiceBadRequest(response.message)
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {

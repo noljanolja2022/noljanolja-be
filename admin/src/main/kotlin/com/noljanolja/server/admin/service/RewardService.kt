@@ -32,6 +32,10 @@ class RewardService(
         configId: Long,
     ) = coreApi.getVideoRewardConfig(configId).toVideoRewardConfig()
 
+    suspend fun getVideoRewardConfig(
+        videoId: String
+    ) = coreApi.getVideoRewardConfig(videoId)?.toVideoRewardConfig()
+
     suspend fun deleteVideoConfig(
         configId: Long,
     ) = coreApi.deleteVideoRewardConfigs(configId)
