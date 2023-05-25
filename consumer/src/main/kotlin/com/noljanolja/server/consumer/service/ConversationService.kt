@@ -9,6 +9,8 @@ import com.noljanolja.server.consumer.rest.request.Attachments
 import com.noljanolja.server.consumer.rest.request.ConversationUpdateType
 import com.noljanolja.server.consumer.rest.request.CoreUpdateAdminOfConversationReq
 import com.noljanolja.server.consumer.rest.request.CoreUpdateMemberOfConversationReq
+import com.noljanolja.server.consumer.rsocket.SocketRequester
+import com.noljanolja.server.consumer.rsocket.UserSendChatMessage
 import com.noljanolja.server.consumer.utils.getAttachmentPath
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -27,6 +29,7 @@ class ConversationService(
     private val pubSubService: ConversationPubSubService,
     private val notificationService: NotificationService,
     private val storageService: GoogleStorageService,
+    private val socketRequester: SocketRequester,
 ) {
     companion object {
         const val IMAGE_CONTENT_TYPE_PREFIX = "image/"
@@ -213,6 +216,15 @@ class ConversationService(
         }
         withContext(Dispatchers.Default) {
             launch {
+                socketRequester.emitUserSendChatMessage(
+                    UserSendChatMessage(
+                        userId = userId,
+                        conversationId = conversationId,
+                        roomType = conversation.type,
+                    )
+                )
+            }
+            launch {
                 notifyParticipants(conversation)
             }
             launch {
@@ -327,7 +339,7 @@ class ConversationService(
     suspend fun addMemberToConversation(
         currentUserId: String,
         conversationId: Long,
-        newParticipantIds: List<String>
+        newParticipantIds: List<String>,
     ): List<String> {
         val res = coreApi.addMemberToConversation(
             conversationId, CoreUpdateMemberOfConversationReq(
@@ -350,13 +362,13 @@ class ConversationService(
     suspend fun removeMemberFromConversation(
         currentUserId: String,
         conversationId: Long,
-        participantIds: List<String>
+        participantIds: List<String>,
     ): List<String> {
         val res = coreApi.removeMemberFromConversation(
             conversationId, CoreUpdateMemberOfConversationReq(
                 currentUserId, participantIds
             )
-        )?: emptyList()
+        ) ?: emptyList()
 
         withContext(Dispatchers.Default) {
             createEventMessage(
@@ -372,7 +384,7 @@ class ConversationService(
     suspend fun updateAdminOfConversation(
         currentUserId: String,
         conversationId: Long,
-        newAdminId: String
+        newAdminId: String,
     ): String {
         val res = coreApi.setAdminToConversation(
             conversationId, CoreUpdateAdminOfConversationReq(

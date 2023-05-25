@@ -482,3 +482,22 @@ CREATE TABLE IF NOT EXISTS `video_reward_records`
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
+
+--changeset tranhieu956230@gmail.com:10
+
+-- -----------------------------------------------------
+-- Table `chat_reward_records`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `chat_reward_records`;
+
+CREATE TABLE IF NOT EXISTS `chat_reward_records`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `user_id`           VARCHAR(255)    NOT NULL,
+    `conversation_id`   VARCHAR(255)    NOT NULL,
+    `apply_times`       INT             NOT NULL,
+    `message_count`     INT             NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;

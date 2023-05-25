@@ -1,13 +1,14 @@
 package com.noljanolja.server.core.rsocket
 
+import com.noljanolja.server.reward.service.ChatRewardService
 import com.noljanolja.server.reward.service.VideoRewardService
 import org.springframework.messaging.handler.annotation.MessageMapping
-import org.springframework.messaging.rsocket.RSocketRequester
 import org.springframework.stereotype.Controller
 
 
 @Controller
 class RSocketController(
+    private val chatRewardService: ChatRewardService,
     private val videoRewardService: VideoRewardService,
 ) {
     @MessageMapping("watch-video")
@@ -23,7 +24,13 @@ class RSocketController(
     }
 
     @MessageMapping("send-message")
-    suspend fun handleUserChat(requester: RSocketRequester) {
-
+    suspend fun handleUserChat(request: UserSendChatMessage) {
+        with(request) {
+            chatRewardService.handleRewardUser(
+                userId = userId,
+                conversationId = conversationId,
+                roomType = roomType,
+            )
+        }
     }
 }

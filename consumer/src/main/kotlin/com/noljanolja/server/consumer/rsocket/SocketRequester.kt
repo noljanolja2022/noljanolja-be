@@ -16,4 +16,13 @@ class SocketRequester(
             .data(userVideoProgress)
             .sendAndAwait()
     }
+
+    suspend fun emitUserSendChatMessage(
+        userSendChatMessage: UserSendChatMessage,
+    ) {
+        coreRSocketRequester
+            .route("send-message")
+            .data(userSendChatMessage)
+            .sendAndAwait()
+    }
 }
