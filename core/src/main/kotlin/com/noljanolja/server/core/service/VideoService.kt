@@ -40,8 +40,6 @@ class VideoService(
             channel = videoChannelRepo.findById(channelId)!!
             category = videoCategoryRepo.findById(categoryId)!!
             viewCount = videoViewCountRepo.getTotalViewCount(videoId)
-            likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(videoId)
-            commentCount = videoCommentRepo.countAllByVideoId(videoId)
             this.comments = comments
         }.toVideo()
     }
@@ -68,8 +66,6 @@ class VideoService(
             videoModel.channel = channels.first { it.id == videoModel.channelId }
             videoModel.category = categories.first { it.id == videoModel.categoryId }
             videoModel.viewCount = videoViewCountRepo.getTotalViewCount(videoModel.id)
-            videoModel.likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(videoModel.id)
-            videoModel.commentCount = videoCommentRepo.countAllByVideoId(videoModel.id)
             videoModel.toVideo()
         }, total)
     }
@@ -82,8 +78,6 @@ class VideoService(
             videoModel.channel = channels.first { it.id == videoModel.channelId }
             videoModel.category = categories.first { it.id == videoModel.categoryId }
             videoModel.viewCount = videoViewCountRepo.getTotalViewCount(videoModel.id)
-            videoModel.likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(videoModel.id)
-            videoModel.commentCount = videoCommentRepo.countAllByVideoId(videoModel.id)
             videoModel.toVideo()
         }
     }
@@ -123,6 +117,8 @@ class VideoService(
                 publishedAt = videoInfo.publishedAt
                 thumbnail = videoInfo.thumbnail
                 favoriteCount = videoInfo.favoriteCount
+                likeCount = videoInfo.likeCount
+                commentCount = videoInfo.commentCount
                 channelId = videoInfo.channel.id
                 categoryId = videoInfo.category.id
                 duration = videoInfo.duration
@@ -144,8 +140,6 @@ class VideoService(
                 this.channel = channel
                 this.category = category
                 this.viewCount = videoViewCountRepo.getTotalViewCount(id)
-                this.likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(id)
-                this.commentCount = videoCommentRepo.countAllByVideoId(id)
             }.toVideo()
     }
 
@@ -183,8 +177,6 @@ class VideoService(
             it.channel = videoChannelRepo.findById(it.channelId)!!
             it.category = videoCategoryRepo.findById(it.categoryId)!!
             it.viewCount = videoViewCountRepo.getTotalViewCount(it.id)
-            it.likeCount = videoUserRepo.countAllByIsLikedIsTrueAndVideoId(it.id)
-            it.commentCount = videoCommentRepo.countAllByVideoId(it.id)
             it.toVideo()
         }
     }

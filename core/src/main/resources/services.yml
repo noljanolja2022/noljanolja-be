@@ -1,0 +1,6 @@
+services:
+  configs:
+    - id: YOUTUBE
+      baseUrl: ${YOUTUBE_BASE_URL}
+      extra:
+        apiKey: ${YOUTUBE_API_KEY}

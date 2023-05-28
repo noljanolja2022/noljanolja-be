@@ -46,6 +46,12 @@ data class VideoModel(
     @Column("is_highlighted")
     var isHighlighted: Boolean = false,
 
+    @Column("like_count")
+    var likeCount: Long = 0,
+
+    @Column("comment_count")
+    var commentCount: Long = 0,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -63,12 +69,6 @@ data class VideoModel(
 
     @Transient
     var viewCount: Long = 0
-
-    @Transient
-    var likeCount: Long = 0
-
-    @Transient
-    var commentCount: Long = 0
 
     @Transient
     var channel: VideoChannelModel = VideoChannelModel()

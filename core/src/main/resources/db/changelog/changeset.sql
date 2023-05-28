@@ -295,6 +295,8 @@ CREATE TABLE IF NOT EXISTS `videos`
     `duration`        VARCHAR(255) NOT NULL,
     `duration_ms`     BIGINT       NOT NULL,
     `favorite_count`  BIGINT       NOT NULL,
+    `like_count`      BIGINT       NOT NULL DEFAULT 0,
+    `comment_count`   BIGINT       NOT NULL DEFAULT 0,
     `is_highlighted`  TINYINT      NOT NULL,
     `channel_id`      VARCHAR(255) NOT NULL,
     `category_id`     VARCHAR(255) NOT NULL,
@@ -502,3 +504,7 @@ CREATE TABLE IF NOT EXISTS `chat_reward_records`
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
+
+ALTER TABLE `videos`
+    ADD `like_count` BIGINT NOT NULL DEFAULT 0,
+    ADD `comment_count` BIGINT NOT NULL DEFAULT 0;
