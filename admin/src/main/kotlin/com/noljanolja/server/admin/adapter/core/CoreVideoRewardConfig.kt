@@ -7,6 +7,7 @@ data class CoreVideoRewardConfig(
     val videoId: String,
     val isActive: Boolean,
     val maxApplyTimes: Int,
+    val totalPoints: Long?,
     val rewardProgresses: List<RewardProgress>,
 ) {
     data class RewardProgress(
@@ -20,10 +21,16 @@ fun CoreVideoRewardConfig.toVideoRewardConfig() = VideoRewardConfig(
     videoId = videoId,
     isActive = isActive,
     maxApplyTimes = maxApplyTimes,
-    rewardProgresses = rewardProgresses.map {
-        VideoRewardConfig.RewardProgress(
-            progress = it.progress,
-            point = it.point,
-        )
+    totalPoints = totalPoints,
+    rewardProgresses = rewardProgresses.let { progresses ->
+        var previousPoints = 0L
+        progresses.map {
+            val progress = VideoRewardConfig.RewardProgress(
+                progress = it.progress,
+                point = it.point + previousPoints,
+            )
+            previousPoints += it.point
+            progress
+        }
     }
 )

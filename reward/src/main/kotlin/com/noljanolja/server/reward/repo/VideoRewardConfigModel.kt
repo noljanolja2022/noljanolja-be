@@ -24,6 +24,12 @@ data class VideoRewardConfigModel(
     @Column("max_apply_times")
     var maxApplyTimes: Int = 0,
 
+    @Column("total_points")
+    var totalPoints: Long? = null,
+
+    @Column("rewarded_points")
+    var rewardedPoints: Long = 0,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -41,6 +47,7 @@ fun VideoRewardConfigModel.toVideoRewardConfig() = VideoRewardConfig(
     videoId = videoId,
     isActive = isActive,
     maxApplyTimes = maxApplyTimes,
+    totalPoints = totalPoints,
     rewardProgresses = rewardProgresses.map {
         VideoRewardConfig.RewardProgress(
             point = it.rewardPoint,

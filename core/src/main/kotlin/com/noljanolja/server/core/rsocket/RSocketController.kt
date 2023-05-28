@@ -17,7 +17,6 @@ class RSocketController(
             videoRewardService.handleRewardUser(
                 userId = userId,
                 videoId = videoId,
-                sessionId = sessionId,
                 progressPercentage = progressPercentage,
             )
         }

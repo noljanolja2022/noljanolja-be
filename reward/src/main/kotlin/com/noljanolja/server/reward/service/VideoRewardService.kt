@@ -20,16 +20,13 @@ class VideoRewardService(
     private val loyaltyService: LoyaltyService,
 ) {
     suspend fun handleRewardUser(
-        sessionId: String,
         progressPercentage: Double,
         userId: String,
         videoId: String,
     ) {
         // find config for video if existed else use config of default video else throw err
-        val configForVideo = videoRewardConfigRepo.findByVideoId(videoId)?.takeIf { it.isActive }
-            ?: videoRewardConfigRepo.findByVideoId("")?.takeIf { it.isActive }
-            ?: throw Error.ConfigNotFound
-
+        val configForVideo = videoRewardConfigRepo.findByVideoIdForUpdate(videoId)?.takeIf { it.isActive }
+            ?: return
         // find progress configs of the video
         val progressConfigsForVideo = videoRewardProgressConfigRepo.findAllByConfigId(configForVideo.id)
             .toList()
@@ -42,24 +39,25 @@ class VideoRewardService(
         ).toList()
         // count number of times user received reward for each progress
         val rewardMapCounts = rewardRecords.groupingBy { it.rewardProgress }.eachCount()
-        val receivedRewardsInSession = rewardRecords
-            .mapNotNull { if (it.sessionId == sessionId) it.rewardProgress else null }
+        val lastRewardRecord = rewardRecords.maxByOrNull { it.createdAt }
         // for each progress config of the video check
         var totalReceivedPoints = 0L
         progressConfigsForVideo.mapNotNull { progressConfig ->
-            //check whether user has received reward for this session at the progress
+            //check whether user has received reward at this progress
             //check if progressConfig is less than or equal to progressPercentage
             //check if user received all the reward for at this progress
-            if (!receivedRewardsInSession.contains(progressConfig.progress) &&
+            //check if budget is still available
+            if ((lastRewardRecord == null || (lastRewardRecord.rewardProgress < progressPercentage)) &&
                 progressConfig.progress <= progressPercentage &&
-                (rewardMapCounts[progressConfig.progress]?.toDouble() ?: 0.0) < configForVideo.maxApplyTimes
+                (rewardMapCounts[progressConfig.progress]?.toDouble() ?: 0.0) < configForVideo.maxApplyTimes &&
+                configForVideo.totalPoints?.let { it >= configForVideo.rewardedPoints + progressConfig.rewardPoint } != false
             ) {
+                configForVideo.rewardedPoints += progressConfig.rewardPoint
                 totalReceivedPoints += progressConfig.rewardPoint
                 VideoRewardRecordModel(
                     userId = userId,
                     configId = configForVideo.id,
                     rewardProgress = progressConfig.progress,
-                    sessionId = sessionId,
                     videoId = videoId,
                 )
             } else null
@@ -69,6 +67,7 @@ class VideoRewardService(
                 point = totalReceivedPoints,
                 reason = "Watch video",
             )
+            videoRewardConfigRepo.save(configForVideo)
             videoRewardRecordRepo.saveAll(it).toList()
         }
     }
@@ -79,13 +78,7 @@ class VideoRewardService(
     ): List<UserVideoRewardRecord> {
         if (videoIds.isEmpty() || userId.isBlank()) return emptyList()
         val configs = videoRewardConfigRepo.findAllByVideoIdInAndActiveIsTrue(videoIds).toList().toMutableList()
-            .also { configs ->
-                if (configs.size < videoIds.size) {
-                    videoRewardConfigRepo.findByVideoId("")?.let { defaultConfig ->
-                        configs.add(defaultConfig)
-                    }
-                }
-            }.ifEmpty { return emptyList() }
+            .ifEmpty { return emptyList() }
         val userRewardRecords = videoRewardRecordRepo.findAllByUserIdAndConfigIdIn(
             userId = userId,
             configIds = configs.map { it.id },
@@ -115,7 +108,7 @@ class VideoRewardService(
                     videoId = videoId,
                     rewardProgresses = rewardProgresses,
                     completed = rewardProgresses.all { it.completed },
-                    totalPoints = rewardProgressesConfigs.sumOf { if (it.configId == config.id) it.rewardPoint else 0L } * config.maxApplyTimes,
+                    totalPoints = config.rewardedPoints,
                     earnedPoints = rewardProgresses.sumOf { it.point * it.claimedAts.size },
                 )
             }
@@ -147,11 +140,9 @@ class VideoRewardService(
     suspend fun getVideoRewardConfig(
         videoId: String
     ): VideoRewardConfig? {
-        val res = (if (videoId == "global")
-            videoRewardConfigRepo.findByVideoId("")
-        else videoRewardConfigRepo.findByVideoId(videoId)) ?: return null
-        res.rewardProgresses = videoRewardProgressConfigRepo.findAllByConfigId(res.id).toList()
-        return res.toVideoRewardConfig()
+        return videoRewardConfigRepo.findByVideoId(videoId)?.apply {
+            rewardProgresses = videoRewardProgressConfigRepo.findAllByConfigId(id).toList()
+        }?.toVideoRewardConfig()
     }
 
     suspend fun deleteVideoConfig(
@@ -167,6 +158,7 @@ class VideoRewardService(
                 isActive = newConfig.isActive
                 maxApplyTimes = newConfig.maxApplyTimes
                 videoId = newConfig.videoId
+                totalPoints = newConfig.totalPoints
             }
         )
         val progresses = newConfig.rewardProgresses.map {

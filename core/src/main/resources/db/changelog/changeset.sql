@@ -443,6 +443,8 @@ CREATE TABLE IF NOT EXISTS `video_reward_configs`
     `video_id`          VARCHAR(255) NOT NULL,
     `active`            TINYINT      NOT NULL,
     `max_apply_times`   INT          NOT NULL,
+    `total_points`      BIGINT       NULL,
+    `rewarded_points`   BIGINT       NOT NULL,
     `created_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
@@ -477,7 +479,6 @@ CREATE TABLE IF NOT EXISTS `video_reward_records`
     `user_id`           VARCHAR(255)    NOT NULL,
     `config_id`         BIGINT          NOT NULL,
     `reward_progress`   DOUBLE          NOT NULL,
-    `session_id`        VARCHAR(255)    NOT NULL,
     `video_id`          VARCHAR(255)    NOT NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP

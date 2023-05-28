@@ -105,6 +105,10 @@ paths:
                 maxApplyTimes:
                   type: number
                   format: integer
+                totalPoints:
+                  type: number
+                  format: int64
+                  nullable: true
                 rewardProgresses:
                   type: array
                   items:
@@ -204,8 +208,8 @@ paths:
                           $ref: "#/components/schemas/ChatRewardConfig"
     put:
       tags: [ Reward ]
-      summary: Upsert config for a video
-      description: Upsert config for a video
+      summary: Upsert chat config
+      description: Upsert chat config
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -300,6 +304,10 @@ components:
         maxApplyTimes:
           type: number
           format: integer
+        totalPoints:
+          type: number
+          format: int64
+          nullable: true
         rewardProgresses:
           type: array
           items:

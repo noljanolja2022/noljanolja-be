@@ -5,6 +5,7 @@ data class VideoRewardConfig(
     val videoId: String,
     val isActive: Boolean,
     val maxApplyTimes: Int,
+    val totalPoints: Long?,
     val rewardProgresses: List<RewardProgress>,
 ) {
     data class RewardProgress(

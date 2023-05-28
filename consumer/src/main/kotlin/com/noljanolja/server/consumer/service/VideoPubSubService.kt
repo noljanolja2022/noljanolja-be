@@ -23,10 +23,6 @@ class VideoPubSubService(
     private val coreApi: CoreApi,
     private val socketRequester: SocketRequester,
 ) {
-    companion object {
-        const val SESSION_PREFIX = "session"
-    }
-
     @OptIn(DelicateCoroutinesApi::class)
     suspend fun saveProgress(userId: String, progress: VideoProgress) {
         // TODO Add validation of progress
@@ -34,8 +30,6 @@ class VideoPubSubService(
         val videoDetails = coreApi.getVideoDetails(progress.videoId).toConsumerVideo()
         val progressPercentage = progress.durationMs.toDouble() / videoDetails.durationMs
         if (progressPercentage < 0 || progressPercentage > 1) return
-        val sessionKey = "$SESSION_PREFIX-$userId-${progress.videoId}"
-        var sessionId = userVideoProgressRedisTemplate.opsForValue().getAndAwait(sessionKey)
         when (progress.event) {
             VideoProgressEvent.PLAY -> {
                 videoRedisTemplate.opsForValue().setAndAwait(
@@ -43,10 +37,6 @@ class VideoPubSubService(
                     progress
                 )
                 userVideoProgressRedisTemplate.opsForSet().addAndAwait(userId, progress.videoId)
-                if (sessionId == null) {
-                    sessionId = UUID.randomUUID().toString()
-                    userVideoProgressRedisTemplate.opsForValue().setAndAwait(sessionKey, sessionId)
-                }
             }
 
             VideoProgressEvent.PAUSE -> {
@@ -59,16 +49,14 @@ class VideoPubSubService(
             VideoProgressEvent.FINISH -> {
                 videoRedisTemplate.opsForValue().deleteAndAwait(getProgressKey(userId, progress.videoId))
                 userVideoProgressRedisTemplate.opsForSet().removeAndAwait(userId, progress.videoId)
-                userVideoProgressRedisTemplate.opsForValue().deleteAndAwait(sessionKey)
             }
         }
-        if (progress.event != VideoProgressEvent.PAUSE && !sessionId.isNullOrBlank()) {
+        if (progress.event != VideoProgressEvent.PAUSE) {
             GlobalScope.launch {
                 socketRequester.emitUserWatchVideo(
                     UserVideoProgress(
                         userId = userId,
                         videoId = progress.videoId,
-                        sessionId = sessionId.toString(),
                         progressPercentage = progressPercentage,
                     )
                 )

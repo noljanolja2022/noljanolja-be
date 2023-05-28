@@ -6,6 +6,7 @@ import com.noljanolja.server.admin.adapter.core.request.CoreUpsertChatConfigRequ
 import com.noljanolja.server.admin.adapter.core.request.CoreUpsertVideoConfigRequest
 import com.noljanolja.server.admin.adapter.core.toChatRewardConfig
 import com.noljanolja.server.admin.adapter.core.toVideoRewardConfig
+import com.noljanolja.server.admin.exception.Error
 import com.noljanolja.server.admin.model.RoomType
 import com.noljanolja.server.admin.model.VideoRewardConfig
 import com.noljanolja.server.admin.rest.request.UpsertChatConfigRequest
@@ -47,11 +48,18 @@ class RewardService(
             videoId = request.videoId,
             isActive = request.isActive,
             maxApplyTimes = request.maxApplyTimes,
-            rewardProgresses = request.rewardProgresses.map {
-                CoreUpsertVideoConfigRequest.VideoConfigProgress(
-                    point = it.point,
-                    progress = it.progress,
-                )
+            totalPoints = request.totalPoints,
+            rewardProgresses = request.rewardProgresses.sortedBy { it.progress }.let { progresses ->
+                var previousProgressPoint = 0L
+                progresses.map {
+                    if (it.progress < 0 || it.progress > 1) throw Error.InvalidProgress
+                    val progress = CoreUpsertVideoConfigRequest.VideoConfigProgress(
+                        point = it.point - previousProgressPoint,
+                        progress = it.progress,
+                    )
+                    previousProgressPoint = it.point
+                    progress
+                }
             }
         )
     ).toVideoRewardConfig()

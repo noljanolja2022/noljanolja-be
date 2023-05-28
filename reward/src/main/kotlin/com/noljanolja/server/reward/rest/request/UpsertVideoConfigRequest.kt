@@ -3,6 +3,7 @@ package com.noljanolja.server.reward.rest.request
 data class UpsertVideoConfigRequest(
     val videoId: String,
     val isActive: Boolean,
+    val totalPoints: Long?,
     val maxApplyTimes: Int,
     val rewardProgresses: List<VideoConfigProgress>,
 ) {

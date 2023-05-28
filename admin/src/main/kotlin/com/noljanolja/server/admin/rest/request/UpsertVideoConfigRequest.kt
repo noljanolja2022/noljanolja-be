@@ -4,6 +4,7 @@ data class UpsertVideoConfigRequest(
     val videoId: String,
     val isActive: Boolean,
     val maxApplyTimes: Int,
+    val totalPoints: Long?,
     val rewardProgresses: List<VideoConfigProgress>,
 ) {
     data class VideoConfigProgress(
