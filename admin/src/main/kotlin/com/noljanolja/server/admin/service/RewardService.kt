@@ -66,7 +66,7 @@ class RewardService(
 
     suspend fun getChatConfigs(
         roomType: RoomType? = null,
-    ) = coreApi.getChatConfigs(roomType?.name).toChatRewardConfig()
+    ) = coreApi.getChatConfigs(roomType?.name).map{it.toChatRewardConfig()}
 
     suspend fun upsertChatConfig(
         payload: UpsertChatConfigRequest,

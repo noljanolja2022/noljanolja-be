@@ -304,7 +304,7 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<CoreChatRewardConfig>>().data!!
+        .awaitBody<Response<List<CoreChatRewardConfig>>>().data!!
 
     suspend fun upsertChatConfig(
         payload: CoreUpsertChatConfigRequest,
