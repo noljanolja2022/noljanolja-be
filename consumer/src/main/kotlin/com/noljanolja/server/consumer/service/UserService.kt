@@ -54,6 +54,7 @@ class UserService(
             name = request.name,
             email = request.email,
             dob = request.dob,
+            avatar = request.avatar,
             gender = request.gender,
             preferences = request.preferences ?: CoreUserPreferences()
         )
