@@ -221,6 +221,7 @@ class ConversationService(
                         userId = userId,
                         conversationId = conversationId,
                         roomType = conversation.type,
+                        creatorId = conversation.creator.id,
                     )
                 )
             }

@@ -108,7 +108,7 @@ class VideoRewardService(
                     videoId = videoId,
                     rewardProgresses = rewardProgresses,
                     completed = rewardProgresses.all { it.completed },
-                    totalPoints = config.rewardedPoints,
+                    totalPoints = rewardProgressesConfigs.sumOf { it.rewardPoint * config.maxApplyTimes },
                     earnedPoints = rewardProgresses.sumOf { it.point * it.claimedAts.size },
                 )
             }
@@ -138,7 +138,7 @@ class VideoRewardService(
         }?.toVideoRewardConfig() ?: throw Error.ConfigNotFound
 
     suspend fun getVideoRewardConfig(
-        videoId: String
+        videoId: String,
     ): VideoRewardConfig? {
         return videoRewardConfigRepo.findByVideoId(videoId)?.apply {
             rewardProgresses = videoRewardProgressConfigRepo.findAllByConfigId(id).toList()

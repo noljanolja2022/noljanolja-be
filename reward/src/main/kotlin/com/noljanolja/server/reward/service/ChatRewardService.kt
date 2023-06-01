@@ -19,17 +19,19 @@ class ChatRewardService(
         userId: String,
         conversationId: Long,
         roomType: RoomType,
+        creatorId: String,
     ) {
         // Get config for current conversation type
         // if config not exist then return
         val rewardConfig = chatRewardConfigRepo.findByRoomType(roomType)?.takeIf { it.isActive } ?: return
         // get reward record for user in this conversation
         // if record not exist create new
+        val memberId = if (rewardConfig.onlyRewardCreator) creatorId else userId
         val rewardRecord = chatRewardRecordRepo.findByUserIdAndConversationIdForUpdate(
-            userId = userId,
+            userId = memberId,
             conversationId = conversationId,
         ) ?: ChatRewardRecordModel(
-            userId = userId,
+            userId = memberId,
             conversationId = conversationId,
             applyTimes = 0,
             messageCount = 0,
@@ -43,7 +45,7 @@ class ChatRewardService(
             rewardRecord.messageCount = 0
             rewardRecord.applyTimes++
             loyaltyService.addTransaction(
-                memberId = userId,
+                memberId = memberId,
                 point = rewardConfig.rewardPoint,
                 reason = "Send messages",
             )
