@@ -202,3 +202,16 @@ serverRewardTest = [
     "spring-boot-test",
     "reactor-test",
 ]
+
+serverGifts = [
+    "spring-boot-r2dbc",
+    "r2dbc-proxy"
+]
+
+serverGiftsRuntime = [
+]
+
+serverGiftsTest = [
+    "spring-boot-test",
+    "reactor-test",
+]

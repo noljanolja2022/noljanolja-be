@@ -8,7 +8,7 @@ sealed class Error(
     cause: Throwable?,
 ) : BaseException(code, message, cause) {
     companion object {
-        const val CONFIG_NOT_FOUND = 404_001
+        const val CONFIG_NOT_FOUND = 404_009
         const val INVALID_VIDEO_CONFIG = 400_200
     }
 

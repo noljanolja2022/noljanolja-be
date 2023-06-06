@@ -21,6 +21,7 @@ tags:
     description: Operation relate to message
   - name: Media
     description: Stickers, emojis, etc.
+  - name: Gift
 paths:
   /api/v1/users/me:
     get:
@@ -935,7 +936,7 @@ paths:
           name: type
           schema:
             type: string
-            enum: [ALL, RECEIVED, SPENT]
+            enum: [ ALL, RECEIVED, SPENT ]
         - in: query
           name: month
           schema:
@@ -962,6 +963,143 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/LoyaltyPoint"
+  /api/v1/gifts/me:
+    get:
+      tags: [ Gift ]
+      summary: Get my gifts
+      description: Get my gifts
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: number
+            format: int64
+          required: false
+        - in: query
+          name: brandId
+          schema:
+            type: number
+            format: int64
+          required: false
+        - in: query
+          name: page
+          schema:
+            type: number
+            format: integer
+          required: false
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+            format: integer
+          required: false
+      responses:
+        "200":
+          description: Return my gifts
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Gift"
+  /api/v1/gifts:
+    get:
+      tags: [ Gift ]
+      summary: Get gifts in shop
+      description: Get gifts in shop
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: number
+            format: int64
+          required: false
+        - in: query
+          name: brandId
+          schema:
+            type: number
+            format: int64
+          required: false
+        - in: query
+          name: page
+          schema:
+            type: number
+            format: integer
+          required: false
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+            format: integer
+          required: false
+      responses:
+        "200":
+          description: Return gifts
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Gift"
+  /api/v1/gifts/{giftId}:
+    get:
+      tags: [ Gift ]
+      summary: Get detail of gift
+      description: Get detail of gift
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: giftId
+          schema:
+            type: number
+            format: int64
+          required: true
+      responses:
+        "200":
+          description: Return gift's detail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - $ref: "#/components/schemas/Gift"
+  /api/v1/gifts/{giftId}/buy:
+    get:
+      tags: [ Gift ]
+      summary: Buy a gift
+      description: Buy a gift
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: giftId
+          schema:
+            type: number
+            format: int64
+          required: true
+      responses:
+        "200":
+          description: Return gift's detail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -1349,3 +1487,56 @@ components:
     LoyaltyTier:
       type: string
       enum: [ BRONZE, SILVER, GOLD, DIAMOND ]
+    Gift:
+      type: object
+      properties:
+        id:
+          type: number
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        image:
+          type: string
+        startTime:
+          type: string
+          format: datetime
+        endTime:
+          type: string
+          format: datetime
+        price:
+          type: number
+          format: int64
+        total:
+          type: number
+          format: integer
+        remaining:
+          type: number
+          format: integer
+        codes:
+          type: array
+          items:
+            type: string
+        isPurchasable:
+          type: boolean
+        category:
+          type: object
+          properties:
+            id:
+              type: number
+              format: int64
+            code:
+              type: string
+            image:
+              type: string
+        brand:
+          type: object
+          properties:
+            id:
+              type: number
+              format: int64
+            name:
+              type: string
+            image:
+              type: string

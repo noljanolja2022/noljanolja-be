@@ -510,3 +510,73 @@ ALTER TABLE `videos`
     ADD `view_count` BIGINT NOT NULL DEFAULT 0,
     ADD `like_count` BIGINT NOT NULL DEFAULT 0,
     ADD `comment_count` BIGINT NOT NULL DEFAULT 0;
+
+--changeset tranhieu956230@gmail.com:11
+
+-- -----------------------------------------------------
+-- Table `gift_brands`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `gift_brands`;
+
+CREATE TABLE IF NOT EXISTS `gift_brands`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `name`              VARCHAR(255)    NOT NULL,
+    `image`             VARCHAR(255)    NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `gift_categories`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `gift_categories`;
+
+CREATE TABLE IF NOT EXISTS `gift_categories`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `code`              VARCHAR(255)    NOT NULL,
+    `image`             VARCHAR(255)    NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `gifts`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `gifts`;
+
+CREATE TABLE IF NOT EXISTS `gifts`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `name`              VARCHAR(255)    NOT NULL,
+    `description`       VARCHAR(1024)   NOT NULL,
+    `image`             VARCHAR(255)    NOT NULL,
+    `start_time`        DATETIME        NOT NULL,
+    `end_time`          DATETIME        NOT NULL,
+    `category_id`       BIGINT          NOT NULL,
+    `brand_id`          BIGINT          NOT NULL,
+    `total`             INT             NOT NULL,
+    `remaining`         INT             NOT NULL,
+    `price`             BIGINT          NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `gift_codes`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `gift_codes`;
+
+CREATE TABLE IF NOT EXISTS `gift_codes`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `gift_id`           BIGINT          NOT NULL,
+    `user_id`           VARCHAR(255)    NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;

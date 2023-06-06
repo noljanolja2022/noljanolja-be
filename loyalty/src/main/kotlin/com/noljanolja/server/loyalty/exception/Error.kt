@@ -8,7 +8,7 @@ sealed class Error(
     cause: Throwable?,
 ) : BaseException(code, message, cause) {
     companion object {
-        const val MEMBER_NOT_FOUND = 404_100
+        const val MEMBER_NOT_FOUND = 404_008
         const val INSUFFICIENT_BALANCE = 400_100
     }
 
