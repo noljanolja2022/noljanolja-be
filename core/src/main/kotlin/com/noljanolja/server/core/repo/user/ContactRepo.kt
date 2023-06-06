@@ -18,4 +18,6 @@ interface ContactRepo : CoroutineCrudRepository<ContactModel, Long> {
     fun findAllByPhoneNumberIn(
         phones: List<String>,
     ): Flow<ContactModel>
+
+    fun findByPhoneNumberAndCountryCode(phone: String, countryCode: String): Flow<ContactModel>
 }

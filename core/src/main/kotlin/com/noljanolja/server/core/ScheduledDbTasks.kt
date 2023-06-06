@@ -20,7 +20,7 @@ class ScheduledDbTasks(
     private val logger = LoggerFactory.getLogger(ScheduledDbTasks::class.java)
 
     //TODO: only run jobs on video with last watch less than 30 days
-    @Scheduled(cron = "0 0 10 ? * 1")
+    @Scheduled(cron = "0 0 10 ? * ?")
     fun syncLikeAndCommentCounts() {
         val start = Instant.now().toEpochMilli()
         logger.info("Begin updating video comments and likes count")
@@ -31,19 +31,28 @@ class ScheduledDbTasks(
             for (i in pv.indices) {
                 ids.add(pv[i].id)
                 if (ids.size >= 10 || i == pv.size - 1) {
-                    updateLikeCommentCounts(ids)
+                    updateStatistics(ids)
                     ids.clear()
                 }
             }
         }
-        logger.info("Finished Synchronizing Youtube like and comments in: ${Instant.now().toEpochMilli() - start} milliseconds")
+        logger.info(
+            "Finished Synchronizing Youtube like and comments in: ${
+                Instant.now().toEpochMilli() - start
+            } milliseconds"
+        )
     }
 
     @Transactional
-    suspend fun updateLikeCommentCounts(videoIds: List<String>) {
+    suspend fun updateStatistics(videoIds: List<String>) {
         val res = youtubeApi.fetchVideoDetail(videoIds)
         res.items.forEach {
-            videoRepo.updateLikeAndComment(it.id, it.statistics.likeCount.toLong(), it.statistics.commentCount.toLong())
+            videoRepo.updateCommonStatistics(
+                it.id,
+                it.statistics.viewCount.toLong(),
+                it.statistics.likeCount.toLong(),
+                it.statistics.commentCount.toLong()
+            )
         }
     }
 }

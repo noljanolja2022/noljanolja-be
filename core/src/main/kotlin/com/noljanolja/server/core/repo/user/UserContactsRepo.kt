@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface UserContactsRepo : CoroutineCrudRepository<UserContactModel, Long> {
     fun findAllByUserId(userId: String): Flow<UserContactModel>
+
+    fun findByUserIdAndContactId(userId: String, contactId: Long) : Flow<UserContactModel>
 }

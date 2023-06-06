@@ -46,11 +46,22 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
     @Modifying
     @Query(
         """
-            UPDATE videos
+            UPDATE `videos`
             SET `like_count`    = :likeCount,
-                `comment_count` = :commentCount
+                `comment_count` = :commentCount,
+                `view_count`    = :viewCount
             WHERE id = :videoId;
         """
     )
-    suspend fun updateLikeAndComment(videoId: String, likeCount: Long, commentCount: Long)
+    suspend fun updateCommonStatistics(videoId: String, viewCount: Long, likeCount: Long, commentCount: Long)
+
+    @Modifying
+    @Query(
+        """
+            UPDATE `videos`
+            SET `view_count`    = `view_count` + 1
+            WHERE id = :videoId;
+        """
+    )
+    suspend fun addLike(videoId: String)
 }

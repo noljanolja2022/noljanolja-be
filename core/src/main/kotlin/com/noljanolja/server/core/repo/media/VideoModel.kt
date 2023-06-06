@@ -46,6 +46,9 @@ data class VideoModel(
     @Column("is_highlighted")
     var isHighlighted: Boolean = false,
 
+    @Column("view_count")
+    var viewCount: Long = 0,
+
     @Column("like_count")
     var likeCount: Long = 0,
 
@@ -66,9 +69,6 @@ data class VideoModel(
     override fun getId() = _id
 
     override fun isNew() = isNewRecord
-
-    @Transient
-    var viewCount: Long = 0
 
     @Transient
     var channel: VideoChannelModel = VideoChannelModel()

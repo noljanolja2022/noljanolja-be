@@ -8,6 +8,7 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserPreferences
+import com.noljanolja.server.core.rest.request.AddFriendRequest
 import com.noljanolja.server.core.rest.request.UpsertUserContactsRequest
 import com.noljanolja.server.core.rest.request.UpsertUserRequest
 import com.noljanolja.server.core.service.UserService
@@ -128,5 +129,15 @@ class UserHandler(
         return ServerResponse
             .ok()
             .bodyValueAndAwait(Response(data = users))
+    }
+
+    suspend fun sendFriendRequest(request: ServerRequest): ServerResponse {
+        val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
+        val reqBody = request.awaitBodyOrNull<AddFriendRequest>()
+            ?: throw RequestBodyRequired
+        userService.addFriendRequest(userId, reqBody.friendId)
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(Response<Nothing>())
     }
 }

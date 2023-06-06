@@ -21,6 +21,7 @@ data class YoutubeVideo(
     val statistics: Statistic
 ) {
     data class Statistic(
+        val viewCount: String = "0",
         val likeCount: String = "0",
         val commentCount: String = "0"
     )

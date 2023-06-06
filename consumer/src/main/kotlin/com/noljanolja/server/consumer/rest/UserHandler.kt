@@ -5,6 +5,7 @@ import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.User
+import com.noljanolja.server.consumer.rest.request.AddFriendRequest
 import com.noljanolja.server.consumer.rest.request.SyncUserContactsRequest
 import com.noljanolja.server.consumer.rest.request.UpdateCurrentUserRequest
 import com.noljanolja.server.consumer.rest.request.UploadType
@@ -72,7 +73,8 @@ class UserHandler(
             UploadType.AVATAR -> {
                 val avatar =
                     (reqData[PART_FILES_FIELD]?.firstOrNull() as? FilePart) ?: throw DefaultBadRequestException(
-                        Exception(""))
+                        Exception("")
+                    )
                 val fileExtension = avatar.filename().split(".").last()
                 val res = googleStorageService.uploadFile(
                     path = "users/${currentUserId}/avatar.$fileExtension",
@@ -84,9 +86,11 @@ class UserHandler(
                     },
                     isPublicAccessible = true
                 )
-                userService.updateCurrentUser(currentUserId, UpdateCurrentUserRequest(
-                    avatar = res.path
-                ))
+                userService.updateCurrentUser(
+                    currentUserId, UpdateCurrentUserRequest(
+                        avatar = res.path
+                    )
+                )
                 ServerResponse
                     .ok()
                     .bodyValueAndAwait(
@@ -121,18 +125,32 @@ class UserHandler(
 
     suspend fun findUserByPhone(request: ServerRequest): ServerResponse {
         val phoneNumber = request.queryParamOrNull("phoneNumber")
-        if (phoneNumber.isNullOrBlank()) {
+        val friendId = request.queryParamOrNull("friendId")
+        if (phoneNumber.isNullOrBlank() && friendId.isNullOrBlank()) {
             return ServerResponse
                 .ok()
                 .bodyValueAndAwait(
                     Response(data = emptyList<User>())
                 )
         }
-        val res = userService.findUsers(phoneNumber)
+        val res = if (!friendId.isNullOrBlank())
+            listOf(userService.findUserById(friendId))
+        else userService.findUsers(phoneNumber)
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
                 Response(data = res)
+            )
+    }
+
+    suspend fun sendFriendRequest(request: ServerRequest): ServerResponse {
+        val reqBody = request.awaitBodyOrNull<AddFriendRequest>()
+            ?: throw RequestBodyRequired
+        userService.sendFriendRequest(AuthUserHolder.awaitUser().id, reqBody)
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                Response<Nothing>()
             )
     }
 }

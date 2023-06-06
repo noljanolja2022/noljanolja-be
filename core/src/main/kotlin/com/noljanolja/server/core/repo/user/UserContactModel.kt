@@ -20,7 +20,7 @@ data class UserContactModel(
     val contactId: Long,
 
     @Column("contact_name")
-    val contactName: String,
+    var contactName: String,
 
     @Column("created_at")
     @CreatedDate

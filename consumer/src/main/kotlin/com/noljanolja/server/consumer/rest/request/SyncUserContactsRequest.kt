@@ -5,3 +5,7 @@ import com.noljanolja.server.consumer.model.LocalContact
 data class SyncUserContactsRequest(
     val contacts: List<LocalContact>,
 )
+
+data class AddFriendRequest(
+    val friendId: String,
+)

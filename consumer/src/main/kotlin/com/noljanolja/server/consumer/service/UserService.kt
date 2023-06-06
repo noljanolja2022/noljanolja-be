@@ -9,7 +9,9 @@ import com.noljanolja.server.consumer.adapter.core.CoreUserPreferences
 import com.noljanolja.server.consumer.adapter.core.toConsumerUser
 import com.noljanolja.server.consumer.exception.CoreServiceError
 import com.noljanolja.server.consumer.model.LocalContact
+import com.noljanolja.server.consumer.model.SimpleUser
 import com.noljanolja.server.consumer.model.User
+import com.noljanolja.server.consumer.rest.request.AddFriendRequest
 import com.noljanolja.server.consumer.rest.request.UpdateCurrentUserRequest
 import org.springframework.stereotype.Component
 
@@ -69,9 +71,9 @@ class UserService(
         userId: String,
         page: Int = 1,
         pageSize: Int = 100
-    ) : List<User> {
+    ) : List<SimpleUser> {
         val res = coreApi.getUsers(friendId = userId, page = page, pageSize = pageSize)
-        return res?.first?.map { it.toConsumerUser() } ?: emptyList()
+        return res?.first ?: emptyList()
     }
 
     suspend fun syncUserContacts(
@@ -84,7 +86,26 @@ class UserService(
 
     suspend fun findUsers(
         phoneNumber: String? = null
-    ): List<User> {
-        return coreApi.getUsers(phoneNumber = phoneNumber)?.first?.map { it.toConsumerUser() }.orEmpty()
+    ): List<SimpleUser> {
+        return coreApi.getUsers(phoneNumber = phoneNumber)?.first.orEmpty()
+    }
+
+    suspend fun findUserById(
+        id: String
+    ): SimpleUser {
+        val res = coreApi.getUserDetails(id)
+        return SimpleUser(
+            id = id,
+            name = res.name,
+            avatar = res.avatar,
+            phone = res.phone
+        )
+    }
+
+    suspend fun sendFriendRequest(
+        userId: String,
+        req: AddFriendRequest
+    ) {
+        coreApi.addFriend(userId, req)
     }
 }

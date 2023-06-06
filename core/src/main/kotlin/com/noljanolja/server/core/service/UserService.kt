@@ -1,6 +1,7 @@
 package com.noljanolja.server.core.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.noljanolja.server.common.exception.UserNotFound
 import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
@@ -166,6 +167,52 @@ class UserService(
             userContactsRepo.saveAll(updateUserContacts).toList()
         }
         return newUserContacts.map { it.value.userId }
+    }
+
+    suspend fun addFriendRequest(
+        userId: String,
+        friendId: String,
+    ) {
+        // Add friend to user contact
+        addUserToContact(userId, friendId)
+        // Add user to friend contact
+        addUserToContact(friendId, userId)
+    }
+
+    private suspend fun addUserToContact(recipientId: String, personTobeAddedId: String) {
+        val friend = userRepo.findById(personTobeAddedId) ?: throw UserNotFound
+        val friendPn = parsePhoneNumber(friend.phoneNumber, friend.countryCode.toInt()) ?: throw Error.InvalidPhoneNumber
+        var existingContact = contactsRepo.findByPhoneNumberAndCountryCode(
+            friendPn.nationalNumber.toString(),
+            friendPn.countryCode.toString()
+        ).toList().firstOrNull()
+
+        if (existingContact == null) {
+            existingContact = contactsRepo.save(
+                ContactModel(
+                    id = 0, countryCode = friendPn.countryCode.toString(),
+                    phoneNumber = friendPn.nationalNumber.toString()
+                )
+            )
+        }
+        val existingUserContact = userContactsRepo.findByUserIdAndContactId(
+            recipientId,
+            existingContact.id
+        ).toList().firstOrNull()
+        if (existingUserContact == null) {
+            userContactsRepo.save(
+                UserContactModel(
+                    id = 0,
+                    userId = recipientId,
+                    contactId = existingContact.id,
+                    contactName = friend.name
+                )
+            )
+        } else {
+            userContactsRepo.save(
+                existingUserContact.apply { contactName = friend.name }
+            )
+        }
     }
 
     suspend fun getUserDevices(

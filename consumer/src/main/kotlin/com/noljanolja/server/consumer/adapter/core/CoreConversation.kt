@@ -2,16 +2,17 @@ package com.noljanolja.server.consumer.adapter.core
 
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
+import com.noljanolja.server.consumer.model.SimpleUser
 import java.time.Instant
 
 data class CoreConversation(
     val id: Long,
     val title: String,
-    val creator: CoreUser,
-    val admin: CoreUser,
+    val creator: SimpleUser,
+    val admin: SimpleUser,
     val type: Type,
     val messages: List<Message>,
-    val participants: List<CoreUser>,
+    val participants: List<SimpleUser>,
     val imageUrl: String,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
@@ -26,11 +27,11 @@ data class CoreConversation(
 fun CoreConversation.toConsumerConversation() = Conversation(
     id = id,
     title = title,
-    creator = creator.toConsumerUser(),
-    admin = admin.toConsumerUser(),
+    creator = creator,
+    admin = admin,
     type = Conversation.Type.valueOf(type.name),
     messages = messages,
-    participants = participants.map { it.toConsumerUser() },
+    participants = participants,
     imageUrl = imageUrl,
     createdAt = createdAt,
     updatedAt = updatedAt,

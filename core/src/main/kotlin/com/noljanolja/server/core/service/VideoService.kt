@@ -65,7 +65,6 @@ class VideoService(
         return Pair(videos.map { videoModel ->
             videoModel.channel = channels.first { it.id == videoModel.channelId }
             videoModel.category = categories.first { it.id == videoModel.categoryId }
-            videoModel.viewCount = videoViewCountRepo.getTotalViewCount(videoModel.id)
             videoModel.toVideo()
         }, total)
     }
@@ -77,7 +76,6 @@ class VideoService(
         return videos.map { videoModel ->
             videoModel.channel = channels.first { it.id == videoModel.channelId }
             videoModel.category = categories.first { it.id == videoModel.categoryId }
-            videoModel.viewCount = videoViewCountRepo.getTotalViewCount(videoModel.id)
             videoModel.toVideo()
         }
     }
@@ -139,7 +137,6 @@ class VideoService(
             .apply {
                 this.channel = channel
                 this.category = category
-                this.viewCount = videoViewCountRepo.getTotalViewCount(id)
             }.toVideo()
     }
 
@@ -155,6 +152,7 @@ class VideoService(
             )
         viewCountModel.viewCount++
         videoViewCountRepo.save(viewCountModel)
+        videoRepo.addLike(videoId)
     }
 
     suspend fun getTrendingVideos(
@@ -176,7 +174,6 @@ class VideoService(
         return trendingVideos.map {
             it.channel = videoChannelRepo.findById(it.channelId)!!
             it.category = videoCategoryRepo.findById(it.categoryId)!!
-            it.viewCount = videoViewCountRepo.getTotalViewCount(it.id)
             it.toVideo()
         }
     }

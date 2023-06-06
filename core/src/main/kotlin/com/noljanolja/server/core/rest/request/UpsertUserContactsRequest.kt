@@ -5,3 +5,7 @@ import com.noljanolja.server.core.model.LocalContact
 data class UpsertUserContactsRequest(
     val contacts: List<LocalContact>,
 )
+
+data class AddFriendRequest(
+    val friendId: String
+)

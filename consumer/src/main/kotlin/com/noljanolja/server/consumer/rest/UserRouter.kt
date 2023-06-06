@@ -23,6 +23,7 @@ class UserRouter(
                 DELETE("", userHandler::deleteCurrentUser)
                 POST("/contacts", userHandler::syncCurrentUserContact)
                 GET("/contacts", userHandler::getCurrentUserContacts)
+                POST("/contacts/invite", userHandler::sendFriendRequest)
             }
         }
         (USERS_ROUTE and accept(MediaType.MULTIPART_FORM_DATA)).nest {

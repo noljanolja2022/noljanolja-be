@@ -1,9 +1,10 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 9/5/2023:
-      - Update Loyalty API
-  version: 1.0.3
+    Changelog - 4/6/2023:
+      - Update API findUsers
+      - Add API to add friend to contacts
+  version: 1.0.4
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -132,9 +133,13 @@ paths:
       parameters:
         - in: query
           name: phoneNumber
-          required: true
           schema:
             $ref: "#/components/schemas/phoneNumber"
+        - in: query
+          name: friendId
+          schema:
+            type: string
+          description: the id of the user
       responses:
         "200":
           description: On success
@@ -148,7 +153,7 @@ paths:
                       data:
                         type: array
                         items:
-                          $ref: "#/components/schemas/User"
+                          $ref: "#/components/schemas/SimpleUser"
   /api/v1/users/me/contacts:
     get:
       tags: [ User ]
@@ -210,6 +215,32 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/User"
+  /api/v1/users/me/contacts/invite:
+    post:
+      tags: [ User ]
+      summary: Invite a person to become a friend
+      description: Currently, this will directly add a specified user as friend, and add yourself to that user contact list
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ friendId ]
+              properties:
+                friendId:
+                  type: string
+                  description: id of the user being invited
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseResponse"
+
   /api/v1/push-tokens:
     post:
       tags: [ Push Token ]
@@ -982,6 +1013,18 @@ components:
           type: string
           description: in date format
           example: 2023-03-10 04:04:43
+    SimpleUser:
+      type: object
+      required: [ id ]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+        phone:
+          type: string
     UserPreference:
       type: object
       properties:

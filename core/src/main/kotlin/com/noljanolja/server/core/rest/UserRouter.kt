@@ -25,6 +25,7 @@ class UserRouter(
 
                 "/contacts".nest {
                     POST("", userHandler::upsertUserContacts)
+                    POST("/invite", userHandler::sendFriendRequest)
                 }
             }
         }

@@ -3,6 +3,13 @@ package com.noljanolja.server.consumer.model
 import java.time.Instant
 import java.time.LocalDate
 
+data class SimpleUser(
+    val id: String,
+    val name: String? = null,
+    val avatar: String? = null,
+    val phone: String? = null
+)
+
 data class User(
     val id: String,
     val name: String? = null,

@@ -4,7 +4,9 @@ import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.exception.CoreServiceError
+import com.noljanolja.server.consumer.model.SimpleUser
 import com.noljanolja.server.consumer.model.StickerPack
+import com.noljanolja.server.consumer.rest.request.AddFriendRequest
 import com.noljanolja.server.consumer.rest.request.CoreUpdateAdminOfConversationReq
 import com.noljanolja.server.consumer.rest.request.CoreUpdateMemberOfConversationReq
 import org.springframework.beans.factory.annotation.Qualifier
@@ -43,7 +45,7 @@ class CoreApi(
         phoneNumber: String? = null,
         page: Int = 1,
         pageSize: Int = 100,
-    ): Pair<List<CoreUser>, Pagination>? = webClient.get()
+    ): Pair<List<SimpleUser>, Pagination>? = webClient.get()
         .uri { builder ->
             builder.path(USERS_ENDPOINT).apply {
                 queryParam("page", page)
@@ -64,7 +66,7 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<List<CoreUser>>>().let {
+        .awaitBody<Response<List<SimpleUser>>>().let {
             Pair(it.data!!, it.pagination!!)
         }
 
@@ -138,6 +140,25 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreUser>>>().data!!
+
+    suspend fun addFriend(
+        userId: String,
+        friend: AddFriendRequest
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$USERS_ENDPOINT/{userId}/contacts/invite").build(userId)
+        }
+        .bodyValue(friend)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
 
     suspend fun getPushToken(
         userId: String,
