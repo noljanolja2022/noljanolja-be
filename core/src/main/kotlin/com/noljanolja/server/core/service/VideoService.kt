@@ -39,7 +39,6 @@ class VideoService(
         return video.apply {
             channel = videoChannelRepo.findById(channelId)!!
             category = videoCategoryRepo.findById(categoryId)!!
-            viewCount = videoViewCountRepo.getTotalViewCount(videoId)
             this.comments = comments
         }.toVideo()
     }
