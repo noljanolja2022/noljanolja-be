@@ -3,7 +3,9 @@ package com.noljanolja.server.gifts.rest
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
+import com.noljanolja.server.gifts.rest.request.CreateBrandRequest
 import com.noljanolja.server.gifts.rest.request.CreateGiftRequest
+import com.noljanolja.server.gifts.rest.request.UpdateBrandRequest
 import com.noljanolja.server.gifts.rest.request.UpdateGiftRequest
 import com.noljanolja.server.gifts.service.GiftService
 import org.springframework.stereotype.Component
@@ -108,6 +110,66 @@ class GiftHandler(
             userId = userId,
             giftId = giftId,
         )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
+    suspend fun getCategories(request: ServerRequest): ServerResponse {
+        val categories = giftService.getCategories()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = categories,
+            )
+    }
+
+    suspend fun getBrands(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
+        val brands = giftService.getBrands(
+            page = page,
+            pageSize = pageSize,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = brands,
+            )
+    }
+
+    suspend fun createBrand(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<CreateBrandRequest>() ?: throw RequestBodyRequired
+        val brand = with(payload) {
+            giftService.createBrand(
+                name = name,
+                image = image,
+            )
+        }
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = brand,
+            )
+    }
+
+    suspend fun updateBrand(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<UpdateBrandRequest>() ?: throw RequestBodyRequired
+        val brandId = request.pathVariable("brandId").toLongOrNull() ?: throw InvalidParamsException("brandId")
+        val brand = with(payload) {
+            giftService.updateBrand(
+                name = name,
+                image = image,
+                brandId = brandId,
+            )
+        }
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = brand,
+            )
+    }
+
+    suspend fun deleteBrand(request: ServerRequest): ServerResponse {
+        val brandId = request.pathVariable("brandId").toLongOrNull() ?: throw InvalidParamsException("brandId")
+        giftService.deleteBrand(brandId)
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response<Nothing>()

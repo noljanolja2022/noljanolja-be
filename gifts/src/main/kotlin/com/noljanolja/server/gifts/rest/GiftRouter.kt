@@ -22,6 +22,17 @@ class GiftRouter(
             PATCH("{giftId}", giftHandler::updateGift)
             POST("", giftHandler::createGift)
             POST("{giftId}/buy", giftHandler::buyGift)
+
+            "/categories".nest {
+                GET("", giftHandler::getCategories)
+            }
+
+            "/brands".nest {
+                GET("", giftHandler::getBrands)
+                POST("", giftHandler::createBrand)
+                PATCH("{brandId}", giftHandler::updateBrand)
+                DELETE("{brandId}", giftHandler::deleteBrand)
+            }
         }
     }
 }

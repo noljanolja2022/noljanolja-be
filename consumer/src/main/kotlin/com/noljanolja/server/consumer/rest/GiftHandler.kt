@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.server.queryParamOrNull
 
 @Component
 class GiftHandler(
-    private val giftService: GiftService
+    private val giftService: GiftService,
 ) {
     companion object {
         const val DEFAULT_PAGE = 1
@@ -75,6 +75,27 @@ class GiftHandler(
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = gifts,
+            )
+    }
+
+    suspend fun getGiftCategories(request: ServerRequest): ServerResponse {
+        val categories = giftService.getGiftCategories()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = categories,
+            )
+    }
+
+    suspend fun getGiftBrands(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
+        val brands = giftService.getBrands(
+            page = page,
+            pageSize = pageSize,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = brands,
             )
     }
 }

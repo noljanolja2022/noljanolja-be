@@ -144,7 +144,7 @@ class CoreApi(
 
     suspend fun addFriend(
         userId: String,
-        friend: AddFriendRequest
+        friend: AddFriendRequest,
     ) = webClient.post()
         .uri { builder ->
             builder.path("$USERS_ENDPOINT/{userId}/contacts/invite").build(userId)
@@ -752,4 +752,33 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Nothing>>()
+
+    suspend fun getBrands(
+        page: Int,
+        pageSize: Int,
+    ) = webClient.get()
+        .uri { builder -> builder.path("$GIFT_ENDPOINT/brands").build() }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreGift.Brand>>>().data!!
+
+    suspend fun getCategories() = webClient.get()
+        .uri { builder -> builder.path("$GIFT_ENDPOINT/categories").build() }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreGift.Category>>>().data!!
 }

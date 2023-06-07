@@ -563,7 +563,10 @@ CREATE TABLE IF NOT EXISTS `gifts`
     `remaining`         INT             NOT NULL,
     `price`             BIGINT          NOT NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (brand_id) REFERENCES gift_brands(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES gift_categories(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------
@@ -578,5 +581,7 @@ CREATE TABLE IF NOT EXISTS `gift_codes`
     `gift_id`           BIGINT          NOT NULL,
     `user_id`           VARCHAR(255)    NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (gift_id) REFERENCES gifts(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;

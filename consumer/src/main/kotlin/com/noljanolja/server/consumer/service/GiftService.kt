@@ -2,6 +2,8 @@ package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.adapter.core.toGift
+import com.noljanolja.server.consumer.adapter.core.toGiftBrand
+import com.noljanolja.server.consumer.adapter.core.toGiftCategory
 import com.noljanolja.server.consumer.model.Gift
 import org.springframework.stereotype.Component
 
@@ -58,4 +60,14 @@ class GiftService(
             giftId = giftId,
         ).toGift()
     }
+
+    suspend fun getGiftCategories() = coreApi.getCategories().map { it.toGiftCategory() }
+
+    suspend fun getBrands(
+        page: Int,
+        pageSize: Int,
+    ) = coreApi.getBrands(
+        page = page,
+        pageSize = pageSize,
+    ).map { it.toGiftBrand() }
 }

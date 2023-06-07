@@ -15,10 +15,10 @@ data class GiftBrandModel(
     val id: Long = 0,
 
     @Column("name")
-    val name: String = "",
+    var name: String = "",
 
     @Column("image")
-    val image: String = "",
+    var image: String = "",
 
     @Column("created_at")
     @CreatedDate

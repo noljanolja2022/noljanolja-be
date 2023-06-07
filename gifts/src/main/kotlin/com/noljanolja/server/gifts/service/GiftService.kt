@@ -5,6 +5,7 @@ import com.noljanolja.server.gifts.model.Gift
 import com.noljanolja.server.gifts.repo.*
 import com.noljanolja.server.loyalty.service.LoyaltyService
 import kotlinx.coroutines.flow.toList
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -170,5 +171,48 @@ class GiftService(
     ) {
         giftRepo.findById(giftId) ?: throw Error.GiftNotFound
         giftRepo.deleteById(giftId)
+    }
+
+    suspend fun getCategories(): List<Gift.Category> {
+        return giftCategoryRepo.findAll().toList().map { it.toGiftCategory() }
+    }
+
+    suspend fun getBrands(
+        page: Int,
+        pageSize: Int,
+    ): List<Gift.Brand> {
+        return giftBrandRepo.findAllBy(
+            pageable = PageRequest.of(page - 1, pageSize)
+        ).toList().map { it.toGiftBrand() }
+    }
+
+    suspend fun createBrand(
+        name: String,
+        image: String,
+    ): Gift.Brand {
+        return giftBrandRepo.save(
+            GiftBrandModel(
+                name = name,
+                image = image,
+            )
+        ).toGiftBrand()
+    }
+
+    suspend fun updateBrand(
+        brandId: Long,
+        name: String?,
+        image: String?,
+    ): Gift.Brand {
+        return giftBrandRepo.findById(brandId)?.apply {
+            image?.let { this.image = it }
+            name?.let { this.name = it }
+        }?.let { giftBrandRepo.save(it).toGiftBrand() } ?: throw Error.BrandNotFound
+    }
+
+    suspend fun deleteBrand(
+        brandId: Long,
+    ) {
+        giftBrandRepo.findById(brandId) ?: throw Error.BrandNotFound
+        giftBrandRepo.deleteById(brandId)
     }
 }

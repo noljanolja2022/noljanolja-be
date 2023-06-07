@@ -20,6 +20,8 @@ class GiftRouter(
             GET("/me", giftHandler::getMyGifts)
             GET("/{giftId}", giftHandler::getGiftDetail)
             POST("/{giftId}/buy", giftHandler::buyGift)
+            GET("/categories", giftHandler::getGiftCategories)
+            GET("/brands", giftHandler::getGiftBrands)
         }
     }
 }
