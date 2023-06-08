@@ -1,8 +1,8 @@
-package com.noljanolja.server.gifts.service
+package com.noljanolja.server.gift.service
 
-import com.noljanolja.server.gifts.exception.Error
-import com.noljanolja.server.gifts.model.Gift
-import com.noljanolja.server.gifts.repo.*
+import com.noljanolja.server.gift.exception.Error
+import com.noljanolja.server.gift.model.Gift
+import com.noljanolja.server.gift.repo.*
 import com.noljanolja.server.loyalty.service.LoyaltyService
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.PageRequest
@@ -35,7 +35,7 @@ class GiftService(
                 remaining--
             }
         )
-        giftCodeRepo.findByGiftIdAndUserIdIsNull(giftId)!!.let {
+        giftCodeRepo.findFirstByGiftIdAndUserIdIsNull(giftId)!!.let {
             giftCodeRepo.save(
                 it.apply {
                     this.userId = userId

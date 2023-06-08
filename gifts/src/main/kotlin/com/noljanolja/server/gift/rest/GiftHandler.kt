@@ -1,13 +1,13 @@
-package com.noljanolja.server.gifts.rest
+package com.noljanolja.server.gift.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
-import com.noljanolja.server.gifts.rest.request.CreateBrandRequest
-import com.noljanolja.server.gifts.rest.request.CreateGiftRequest
-import com.noljanolja.server.gifts.rest.request.UpdateBrandRequest
-import com.noljanolja.server.gifts.rest.request.UpdateGiftRequest
-import com.noljanolja.server.gifts.service.GiftService
+import com.noljanolja.server.gift.rest.request.CreateBrandRequest
+import com.noljanolja.server.gift.rest.request.CreateGiftRequest
+import com.noljanolja.server.gift.rest.request.UpdateBrandRequest
+import com.noljanolja.server.gift.rest.request.UpdateGiftRequest
+import com.noljanolja.server.gift.service.GiftService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
@@ -35,7 +35,9 @@ class GiftHandler(
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = gifts,
+                body = Response(
+                    data = gifts,
+                )
             )
     }
 
@@ -48,7 +50,9 @@ class GiftHandler(
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = gift
+                body = Response(
+                    data = gift,
+                )
             )
     }
 
@@ -69,7 +73,9 @@ class GiftHandler(
         }
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = gift,
+                body = Response(
+                    data = gift,
+                )
             )
     }
 
@@ -89,7 +95,9 @@ class GiftHandler(
         }
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = gift,
+                body = Response(
+                    data = gift,
+                )
             )
     }
 
@@ -120,7 +128,9 @@ class GiftHandler(
         val categories = giftService.getCategories()
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = categories,
+                body = Response(
+                    data = categories,
+                ),
             )
     }
 
@@ -133,7 +143,9 @@ class GiftHandler(
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = brands,
+                body = Response(
+                    data = brands,
+                )
             )
     }
 
@@ -147,7 +159,9 @@ class GiftHandler(
         }
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = brand,
+                body = Response(
+                    data = brand,
+                )
             )
     }
 
@@ -163,7 +177,9 @@ class GiftHandler(
         }
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = brand,
+                body = Response(
+                    data = brand,
+                )
             )
     }
 

@@ -1,7 +1,6 @@
-package com.noljanolja.server.gifts.repo
+package com.noljanolja.server.gift.repo
 
 import kotlinx.coroutines.flow.Flow
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository

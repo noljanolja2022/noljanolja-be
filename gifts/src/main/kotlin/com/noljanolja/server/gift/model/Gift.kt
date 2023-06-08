@@ -1,4 +1,4 @@
-package com.noljanolja.server.gifts.model
+package com.noljanolja.server.gift.model
 
 import java.time.Instant
 

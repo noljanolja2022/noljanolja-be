@@ -1,4 +1,4 @@
-package com.noljanolja.server.gifts.repo
+package com.noljanolja.server.gift.repo
 
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
@@ -22,7 +22,7 @@ interface GiftCodeRepo : CoroutineCrudRepository<GiftCodeModel, Long> {
         userId: String? = null,
     ): Flow<GiftCodeModel>
 
-    suspend fun findByGiftIdAndUserIdIsNull(
+    suspend fun findFirstByGiftIdAndUserIdIsNull(
         giftId: Long
     ): GiftCodeModel?
 }

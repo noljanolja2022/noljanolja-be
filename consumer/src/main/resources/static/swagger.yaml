@@ -1132,7 +1132,10 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/BaseResponse"
-                  - $ref: "#/components/schemas/Gift"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Gift"
   /api/v1/gifts/{giftId}/buy:
     get:
       tags: [ Gift ]
@@ -1149,7 +1152,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Return gift's detail
+          description: Return empty response
           content:
             application/json:
               schema:

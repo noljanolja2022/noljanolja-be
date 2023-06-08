@@ -1,4 +1,4 @@
-package com.noljanolja.server.gifts.repo
+package com.noljanolja.server.gift.repo
 
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
@@ -12,8 +12,8 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, Long> {
         SELECT * FROM gifts WHERE 
         IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
         IF(:brandId IS NOT NULL, brand_id = :brandId, TRUE) 
-        LIMIT :limit  OFFSET :offset
         ORDER BY created_at DESC
+        LIMIT :limit  OFFSET :offset
     """
     )
     fun findAllBy(
@@ -37,8 +37,8 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, Long> {
         WHERE gift_codes.user_id = :userId AND
         IF(:categoryId IS NOT NULL, gifts.category_id = :categoryId, TRUE) AND
         IF(:brandId IS NOT NULL, gifts.brand_id = :brandId, TRUE) 
-        LIMIT :limit  OFFSET :offset
         ORDER BY created_at DESC
+        LIMIT :limit  OFFSET :offset
     """)
     suspend fun findGiftsOfUser(
         userId: String,

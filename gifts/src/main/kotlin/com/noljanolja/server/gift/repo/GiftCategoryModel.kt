@@ -1,6 +1,6 @@
-package com.noljanolja.server.gifts.repo
+package com.noljanolja.server.gift.repo
 
-import com.noljanolja.server.gifts.model.Gift
+import com.noljanolja.server.gift.model.Gift
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate

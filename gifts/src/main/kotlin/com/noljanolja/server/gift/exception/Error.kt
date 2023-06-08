@@ -1,4 +1,4 @@
-package com.noljanolja.server.gifts.exception
+package com.noljanolja.server.gift.exception
 
 import com.noljanolja.server.common.exception.BaseException
 

@@ -580,6 +580,7 @@ CREATE TABLE IF NOT EXISTS `gift_codes`
     `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `gift_id`           BIGINT          NOT NULL,
     `user_id`           VARCHAR(255)    NULL,
+    `code`              VARCHAR(255)    NOT NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

@@ -1,4 +1,4 @@
-package com.noljanolja.server.gifts.repo
+package com.noljanolja.server.gift.repo
 
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id

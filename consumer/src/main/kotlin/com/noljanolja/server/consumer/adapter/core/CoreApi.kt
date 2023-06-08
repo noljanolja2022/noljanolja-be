@@ -738,7 +738,7 @@ class CoreApi(
         giftId: Long,
     ) = webClient.post()
         .uri { builder ->
-            builder.path("$GIFT_ENDPOINT/{giftId}")
+            builder.path("$GIFT_ENDPOINT/{giftId}/buy")
                 .queryParam("userId", userId)
                 .build(giftId)
         }

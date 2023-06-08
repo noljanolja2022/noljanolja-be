@@ -1,4 +1,4 @@
-package com.noljanolja.server.gifts.rest.request
+package com.noljanolja.server.gift.rest.request
 
 data class UpdateBrandRequest(
     val name: String?,

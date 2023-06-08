@@ -33,7 +33,9 @@ class GiftHandler(
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = gifts,
+                body = Response(
+                    data = gifts,
+                ),
             )
     }
 
@@ -45,7 +47,9 @@ class GiftHandler(
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = gift,
+                body = Response(
+                    data = gift,
+                )
             )
     }
 
@@ -74,7 +78,9 @@ class GiftHandler(
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = gifts,
+                body = Response(
+                    data = gifts,
+                )
             )
     }
 
@@ -82,7 +88,9 @@ class GiftHandler(
         val categories = giftService.getGiftCategories()
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = categories,
+                body = Response(
+                    data = categories
+                ),
             )
     }
 
@@ -95,7 +103,9 @@ class GiftHandler(
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = brands,
+                body = Response(
+                    data = brands
+                ),
             )
     }
 }
