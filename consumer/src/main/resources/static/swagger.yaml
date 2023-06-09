@@ -1008,7 +1008,7 @@ paths:
                       data:
                         type: array
                         items:
-                          $ref: "#/components/schemas/Gift"
+                          $ref: "#/components/schemas/MyGift"
   /api/v1/gifts:
     get:
       tags: [ Gift ]
@@ -1572,12 +1572,26 @@ components:
         remaining:
           type: number
           format: integer
-        codes:
-          type: array
-          items:
-            type: string
         isPurchasable:
           type: boolean
+        category:
+          $ref: '#/components/schemas/GiftCategory'
+        brand:
+          $ref: '#/components/schemas/GiftBrand'
+    MyGift:
+      type: object
+      properties:
+        id:
+          type: number
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        image:
+          type: string
+        code:
+          type: string
         category:
           $ref: '#/components/schemas/GiftCategory'
         brand:

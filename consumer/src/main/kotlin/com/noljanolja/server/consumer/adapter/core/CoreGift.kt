@@ -1,6 +1,9 @@
 package com.noljanolja.server.consumer.adapter.core
 
 import com.noljanolja.server.consumer.model.Gift
+import com.noljanolja.server.consumer.model.GiftBrand
+import com.noljanolja.server.consumer.model.GiftCategory
+import com.noljanolja.server.consumer.model.MyGift
 import java.time.Instant
 
 data class CoreGift(
@@ -30,21 +33,19 @@ data class CoreGift(
     )
 }
 
-fun CoreGift.Category.toGiftCategory() = Gift.Category(
+fun CoreGift.Category.toGiftCategory() = GiftCategory(
     id = id,
     code = code,
     image = image,
 )
 
-fun CoreGift.Brand.toGiftBrand() = Gift.Brand(
+fun CoreGift.Brand.toGiftBrand() = GiftBrand(
     id = id,
     name = name,
     image = image,
 )
 
-fun CoreGift.toGift(
-    includeCodes: Boolean = true,
-) = Gift(
+fun CoreGift.toGift() = Gift(
     id = id,
     name = name,
     description = description,
@@ -56,6 +57,17 @@ fun CoreGift.toGift(
     brand = brand.toGiftBrand(),
     category = category.toGiftCategory(),
     price = price,
-    codes = codes.takeIf { includeCodes }.orEmpty(),
     isPurchasable = remaining > 0 && Instant.now() in startTime..endTime
 )
+
+fun CoreGift.toMyGift() = codes.map {
+    MyGift(
+        id = id,
+        name = name,
+        description = description,
+        image = image,
+        brand = brand.toGiftBrand(),
+        category = category.toGiftCategory(),
+        code = it,
+    )
+}

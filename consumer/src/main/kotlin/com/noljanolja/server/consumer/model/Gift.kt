@@ -10,23 +10,31 @@ data class Gift(
     val startTime: Instant,
     val endTime: Instant,
     val price: Long,
-    val brand: Brand,
-    val category: Category,
-    val codes: List<String>,
+    val brand: GiftBrand,
+    val category: GiftCategory,
     val total: Int,
     val remaining: Int,
     val isPurchasable: Boolean,
-) {
-    data class Brand(
-        val id: Long,
-        val name: String,
-        val image: String,
-    )
+)
 
-    data class Category(
-        val id: Long,
-        val code: String,
-        val image: String,
-    )
-}
+data class GiftBrand(
+    val id: Long,
+    val name: String,
+    val image: String,
+)
 
+data class GiftCategory(
+    val id: Long,
+    val code: String,
+    val image: String,
+)
+
+data class MyGift(
+    val id: Long,
+    val name: String,
+    val description: String,
+    val image: String,
+    val brand: GiftBrand,
+    val category: GiftCategory,
+    val code: String,
+)
