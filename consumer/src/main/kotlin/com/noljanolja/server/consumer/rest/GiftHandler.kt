@@ -1,6 +1,7 @@
 package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
+import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.service.GiftService
@@ -16,7 +17,7 @@ class GiftHandler(
 ) {
     companion object {
         const val DEFAULT_PAGE = 1
-        const val DEFAULT_PAGE_SIZE = 10
+        const val DEFAULT_PAGE_SIZE = 20
     }
 
     suspend fun getMyGifts(request: ServerRequest): ServerResponse {
@@ -24,7 +25,7 @@ class GiftHandler(
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
         val categoryId = request.queryParamOrNull("categoryId")?.toLongOrNull()
         val brandId = request.queryParamOrNull("brandId")?.toLongOrNull()
-        val gifts = giftService.getMyGifts(
+        val (gifts, pagination) = giftService.getMyGifts(
             userId = AuthUserHolder.awaitUser().id,
             page = page,
             pageSize = pageSize,
@@ -35,6 +36,7 @@ class GiftHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = gifts,
+                    pagination = pagination,
                 ),
             )
     }
@@ -55,13 +57,15 @@ class GiftHandler(
 
     suspend fun buyGift(request: ServerRequest): ServerResponse {
         val giftId = request.pathVariable("giftId").toLongOrNull() ?: throw InvalidParamsException("giftId")
-        giftService.buyGift(
+        val gift = giftService.buyGift(
             userId = AuthUserHolder.awaitUser().id,
             giftId = giftId,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = Response<Nothing>(),
+                body = Response(
+                    data = gift,
+                ),
             )
     }
 
@@ -70,7 +74,7 @@ class GiftHandler(
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
         val categoryId = request.queryParamOrNull("categoryId")?.toLongOrNull()
         val brandId = request.queryParamOrNull("brandId")?.toLongOrNull()
-        val gifts = giftService.getGifts(
+        val (gifts, pagination) = giftService.getGifts(
             page = page,
             pageSize = pageSize,
             categoryId = categoryId,
@@ -80,6 +84,7 @@ class GiftHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = gifts,
+                    pagination = pagination,
                 )
             )
     }
@@ -97,14 +102,15 @@ class GiftHandler(
     suspend fun getGiftBrands(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
-        val brands = giftService.getBrands(
+        val (brands, pagination) = giftService.getBrands(
             page = page,
             pageSize = pageSize,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
-                    data = brands
+                    data = brands,
+                    pagination = pagination,
                 ),
             )
     }

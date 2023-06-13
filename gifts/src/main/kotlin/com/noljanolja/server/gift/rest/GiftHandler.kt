@@ -2,6 +2,7 @@ package com.noljanolja.server.gift.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
+import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.gift.rest.request.CreateBrandRequest
 import com.noljanolja.server.gift.rest.request.CreateGiftRequest
@@ -26,7 +27,7 @@ class GiftHandler(
         val categoryId = request.queryParamOrNull("categoryId")?.toLongOrNull()
         val brandId = request.queryParamOrNull("brandId")?.toLongOrNull()
         val userId = request.queryParamOrNull("userId")
-        val gifts = giftService.getGifts(
+        val (gifts, total) = giftService.getGifts(
             categoryId = categoryId,
             brandId = brandId,
             page = page,
@@ -37,6 +38,11 @@ class GiftHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = gifts,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = total,
+                    )
                 )
             )
     }
@@ -114,13 +120,15 @@ class GiftHandler(
         val giftId = request.pathVariable("giftId").toLongOrNull() ?: throw InvalidParamsException("giftId")
         val userId = request.queryParamOrNull("userId")?.takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("userId")
-        giftService.buyGift(
+        val gift = giftService.buyGift(
             userId = userId,
             giftId = giftId,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = Response<Nothing>()
+                body = Response(
+                    data = gift,
+                )
             )
     }
 
@@ -137,7 +145,7 @@ class GiftHandler(
     suspend fun getBrands(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
-        val brands = giftService.getBrands(
+        val (brands, total) = giftService.getBrands(
             page = page,
             pageSize = pageSize,
         )
@@ -145,6 +153,11 @@ class GiftHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = brands,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = total,
+                    )
                 )
             )
     }

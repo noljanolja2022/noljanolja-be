@@ -995,6 +995,11 @@ paths:
             type: number
             format: integer
           required: false
+        - in: query
+          name: name
+          schema:
+            type: string
+          required: false
       responses:
         "200":
           description: Return my gifts
@@ -1040,6 +1045,11 @@ paths:
           schema:
             type: number
             format: integer
+          required: false
+        - in: query
+          name: name
+          schema:
+            type: string
           required: false
       responses:
         "200":
@@ -1137,7 +1147,7 @@ paths:
                       data:
                         $ref: "#/components/schemas/Gift"
   /api/v1/gifts/{giftId}/buy:
-    get:
+    post:
       tags: [ Gift ]
       summary: Buy a gift
       description: Buy a gift
@@ -1158,6 +1168,10 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/MyGift"
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme

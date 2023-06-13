@@ -731,7 +731,9 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<List<CoreGift>>>().data!!
+        .awaitBody<Response<List<CoreGift>>>().let {
+            Pair(it.data!!, it.pagination!!)
+        }
 
     suspend fun buyGift(
         userId: String,
@@ -751,7 +753,7 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<Nothing>>()
+        .awaitBody<Response<CoreGift>>().data!!
 
     suspend fun getBrands(
         page: Int,
@@ -767,7 +769,9 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<List<CoreGift.Brand>>>().data!!
+        .awaitBody<Response<List<CoreGift.Brand>>>().let {
+            Pair(it.data!!, it.pagination!!)
+        }
 
     suspend fun getCategories() = webClient.get()
         .uri { builder -> builder.path("$GIFT_ENDPOINT/categories").build() }

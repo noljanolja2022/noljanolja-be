@@ -1,5 +1,6 @@
 package com.noljanolja.server.consumer.service
 
+import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.consumer.adapter.core.*
 import com.noljanolja.server.consumer.model.Gift
 import com.noljanolja.server.consumer.model.MyGift
@@ -15,24 +16,24 @@ class GiftService(
         brandId: Long?,
         page: Int,
         pageSize: Int,
-    ): List<MyGift> {
+    ): Pair<List<MyGift>, Pagination> {
         return coreApi.getGifts(
             userId = userId,
             categoryId = categoryId,
             brandId = brandId,
             page = page,
             pageSize = pageSize,
-        ).flatMap { it.toMyGift() }
+        ).let { (gifts, pagination) -> Pair(gifts.flatMap { it.toMyGift() }, pagination) }
     }
 
     suspend fun buyGift(
         userId: String,
         giftId: Long,
-    ) {
-        coreApi.buyGift(
+    ): MyGift {
+        return coreApi.buyGift(
             userId = userId,
             giftId = giftId,
-        )
+        ).toMyGift().first()
     }
 
     suspend fun getGifts(
@@ -40,13 +41,13 @@ class GiftService(
         brandId: Long?,
         page: Int,
         pageSize: Int,
-    ): List<Gift> {
+    ): Pair<List<Gift>, Pagination> {
         return coreApi.getGifts(
             categoryId = categoryId,
             brandId = brandId,
             page = page,
             pageSize = pageSize,
-        ).map { it.toGift() }
+        ).let { (gifts, pagination) -> Pair(gifts.map { it.toGift() }, pagination) }
     }
 
     suspend fun getGiftDetail(
@@ -67,5 +68,5 @@ class GiftService(
     ) = coreApi.getBrands(
         page = page,
         pageSize = pageSize,
-    ).map { it.toGiftBrand() }
+    ).let { (brands, pagination) -> Pair(brands.map { it.toGiftBrand() }, pagination) }
 }

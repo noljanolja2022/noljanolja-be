@@ -30,11 +30,8 @@ class VideoPubSubService(
         val videoDetails = coreApi.getVideoDetails(progress.videoId).toConsumerVideo()
         val progressPercentage = progress.durationMs.toDouble() / videoDetails.durationMs
         if (progressPercentage < 0 || progressPercentage > 1) return
-        var isNewView = false
         when (progress.event) {
             VideoProgressEvent.PLAY -> {
-                isNewView =
-                    videoRedisTemplate.opsForValue().getAndAwait(getProgressKey(userId, progress.videoId)) != null
                 videoRedisTemplate.opsForValue().setAndAwait(
                     getProgressKey(userId, progress.videoId),
                     progress
@@ -61,7 +58,6 @@ class VideoPubSubService(
                         userId = userId,
                         videoId = progress.videoId,
                         progressPercentage = progressPercentage,
-                        isNewView = isNewView,
                     )
                 )
             }

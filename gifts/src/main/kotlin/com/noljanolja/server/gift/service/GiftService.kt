@@ -22,7 +22,7 @@ class GiftService(
     suspend fun buyGift(
         userId: String,
         giftId: Long,
-    ) {
+    ): Gift {
         val gift = giftRepo.findByIdForUpdate(giftId) ?: throw Error.GiftNotFound
         if (gift.remaining <= 0) throw Error.NotEnoughGift
         loyaltyService.addTransaction(
@@ -30,18 +30,23 @@ class GiftService(
             point = -gift.price,
             reason = "Buy gift"
         )
-        giftRepo.save(
+        val savedGift = giftRepo.save(
             gift.apply {
                 remaining--
             }
         )
-        giftCodeRepo.findFirstByGiftIdAndUserIdIsNull(giftId)!!.let {
+        val giftCode = giftCodeRepo.findFirstByGiftIdAndUserIdIsNull(giftId)!!.let {
             giftCodeRepo.save(
                 it.apply {
                     this.userId = userId
                 }
             )
         }
+        return savedGift.apply {
+            codes = listOf(giftCode.code)
+            category = giftCategoryRepo.findById(categoryId)!!
+            brand = giftBrandRepo.findById(brandId)!!
+        }.toGift()
     }
 
     suspend fun getGifts(
@@ -50,34 +55,50 @@ class GiftService(
         brandId: Long?,
         page: Int,
         pageSize: Int,
-    ): List<Gift> {
+    ): Pair<List<Gift>, Long> {
         return (if (userId.isNullOrBlank()) {
-            giftRepo.findAllBy(
-                categoryId = categoryId,
-                brandId = brandId,
-                limit = pageSize,
-                offset = (page - 1) * pageSize,
+            Pair(
+                giftRepo.findAllBy(
+                    categoryId = categoryId,
+                    brandId = brandId,
+                    limit = pageSize,
+                    offset = (page - 1) * pageSize,
+                ).toList(),
+                giftRepo.countAllBy(
+                    categoryId = categoryId,
+                    brandId = brandId,
+                )
             )
         } else {
-            giftRepo.findGiftsOfUser(
-                userId = userId,
-                categoryId = categoryId,
-                brandId = brandId,
-                offset = (page - 1) * pageSize,
-                limit = pageSize,
+            Pair(
+                giftRepo.findGiftsOfUser(
+                    userId = userId,
+                    categoryId = categoryId,
+                    brandId = brandId,
+                    offset = (page - 1) * pageSize,
+                    limit = pageSize,
+                ).toList(),
+                giftRepo.countGiftsOfUser(
+                    userId = userId,
+                    categoryId = categoryId,
+                    brandId = brandId,
+                )
             )
-        }).toList().let { gifts ->
+        }).let { (gifts, count) ->
             val categories = giftCategoryRepo.findAllById(gifts.map { it.categoryId }.toMutableSet()).toList()
             val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
-            gifts.map { gift ->
-                gift.category = categories.first { it.id == gift.categoryId }
-                gift.brand = brands.first { it.id == gift.brandId }
-                gift.codes = giftCodeRepo.findAllByGiftIdAndUserId(
-                    giftId = gift.id,
-                    userId = userId,
-                ).toList().map { it.code }
-                gift.toGift()
-            }
+            Pair(
+                gifts.map { gift ->
+                    gift.category = categories.first { it.id == gift.categoryId }
+                    gift.brand = brands.first { it.id == gift.brandId }
+                    gift.codes = giftCodeRepo.findAllByGiftIdAndUserId(
+                        giftId = gift.id,
+                        userId = userId,
+                    ).toList().map { it.code }
+                    gift.toGift()
+                },
+                count
+            )
         }
     }
 
@@ -180,10 +201,13 @@ class GiftService(
     suspend fun getBrands(
         page: Int,
         pageSize: Int,
-    ): List<Gift.Brand> {
-        return giftBrandRepo.findAllBy(
-            pageable = PageRequest.of(page - 1, pageSize)
-        ).toList().map { it.toGiftBrand() }
+    ): Pair<List<Gift.Brand>, Long> {
+        return Pair(
+            giftBrandRepo.findAllBy(
+                pageable = PageRequest.of(page - 1, pageSize)
+            ).toList().map { it.toGiftBrand() },
+            giftBrandRepo.count(),
+        )
     }
 
     suspend fun createBrand(
