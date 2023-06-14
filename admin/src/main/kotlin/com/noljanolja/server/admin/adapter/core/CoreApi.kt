@@ -3,9 +3,7 @@ package com.noljanolja.server.admin.adapter.core
 
 import com.noljanolja.server.admin.adapter.core.request.CoreUpsertChatConfigRequest
 import com.noljanolja.server.admin.adapter.core.request.CoreUpsertVideoConfigRequest
-import com.noljanolja.server.admin.model.CoreServiceError
-import com.noljanolja.server.admin.model.StickerPack
-import com.noljanolja.server.admin.model.Video
+import com.noljanolja.server.admin.model.*
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatusCode
@@ -18,7 +16,6 @@ import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-
 @Component
 class CoreApi(
     @Qualifier("coreWebClient") private val webClient: WebClient,
@@ -28,6 +25,7 @@ class CoreApi(
         const val STICKER_PACK_ENDPOINT = "/api/v1/media/sticker-packs"
         const val VIDEO_ENDPOINT = "/api/v1/media/videos"
         const val REWARD_ENDPOINT = "/api/v1/reward"
+        const val GIFT_ROUTES = "/api/v1/gifts"
     }
 
     suspend fun getUser(
@@ -324,4 +322,197 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreChatRewardConfig>>().data!!
+
+    suspend fun getGifts(
+        categoryId: Long?,
+        brandId: Long?,
+        page: Int = 1,
+        pageSize: Int = 10,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path(GIFT_ROUTES)
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .queryParamIfPresent("categoryId", Optional.ofNullable(categoryId))
+                .queryParamIfPresent("brandId", Optional.ofNullable(brandId))
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<Gift>>>().data!!
+
+    suspend fun getGift(
+        giftId: Long
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$GIFT_ROUTES/$giftId").build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Gift>>().data!!
+
+    suspend fun createGift(
+        payload: CreateGiftRequest
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path(GIFT_ROUTES)
+                .build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Gift>>().data!!
+
+    suspend fun updateGift(
+        giftId: Long, payload: UpdateGiftRequest
+    ) = webClient.patch()
+        .uri { builder ->
+            builder.path("$GIFT_ROUTES/$giftId")
+                .build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Gift>>().data!!
+
+    suspend fun deleteGift(
+        giftId: Long
+    ) = webClient.delete()
+        .uri { builder ->
+            builder.path("$GIFT_ROUTES/$giftId")
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
+    suspend fun getBrands(
+        page: Int, pageSize: Int
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$GIFT_ROUTES/brands")
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<Gift.Brand>>>().data!!
+
+    suspend fun createBrand(
+        payload: CreateBrandRequest
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$GIFT_ROUTES/brands")
+                .build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Gift.Brand>>().data!!
+
+    suspend fun updateBrand(
+        brandId: Long, payload: UpdateBrandRequest
+    ) = webClient.patch()
+        .uri { builder ->
+            builder.path("$GIFT_ROUTES/brands/$brandId")
+                .build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Gift.Brand>>().data!!
+
+    suspend fun deleteBrand(
+        brandId: Long
+    ) = webClient.delete()
+        .uri { builder ->
+            builder.path("$GIFT_ROUTES/brands/$brandId")
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
+    suspend fun getCategories(
+
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$GIFT_ROUTES/categories")
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<Gift.Category>>>().data!!
+
 }
