@@ -15,6 +15,7 @@ sealed class Error(
         const val VIDEO_NOT_FOUND = 404_005
         const val STICKER_PACK_NOT_FOUND = 404_006
         const val STICKERS_NOT_FOUND = 404_007
+        const val REACTION_NOT_FOUND = 404_013
         const val USER_NOT_PARTICIPATE_IN_CONVERSATION = 400_001
         const val INVALID_PARTICIPANTS_SIZE = 400_002
         const val PARTICIPANTS_NOT_FOUND = 400_003
@@ -96,15 +97,21 @@ sealed class Error(
         null
     )
 
-    object NoPermissionToUpdateParticipants: Error(
+    object NoPermissionToUpdateParticipants : Error(
         NO_PERMISSION_TO_UPDATE_PARTICIPANTS,
         "No permission to update conversation participants",
         null
     )
 
-    object CannotRemoveParticipants: Error(
+    object CannotRemoveParticipants : Error(
         PARTICIPANT_REMOVAL_FAILED,
         "Unable to update. Admin can't quit the conversation before assigning new one",
         null
+    )
+
+    object ReactionNotFound : Error(
+        REACTION_NOT_FOUND,
+        "Reaction not found",
+        null,
     )
 }

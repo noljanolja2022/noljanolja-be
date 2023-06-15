@@ -13,7 +13,15 @@ data class Message(
     val seenBy: List<String> = listOf(),
     val createdAt: Instant = Instant.now(),
     val attachments: List<Attachment> = listOf(),
+    val reactions: List<Reaction> = emptyList(),
 ) {
+    data class Reaction(
+        val reactionId: Long,
+        val reactionCode: String,
+        val reactionDescription: String,
+        val userId: String,
+        val userName: String,
+    )
 
     enum class Type {
         PLAINTEXT,

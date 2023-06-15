@@ -18,6 +18,7 @@ class ConversationRouter(
         (CONVERSATIONS_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             GET("", conversationHandler::getConversations)
             POST("", conversationHandler::createConversation)
+            GET("/react-icons", conversationHandler::getAllReactionIcons)
 
             "/{conversationId}".nest {
                 GET("", conversationHandler::getConversationDetails)
@@ -29,6 +30,7 @@ class ConversationRouter(
                     "/{messageId}".nest {
                         PUT("", conversationHandler::updateMessageStatus)
                         POST("/attachments", conversationHandler::saveAttachments)
+                        PUT("/reactions/{reactionId}", conversationHandler::reactMessage)
                     }
                 }
 

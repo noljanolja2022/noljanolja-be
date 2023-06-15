@@ -586,3 +586,40 @@ CREATE TABLE IF NOT EXISTS `gift_codes`
 
     FOREIGN KEY (gift_id) REFERENCES gifts(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
+
+--changeset tranhieu956230@gmail.com:12
+
+-- -----------------------------------------------------
+-- Table `message_reactions`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `message_reactions`;
+
+CREATE TABLE IF NOT EXISTS `message_reactions`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `code`              VARCHAR(50)     NOT NULL,
+    `description`       VARCHAR(255)    NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `messages_participants_reactions`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `messages_participants_reactions`;
+
+CREATE TABLE IF NOT EXISTS `messages_participants_reactions`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `participant_id`    VARCHAR(255)    NOT NULL,
+    `message_id`        BIGINT          NOT NULL,
+    `reaction_id`       BIGINT          NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (participant_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
+    FOREIGN KEY (reaction_id) REFERENCES message_reactions(id) ON DELETE CASCADE
+) ENGINE = InnoDB;

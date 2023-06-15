@@ -609,6 +609,58 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/BaseResponse"
+  /api/v1/conversations/{conversationId}/messages/{messageId}/reactions/{reactionId}:
+    put:
+      tags: [ Message ]
+      summary: React a message
+      description: React a message
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+        - in: path
+          name: messageId
+          schema:
+            type: number
+          description: the id of the message
+        - in: path
+          name: reactionId
+          schema:
+            type: number
+          description: id of the reaction icon
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+  /api/v1/conversations/react-icons:
+    get:
+      tags: [ Message ]
+      summary: Return all reaction icons
+      description: Return all reaction icons
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/MessageReactionIcon"
   /api/v1/conversations/{conversationId}/attachments/{attachmentId}:
     get:
       tags: [ Conversation ]
@@ -1320,6 +1372,10 @@ components:
           type: string
         createdAt:
           type: string
+        reactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageReaction"
     MessageType:
       type: string
       enum: [ PLAINTEXT, STICKER, GIF, PHOTO, DOCUMENT, EVENT_UPDATED, EVENT_LEFT, EVENT_JOIN ]
@@ -1630,4 +1686,29 @@ components:
           type: string
         image:
           type: string
+    MessageReaction:
+      type: object
+      properties:
+        reactionId:
+          type: number
+          format: integer
+        reactionCode:
+          type: string
+        reactionDescription:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+    MessageReactionIcon:
+      type: object
+      properties:
+        id:
+          type: number
+          format: int64
+        code:
+          type: string
+        description:
+          type: string
+
 

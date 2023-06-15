@@ -90,10 +90,12 @@ class ConversationHandler(
         val messageLimit = request.queryParamOrNull("messageLimit")?.toLongOrNull()?.takeIf { it > 0 } ?: 20
         val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
             ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+        val messageId = request.queryParamOrNull("messageId")?.toLongOrNull()
         val conversation = conversationService.getConversationDetail(
             conversationId = conversationId,
             userId = userId,
             messageLimit = messageLimit,
+            messageId = messageId,
         )
         return ServerResponse
             .ok()
@@ -221,7 +223,9 @@ class ConversationHandler(
     suspend fun removeMemberFromConversation(request: ServerRequest): ServerResponse {
         val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
             ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
-        val participantIds = request.queryParamOrNull(QUERY_PARAM_PARTICIPANT_ID) ?: throw InvalidParamsException(QUERY_PARAM_PARTICIPANT_ID)
+        val participantIds = request.queryParamOrNull(QUERY_PARAM_PARTICIPANT_ID) ?: throw InvalidParamsException(
+            QUERY_PARAM_PARTICIPANT_ID
+        )
         val userId = request.queryParamOrNull(QUERY_PARAM_USER_ID) ?: throw InvalidParamsException(QUERY_PARAM_USER_ID)
         conversationService.removeConversationMember(conversationId, userId, participantIds.split(","))
         return ServerResponse.ok().bodyValueAndAwait(
@@ -235,11 +239,40 @@ class ConversationHandler(
         val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
             ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
         val payload = request.awaitBodyOrNull<UpdateConversationAdminRequest>() ?: throw RequestBodyRequired
-        val newAdminId = conversationService.assignConversationAdmin(conversationId, payload.adminId, payload.assigneeId)
+        val newAdminId =
+            conversationService.assignConversationAdmin(conversationId, payload.adminId, payload.assigneeId)
         return ServerResponse.ok().bodyValueAndAwait(
             Response(
                 data = newAdminId
             )
         )
+    }
+
+    suspend fun reactMessage(request: ServerRequest): ServerResponse {
+        val reactionId = request.pathVariable("reactionId").toLongOrNull() ?: throw InvalidParamsException("reactionId")
+        val messageId = request.pathVariable("messageId").toLongOrNull() ?: throw InvalidParamsException("messageId")
+        val participantId = request.queryParamOrNull("participantId")?.takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("participantId")
+        val conversationId = request.pathVariable("conversationId").toLongOrNull() ?: throw InvalidParamsException("conversationId")
+        conversationService.reactMessage(
+            participantId = participantId,
+            reactionId = reactionId,
+            messageId = messageId,
+            conversationId = conversationId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
+    suspend fun getAllReactionIcons(request: ServerRequest): ServerResponse {
+        val reactionIcons = conversationService.getAllReactions()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = reactionIcons,
+                )
+            )
     }
 }

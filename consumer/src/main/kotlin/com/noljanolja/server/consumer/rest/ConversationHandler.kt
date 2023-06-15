@@ -261,4 +261,31 @@ class ConversationHandler(
             conversationService.updateAdminOfConversation(AuthUserHolder.awaitUser().id, conversationId, req.assigneeId)
         return ServerResponse.ok().bodyValueAndAwait(Response(data = res))
     }
+
+    suspend fun reactMessage(request: ServerRequest): ServerResponse {
+        val messageId = request.pathVariable("messageId").toLongOrNull() ?: throw InvalidParamsException("messageId")
+        val reactionId = request.pathVariable("reactionId").toLongOrNull() ?: throw InvalidParamsException("reactionId")
+        val conversationId = request.pathVariable("conversationId").toLongOrNull()
+            ?: throw InvalidParamsException("conversationId")
+        conversationService.reactMessage(
+            userId = AuthUserHolder.awaitUser().id,
+            messageId = messageId,
+            reactionId = reactionId,
+            conversationId = conversationId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
+    suspend fun getAllReactionIcons(request: ServerRequest): ServerResponse {
+        val reactionIcons = conversationService.getAllReactionIcons()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = reactionIcons,
+                )
+            )
+    }
 }

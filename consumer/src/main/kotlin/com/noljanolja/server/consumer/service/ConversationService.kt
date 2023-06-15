@@ -211,6 +211,7 @@ class ConversationService(
         val conversation = coreApi.getConversationDetail(
             userId = userId,
             conversationId = conversationId,
+            messageId = savedMessage.id,
         ).toConsumerConversation().apply {
             this.messages.firstOrNull()?.localId = localId
         }
@@ -243,7 +244,7 @@ class ConversationService(
         type: Message.Type,
         conversationId: Long,
     ) {
-        coreApi.saveMessage(
+        val savedMessage = coreApi.saveMessage(
             request = SaveMessageRequest(
                 message = message,
                 type = CoreMessage.Type.valueOf(type.name),
@@ -254,6 +255,7 @@ class ConversationService(
         val conversation = coreApi.getConversationDetail(
             userId = userId,
             conversationId = conversationId,
+            messageId = savedMessage.id,
         ).toConsumerConversation().apply {
             this.messages.firstOrNull()?.localId = UUID.randomUUID().toString()
         }
@@ -318,6 +320,7 @@ class ConversationService(
             val conversation = coreApi.getConversationDetail(
                 userId = userId,
                 conversationId = conversationId,
+                messageId = messageId,
             ).toConsumerConversation()
             notifyParticipants(conversation)
         } catch (e: Exception) {
@@ -402,6 +405,28 @@ class ConversationService(
         }
         return res ?: newAdminId
     }
+
+    suspend fun reactMessage(
+        userId: String,
+        reactionId: Long,
+        messageId: Long,
+        conversationId: Long,
+    ) {
+        coreApi.reactMessage(
+            messageId = messageId,
+            reactionId = reactionId,
+            participantId = userId,
+            conversationId = conversationId,
+        )
+        val conversation = coreApi.getConversationDetail(
+            userId = userId,
+            conversationId = conversationId,
+            messageId = messageId,
+        ).toConsumerConversation()
+        notifyParticipants(conversation)
+    }
+
+    suspend fun getAllReactionIcons() = coreApi.getAllReactionIcons().map { it.toMessageReactionIcon() }
 
     private suspend fun notifyParticipants(
         conversation: Conversation,

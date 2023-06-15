@@ -263,10 +263,14 @@ class CoreApi(
     suspend fun getConversationDetail(
         userId: String,
         conversationId: Long,
+        messageLimit: Int = 20,
+        messageId: Long? = null,
     ): CoreConversation = webClient.get()
         .uri { builder ->
             builder.path(GET_CONVERSATION_DETAIL_ENDPOINT)
                 .queryParam("userId", userId)
+                .queryParam("messageLimit", messageLimit)
+                .queryParamIfPresent("messageId", Optional.ofNullable(messageId))
                 .build(conversationId)
         }
         .retrieve()
@@ -785,4 +789,40 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreGift.Category>>>().data!!
+
+    suspend fun reactMessage(
+        messageId: Long,
+        reactionId: Long,
+        participantId: String,
+        conversationId: Long,
+    ) = webClient.put()
+        .uri { builder ->
+            builder.path("$CONVERSATION_ENDPOINT/{conversationId}/messages/{messageId}/reactions/{reactionId}")
+                .queryParam("participantId", participantId)
+                .build(conversationId, messageId, reactionId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
+
+    suspend fun getAllReactionIcons() = webClient.get()
+        .uri { builder -> builder.path("$CONVERSATION_ENDPOINT/react-icons").build() }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreMessageReactionIcon>>>().data!!
 }

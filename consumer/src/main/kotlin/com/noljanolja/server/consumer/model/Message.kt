@@ -14,7 +14,15 @@ data class Message(
     val attachments: List<Attachment> = listOf(),
     var localId: String = "",
     val createdAt: Instant = Instant.now(),
+    val reactions: List<Reaction> = emptyList(),
 ) {
+    data class Reaction(
+        val reactionId: Long,
+        val reactionCode: String,
+        val reactionDescription: String,
+        val userId: String,
+        val userName: String,
+    )
 
     data class Attachment(
         val id: Long = 0,

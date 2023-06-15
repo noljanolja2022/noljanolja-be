@@ -59,6 +59,9 @@ data class MessageModel(
 
     @Transient
     var attachments: List<AttachmentModel> = listOf()
+
+    @Transient
+    var reactions: List<MessageParticipantReactionModel> = listOf()
 }
 
 fun MessageModel.toMessage(objectMapper: ObjectMapper) = Message(
@@ -71,5 +74,14 @@ fun MessageModel.toMessage(objectMapper: ObjectMapper) = Message(
     type = type,
     seenBy = seenBy,
     createdAt = createdAt,
-    attachments = attachments.map { it.toAttachment() }
+    attachments = attachments.map { it.toAttachment() },
+    reactions = reactions.map {
+        Message.Reaction(
+            reactionId = it.reactionId,
+            reactionCode = it.reaction.code,
+            reactionDescription = it.reaction.description,
+            userId = it.participantId,
+            userName = it.participant.name,
+        )
+    }
 )

@@ -26,6 +26,8 @@ class ConversationService(
     private val conversationParticipantRepo: ConversationParticipantRepo,
     private val messageStatusRepo: MessageStatusRepo,
     private val attachmentRepo: AttachmentRepo,
+    private val messageReactionRepo: MessageReactionRepo,
+    private val messageParticipantReactionRepo: MessageParticipantReactionRepo,
     private val objectMapper: ObjectMapper,
 ) {
     suspend fun createMessage(
@@ -92,18 +94,22 @@ class ConversationService(
         conversationId: Long,
         userId: String,
         messageLimit: Long = 20,
+        messageId: Long? = null,
     ): Conversation {
 //        conversationParticipantRepo.findAllByParticipantIdAndConversationId(userId, conversationId).toList().ifEmpty {
 //            throw Error.UserNotParticipateInConversation
 //        }
-        return conversationRepo.findById(conversationId)!!.apply {
-            val messages = messageRepo.findAllByConversationId(id, messageLimit).toList()
+        return conversationRepo.findById(conversationId)?.apply {
+            val messages = if (messageId == null) {
+                messageRepo.findAllByConversationId(id, messageLimit).toList()
+            } else listOfNotNull(messageRepo.findById(messageId))
+
             populateMessages(messages)
             this.messages = messages
             this.participants = userRepo.findAllParticipants(id).toList()
             this.creator = userRepo.findById(this.creatorId)!!
             getAdminOfConversationModel(this)
-        }.toConversation(objectMapper)
+        }?.toConversation(objectMapper) ?: throw Error.ConversationNotFound
     }
 
     suspend fun getUserConversations(
@@ -287,7 +293,7 @@ class ConversationService(
     suspend fun addConversationParticipants(
         conversationId: Long,
         userId: String,
-        participants: List<String>
+        participants: List<String>,
     ): List<String> {
         val conversation = conversationRepo.findById(conversationId)
             ?: throw Error.ConversationNotFound
@@ -325,7 +331,7 @@ class ConversationService(
     suspend fun assignConversationAdmin(
         conversationId: Long,
         adminId: String,
-        assigneeId: String
+        assigneeId: String,
     ): String {
         val conversation = conversationRepo.findById(conversationId)
             ?: throw Error.ConversationNotFound
@@ -342,6 +348,36 @@ class ConversationService(
         return res.adminId
     }
 
+    suspend fun reactMessage(
+        participantId: String,
+        messageId: Long,
+        reactionId: Long,
+        conversationId: Long,
+    ) {
+        if (!messageReactionRepo.existsById(reactionId)) throw Error.ReactionNotFound
+        val message = messageRepo.findById(messageId) ?: throw Error.MessageNotFound
+        if (message.conversationId != conversationId) throw Error.MessageNotBelongToConversation
+        conversationParticipantRepo.findAllByParticipantIdAndConversationId(
+            participantId = participantId,
+            conversationId = message.conversationId,
+        ).toList().ifEmpty { throw Error.UserNotParticipateInConversation }
+        messageParticipantReactionRepo.findFirstByMessageIdAndParticipantIdAndReactionId(
+            messageId = messageId,
+            reactionId = reactionId,
+            participantId = participantId,
+        )?.also {
+            messageParticipantReactionRepo.deleteById(it.id)
+        } ?: run {
+            messageParticipantReactionRepo.save(
+                MessageParticipantReactionModel(
+                    participantId = participantId,
+                    messageId = messageId,
+                    reactionId = reactionId,
+                )
+            )
+        }
+    }
+
     private suspend fun getAdminOfConversationModel(conversation: ConversationModel) {
         conversation.admin = if (conversation.creatorId == conversation.adminId)
             conversation.creator
@@ -349,8 +385,9 @@ class ConversationService(
     }
 
     private suspend fun populateMessages(
-        messages: List<MessageModel>
+        messages: List<MessageModel>,
     ) {
+        if (messages.isEmpty()) return
         val uniqueSenderIds = messages.mapTo(mutableSetOf()) { it.senderId }
         val participants = userRepo.findAllById(uniqueSenderIds).toList()
         val attachments = attachmentRepo.findAllByMessageIdIn(messages.map { it.id }.distinct()).toList()
@@ -372,6 +409,18 @@ class ConversationService(
         if (joinParticipantIds.isNotEmpty()) {
             joinParticipants = userRepo.findAllById(joinParticipantIds).toList()
         }
+        //Populate reactions info
+        val messageReactions = messageParticipantReactionRepo.findAllByMessageIdIn(messages.map { it.id }).toList()
+        val messageReactorIds = messageReactions.map { it.participantId }.toSet()
+        val messageReactors = userRepo.findAllById(messageReactorIds).toList()
+        val reactionIds = messageReactions.map { it.reactionId }.toSet()
+        val reactionDetails = messageReactionRepo.findAllById(reactionIds).toList()
+        messageReactions.forEach { msgReaction ->
+            msgReaction.participant = messageReactors.first { it.id == msgReaction.participantId }
+            msgReaction.reaction = reactionDetails.first { it.id == msgReaction.reactionId }
+        }
+
+        //mapping data to message
         messages.forEach { message ->
             val leftIds = message.leftParticipantIds?.split(",") ?: emptyList()
             val joinIds = message.joinParticipantIds?.split(",") ?: emptyList()
@@ -384,6 +433,11 @@ class ConversationService(
             message.sender = participants.first { it.id == message.senderId }
             message.seenBy = messageStatusSeen.filter { it.messageId == message.id }.map { it.userId }
             message.attachments = attachments.filter { it.messageId == message.id }
+            message.reactions = messageReactions.filter { it.messageId == message.id }
         }
+    }
+
+    suspend fun getAllReactions() = messageReactionRepo.findAll().toList().map {
+        it.toMessageReactionIcon()
     }
 }

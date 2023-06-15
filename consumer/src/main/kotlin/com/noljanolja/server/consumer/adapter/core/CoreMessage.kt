@@ -14,7 +14,15 @@ data class CoreMessage(
     val seenBy: List<String> = listOf(),
     val createdAt: Instant = Instant.now(),
     val attachments: List<CoreAttachment> = listOf(),
+    val reactions: List<Reaction> = emptyList(),
 ) {
+    data class Reaction(
+        val reactionId: Long,
+        val reactionCode: String,
+        val reactionDescription: String,
+        val userName: String,
+        val userId: String,
+    )
 
     enum class Type {
         PLAINTEXT,
@@ -39,4 +47,13 @@ fun CoreMessage.toConsumerMessage() = Message(
     seenBy = seenBy,
     attachments = attachments.map { it.toConsumerAttachment() },
     createdAt = createdAt,
+    reactions = reactions.map {
+        Message.Reaction(
+            reactionId = it.reactionId,
+            reactionCode = it.reactionCode,
+            reactionDescription = it.reactionDescription,
+            userName = it.userName,
+            userId = it.userId,
+        )
+    }
 )
