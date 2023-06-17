@@ -1,10 +1,7 @@
 package com.noljanolja.server.admin.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.noljanolja.server.admin.model.CreateBrandRequest
-import com.noljanolja.server.admin.model.CreateGiftRequest
-import com.noljanolja.server.admin.model.UpdateBrandRequest
-import com.noljanolja.server.admin.model.UpdateGiftRequest
+import com.noljanolja.server.admin.model.*
 import com.noljanolja.server.admin.service.GiftService
 import com.noljanolja.server.admin.service.GoogleStorageService
 import com.noljanolja.server.common.exception.DefaultBadRequestException
@@ -17,7 +14,10 @@ import com.noljanolja.server.common.utils.toObject
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.*
+import org.springframework.web.reactive.function.server.ServerRequest
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.bodyValueAndAwait
+import org.springframework.web.reactive.function.server.queryParamOrNull
 import java.util.*
 
 @Component
@@ -63,18 +63,11 @@ class GiftHandler(
 
     suspend fun createGift(request: ServerRequest): ServerResponse {
         val reqData = request.multipartData().awaitFirstOrNull() ?: throw RequestBodyRequired
-        val thumbnailFile = (reqData["image"]?.firstOrNull() as? FilePart)
+        val thumbnailFile = reqData.getFieldPartFile("image")
             ?: throw DefaultBadRequestException(Exception("Invalid image file provided"))
         val createRequest = reqData.toObject<CreateGiftRequest>(objectMapper)
-        val fileExtension = thumbnailFile.filename().split(".").last()
-        val fileName = UUID.randomUUID()
-        val uploadedFile = googleStorageService.uploadFile(
-            path = "${GoogleStorageService.GIFT_BUCKET}/$fileName.$fileExtension",
-            contentType = "image/$fileExtension",
-            content = thumbnailFile.toByteBuffer(),
-            isPublicAccessible = true
-        )
-        createRequest.image = uploadedFile.path
+        val newImage = uploadNewAvatar(thumbnailFile, GoogleStorageService.GIFT_BUCKET)
+        createRequest.image = newImage.path
         val res = giftService.createGift(createRequest)
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -85,8 +78,14 @@ class GiftHandler(
     }
 
     suspend fun updateGift(request: ServerRequest): ServerResponse {
-        val payload = request.awaitBodyOrNull<UpdateGiftRequest>() ?: throw RequestBodyRequired
         val giftId = request.pathVariable("giftId").toLongOrNull() ?: throw InvalidParamsException("giftId")
+        val reqData = request.multipartData().awaitFirstOrNull() ?: throw RequestBodyRequired
+        val payload = reqData.toObject<UpdateGiftRequest>(objectMapper)
+        val thumbnailFile = reqData.getFieldPartFile("image")
+        if (thumbnailFile != null) {
+            val newImage = uploadNewAvatar(thumbnailFile, GoogleStorageService.GIFT_BUCKET)
+            payload.image = newImage.path
+        }
         val res = giftService.updateGift(giftId, payload)
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -135,16 +134,9 @@ class GiftHandler(
         val thumbnailFile = reqData.getFieldPartFile("image")
             ?: throw DefaultBadRequestException(Exception("Invalid file input"))
         val req = reqData.toObject<CreateBrandRequest>(objectMapper)
-        val fileExtension = thumbnailFile.filename().split(".").last()
-        val fileName = UUID.randomUUID()
-        val uploadedFile = googleStorageService.uploadFile(
-            path = "${GoogleStorageService.BRAND_BUCKET}/$fileName.$fileExtension",
-            contentType = "image/$fileExtension",
-            content = thumbnailFile.toByteBuffer(),
-            isPublicAccessible = true
-        )
+        val newImage = uploadNewAvatar(thumbnailFile, GoogleStorageService.BRAND_BUCKET)
         val res = giftService.createBrand(req.apply {
-            image = uploadedFile.path
+            image = newImage.path
         })
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -160,15 +152,8 @@ class GiftHandler(
         val req = reqData.toObject<UpdateBrandRequest>(objectMapper)
         val thumbnailFile = reqData.getFieldPartFile("image")
         if (thumbnailFile != null) {
-            val fileExtension = thumbnailFile.filename().split(".").last()
-            val fileName = UUID.randomUUID()
-            val uploadedFile = googleStorageService.uploadFile(
-                path = "${GoogleStorageService.BRAND_BUCKET}/$fileName.$fileExtension",
-                contentType = "image/$fileExtension",
-                content = thumbnailFile.toByteBuffer(),
-                isPublicAccessible = true
-            )
-            req.image = uploadedFile.path
+            val newImage = uploadNewAvatar(thumbnailFile, GoogleStorageService.BRAND_BUCKET)
+            req.image = newImage.path
         }
         val res = giftService.updateBrand(brandId, req)
         return ServerResponse.ok()
@@ -186,5 +171,16 @@ class GiftHandler(
             .bodyValueAndAwait(
                 body = Response<Nothing>()
             )
+    }
+
+    private suspend fun uploadNewAvatar(filePart: FilePart, bucket: String): UploadInfo {
+        val fileExtension = filePart.filename().split(".").last()
+        val fileName = UUID.randomUUID()
+        return googleStorageService.uploadFile(
+            path = "$bucket/$fileName.$fileExtension",
+            contentType = "image/$fileExtension",
+            content = filePart.toByteBuffer(),
+            isPublicAccessible = true
+        )
     }
 }
