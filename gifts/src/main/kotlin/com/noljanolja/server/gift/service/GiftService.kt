@@ -25,6 +25,12 @@ class GiftService(
     ): Gift {
         val gift = giftRepo.findByIdForUpdate(giftId) ?: throw Error.GiftNotFound
         if (gift.remaining <= 0) throw Error.NotEnoughGift
+        if (
+            giftCodeRepo.countByUserIdAndGiftId(
+                userId = userId,
+                giftId = giftId,
+            ) >= gift.maxBuyTimes
+        ) throw Error.MaximumBuyTimesReached
         loyaltyService.addTransaction(
             memberId = userId,
             point = -gift.price,
@@ -49,57 +55,70 @@ class GiftService(
         }.toGift()
     }
 
-    suspend fun getGifts(
+    suspend fun getUserGifts(
+        userId: String,
+        categoryId: Long?,
+        brandId: Long?,
+        page: Int,
+        pageSize: Int,
+    ): Pair<List<Gift>, Long> {
+        val gifts = giftRepo.findGiftsOfUser(
+            userId = userId,
+            categoryId = categoryId,
+            brandId = brandId,
+            offset = (page - 1) * pageSize,
+            limit = pageSize,
+        ).toList()
+        val categories = giftCategoryRepo.findAllById(gifts.map { it.categoryId }.toMutableSet()).toList()
+        val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
+        return Pair(
+            gifts.map { gift ->
+                gift.category = categories.first { it.id == gift.categoryId }
+                gift.brand = brands.first { it.id == gift.brandId }
+                gift.codes = giftCodeRepo.findAllByGiftIdAndUserId(
+                    giftId = gift.id,
+                    userId = userId,
+                ).toList().map { it.code }
+                gift.toGift()
+            },
+            giftRepo.countGiftsOfUser(
+                userId = userId,
+                categoryId = categoryId,
+                brandId = brandId,
+            )
+        )
+    }
+
+    suspend fun getAllGifts(
         userId: String?,
         categoryId: Long?,
         brandId: Long?,
         page: Int,
         pageSize: Int,
     ): Pair<List<Gift>, Long> {
-        return (if (userId.isNullOrBlank()) {
-            Pair(
-                giftRepo.findAllBy(
-                    categoryId = categoryId,
-                    brandId = brandId,
-                    limit = pageSize,
-                    offset = (page - 1) * pageSize,
-                ).toList(),
-                giftRepo.countAllBy(
-                    categoryId = categoryId,
-                    brandId = brandId,
-                )
-            )
-        } else {
-            Pair(
-                giftRepo.findGiftsOfUser(
+        val gifts = giftRepo.findAllBy(
+            categoryId = categoryId,
+            brandId = brandId,
+            limit = pageSize,
+            offset = (page - 1) * pageSize,
+        ).toList()
+        val categories = giftCategoryRepo.findAllById(gifts.map { it.categoryId }.toMutableSet()).toList()
+        val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
+        return Pair(
+            gifts.map { gift ->
+                gift.category = categories.first { it.id == gift.categoryId }
+                gift.brand = brands.first { it.id == gift.brandId }
+                gift.codes = giftCodeRepo.findAllByGiftIdAndUserId(
+                    giftId = gift.id,
                     userId = userId,
-                    categoryId = categoryId,
-                    brandId = brandId,
-                    offset = (page - 1) * pageSize,
-                    limit = pageSize,
-                ).toList(),
-                giftRepo.countGiftsOfUser(
-                    userId = userId,
-                    categoryId = categoryId,
-                    brandId = brandId,
-                )
+                ).toList().map { it.code }
+                gift.toGift()
+            },
+            giftRepo.countAllBy(
+                categoryId = categoryId,
+                brandId = brandId,
             )
-        }).let { (gifts, count) ->
-            val categories = giftCategoryRepo.findAllById(gifts.map { it.categoryId }.toMutableSet()).toList()
-            val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
-            Pair(
-                gifts.map { gift ->
-                    gift.category = categories.first { it.id == gift.categoryId }
-                    gift.brand = brands.first { it.id == gift.brandId }
-                    gift.codes = giftCodeRepo.findAllByGiftIdAndUserId(
-                        giftId = gift.id,
-                        userId = userId,
-                    ).toList().map { it.code }
-                    gift.toGift()
-                },
-                count
-            )
-        }
+        )
     }
 
     suspend fun getGiftDetail(
@@ -126,6 +145,7 @@ class GiftService(
         categoryId: Long,
         price: Long,
         brandId: Long,
+        maxBuyTimes: Int,
     ): Gift {
         val category = giftCategoryRepo.findById(categoryId) ?: throw Error.CategoryNotFound
         val brand = giftBrandRepo.findById(brandId) ?: throw Error.BrandNotFound
@@ -141,6 +161,7 @@ class GiftService(
                 total = codes.size,
                 remaining = codes.size,
                 price = price,
+                maxBuyTimes = maxBuyTimes,
             )
         )
         val giftCodes = giftCodeRepo.saveAll(
@@ -166,6 +187,7 @@ class GiftService(
         price: Long?,
         startTime: Instant?,
         endTime: Instant?,
+        maxBuyTimes: Int?,
     ): Gift {
         val gift = giftRepo.findById(giftId) ?: throw Error.GiftNotFound
         val category = giftCategoryRepo.findById(gift.categoryId)!!
@@ -179,6 +201,7 @@ class GiftService(
                 startTime?.let { this.startTime = it }
                 endTime?.let { this.endTime = it }
                 price?.let { this.price = it }
+                maxBuyTimes?.let { this.maxBuyTimes = it }
             }
         ).apply {
             this.brand = brand

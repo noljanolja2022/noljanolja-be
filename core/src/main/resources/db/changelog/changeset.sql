@@ -561,6 +561,7 @@ CREATE TABLE IF NOT EXISTS `gifts`
     `brand_id`          BIGINT          NOT NULL,
     `total`             INT             NOT NULL,
     `remaining`         INT             NOT NULL,
+    `max_buy_times`     INT             NOT NULL,
     `price`             BIGINT          NOT NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -15,6 +15,7 @@ data class Gift(
     val total: Int,
     val remaining: Int,
     val price: Long,
+    val maxBuyTimes: Int,
 ) {
     data class Category(
         val id: Long,

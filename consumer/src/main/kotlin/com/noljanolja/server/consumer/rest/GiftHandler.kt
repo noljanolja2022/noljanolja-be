@@ -79,6 +79,7 @@ class GiftHandler(
             pageSize = pageSize,
             categoryId = categoryId,
             brandId = brandId,
+            userId = AuthUserHolder.awaitUser().id,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

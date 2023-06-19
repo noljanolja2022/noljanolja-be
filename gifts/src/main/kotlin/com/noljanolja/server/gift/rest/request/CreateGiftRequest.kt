@@ -12,4 +12,5 @@ data class CreateGiftRequest(
     val categoryId: Long,
     val brandId: Long,
     val price: Long,
+    val maxBuyTimes: Int = 1,
 )

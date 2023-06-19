@@ -45,6 +45,9 @@ data class GiftModel(
     @Column("remaining")
     var remaining: Int,
 
+    @Column("max_buy_times")
+    var maxBuyTimes: Int = 0,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -76,4 +79,5 @@ fun GiftModel.toGift() = Gift(
     category = category.toGiftCategory(),
     codes = codes,
     price = price,
+    maxBuyTimes = maxBuyTimes,
 )

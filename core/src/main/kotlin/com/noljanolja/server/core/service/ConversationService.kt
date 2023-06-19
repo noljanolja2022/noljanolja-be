@@ -361,21 +361,13 @@ class ConversationService(
             participantId = participantId,
             conversationId = message.conversationId,
         ).toList().ifEmpty { throw Error.UserNotParticipateInConversation }
-        messageParticipantReactionRepo.findFirstByMessageIdAndParticipantIdAndReactionId(
-            messageId = messageId,
-            reactionId = reactionId,
-            participantId = participantId,
-        )?.also {
-            messageParticipantReactionRepo.deleteById(it.id)
-        } ?: run {
-            messageParticipantReactionRepo.save(
-                MessageParticipantReactionModel(
-                    participantId = participantId,
-                    messageId = messageId,
-                    reactionId = reactionId,
-                )
+        messageParticipantReactionRepo.save(
+            MessageParticipantReactionModel(
+                participantId = participantId,
+                messageId = messageId,
+                reactionId = reactionId,
             )
-        }
+        )
     }
 
     private suspend fun getAdminOfConversationModel(conversation: ConversationModel) {

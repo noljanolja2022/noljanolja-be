@@ -710,7 +710,7 @@ class CoreApi(
         }
         .awaitBody<Response<CoreGift>>().data!!
 
-    suspend fun getGifts(
+    suspend fun getAllGifts(
         userId: String? = null,
         categoryId: Long?,
         brandId: Long?,
@@ -725,6 +725,34 @@ class CoreApi(
                 .queryParamIfPresent("categoryId", Optional.ofNullable(categoryId))
                 .queryParamIfPresent("brandId", Optional.ofNullable(brandId))
                 .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreGift>>>().let {
+            Pair(it.data!!, it.pagination!!)
+        }
+
+    suspend fun getUserGifts(
+        userId: String,
+        categoryId: Long?,
+        brandId: Long?,
+        page: Int,
+        pageSize: Int,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$GIFT_ENDPOINT/users/{userId}")
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .queryParamIfPresent("categoryId", Optional.ofNullable(categoryId))
+                .queryParamIfPresent("brandId", Optional.ofNullable(brandId))
+                .build(userId)
         }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {

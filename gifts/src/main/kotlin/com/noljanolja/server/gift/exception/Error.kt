@@ -12,6 +12,7 @@ sealed class Error(
         const val CATEGORY_NOT_FOUND = 404_011
         const val BRAND_NOT_FOUND = 404_012
         const val NOT_ENOUGH_GIFT = 400_015
+        const val MAXIMUM_BUY_TIMES_REACHED = 400_016
     }
 
     object GiftNotFound : Error(
@@ -35,6 +36,12 @@ sealed class Error(
     object NotEnoughGift : Error(
         NOT_ENOUGH_GIFT,
         "Not enough gift",
+        null,
+    )
+
+    object MaximumBuyTimesReached : Error(
+        MAXIMUM_BUY_TIMES_REACHED,
+        "Maximum buy times reached",
         null,
     )
 }

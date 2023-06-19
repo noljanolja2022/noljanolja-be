@@ -34,7 +34,8 @@ class GiftRouter(
                 POST("/buy", giftHandler::buyGift)
             }
 
-            GET("", giftHandler::getGifts)
+            GET("", giftHandler::getAllGifts)
+            GET("/users/{userId}", giftHandler::getUserGifts)
             POST("", giftHandler::createGift)
         }
     }

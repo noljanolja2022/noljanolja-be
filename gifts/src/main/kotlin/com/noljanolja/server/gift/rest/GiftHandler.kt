@@ -21,13 +21,39 @@ class GiftHandler(
         const val DEFAULT_PAGE_SIZE = 10
     }
 
-    suspend fun getGifts(request: ServerRequest): ServerResponse {
+    suspend fun getAllGifts(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
         val categoryId = request.queryParamOrNull("categoryId")?.toLongOrNull()
         val brandId = request.queryParamOrNull("brandId")?.toLongOrNull()
         val userId = request.queryParamOrNull("userId")
-        val (gifts, total) = giftService.getGifts(
+        val (gifts, total) = giftService.getAllGifts(
+            categoryId = categoryId,
+            brandId = brandId,
+            page = page,
+            pageSize = pageSize,
+            userId = userId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = gifts,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = total,
+                    )
+                )
+            )
+    }
+
+    suspend fun getUserGifts(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
+        val categoryId = request.queryParamOrNull("categoryId")?.toLongOrNull()
+        val brandId = request.queryParamOrNull("brandId")?.toLongOrNull()
+        val userId = request.pathVariable("userId").takeIf { it.isNotBlank() } ?: throw InvalidParamsException("userId")
+        val (gifts, total) = giftService.getUserGifts(
             categoryId = categoryId,
             brandId = brandId,
             page = page,
@@ -75,6 +101,7 @@ class GiftHandler(
                 categoryId = categoryId,
                 brandId = brandId,
                 price = price,
+                maxBuyTimes = maxBuyTimes,
             )
         }
         return ServerResponse.ok()
@@ -97,6 +124,7 @@ class GiftHandler(
                 price = price,
                 startTime = startTime,
                 endTime = endTime,
+                maxBuyTimes = maxBuyTimes,
             )
         }
         return ServerResponse.ok()

@@ -22,6 +22,11 @@ interface GiftCodeRepo : CoroutineCrudRepository<GiftCodeModel, Long> {
         userId: String? = null,
     ): Flow<GiftCodeModel>
 
+    suspend fun countByUserIdAndGiftId(
+        userId: String,
+        giftId: Long,
+    ): Long
+
     suspend fun findFirstByGiftIdAndUserIdIsNull(
         giftId: Long
     ): GiftCodeModel?

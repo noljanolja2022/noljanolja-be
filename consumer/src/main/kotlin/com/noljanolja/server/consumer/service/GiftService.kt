@@ -17,7 +17,7 @@ class GiftService(
         page: Int,
         pageSize: Int,
     ): Pair<List<MyGift>, Pagination> {
-        return coreApi.getGifts(
+        return coreApi.getUserGifts(
             userId = userId,
             categoryId = categoryId,
             brandId = brandId,
@@ -37,12 +37,14 @@ class GiftService(
     }
 
     suspend fun getGifts(
+        userId: String,
         categoryId: Long?,
         brandId: Long?,
         page: Int,
         pageSize: Int,
     ): Pair<List<Gift>, Pagination> {
-        return coreApi.getGifts(
+        return coreApi.getAllGifts(
+            userId = userId,
             categoryId = categoryId,
             brandId = brandId,
             page = page,
