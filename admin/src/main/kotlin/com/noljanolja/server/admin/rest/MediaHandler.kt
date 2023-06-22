@@ -14,8 +14,12 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.common.utils.extractZippedFile
 import com.noljanolja.server.common.utils.readJsonFileToString
 import com.noljanolja.server.common.utils.saveFileToLocal
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.withContext
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.http.ContentDisposition
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.reactive.function.server.*
 import java.io.File
@@ -44,6 +48,24 @@ class MediaHandler(
                     pagination = res.pagination
                 )
             )
+    }
+
+    suspend fun getSticker(request: ServerRequest): ServerResponse {
+        val stickerPackId = request.pathVariable(PATH_ID).takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException(PATH_ID)
+        val stickerName = request.pathVariable("stickerName").takeIf { it.isNotEmpty() }
+            ?: throw DefaultBadRequestException(Error("No sticker file Name Provided"))
+        val res = withContext(Dispatchers.IO) {
+            val resource = googleStorageService.getResource(
+                "stickers/$stickerPackId/$stickerName"
+            )
+            ByteArrayResource(resource.data.readAllBytes())
+        }
+        return ServerResponse.accepted()
+            .headers {
+                it.contentDisposition = ContentDisposition.attachment().filename(stickerName).build()
+            }
+            .bodyValueAndAwait(res)
     }
 
     suspend fun createStickerPack(request: ServerRequest): ServerResponse {

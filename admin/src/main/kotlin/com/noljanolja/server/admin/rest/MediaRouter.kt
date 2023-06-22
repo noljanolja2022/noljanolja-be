@@ -18,6 +18,7 @@ class MediaRouter(
         (MEDIA_ROUTE and accept(MediaType.MULTIPART_FORM_DATA)).nest {
             "/sticker-packs".nest {
                 GET("", mediaHandler::getStickerPacks)
+                GET("/{id}/{stickerName}", mediaHandler::getSticker)
                 POST("", mediaHandler::createStickerPack)
                 DELETE("/{id}", mediaHandler::deleteStickerPack)
             }
