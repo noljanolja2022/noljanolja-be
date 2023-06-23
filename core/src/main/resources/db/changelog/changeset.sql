@@ -624,3 +624,27 @@ CREATE TABLE IF NOT EXISTS `messages_participants_reactions`
     FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
     FOREIGN KEY (reaction_id) REFERENCES message_reactions(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
+
+--changeset tranhieu956230@gmail.com:13
+
+-- -----------------------------------------------------
+-- Table `banners`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `banners`;
+
+CREATE TABLE IF NOT EXISTS `banners`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `title`             VARCHAR(255)    NOT NULL,
+    `description`       TEXT            NOT NULL,
+    `content`           TEXT            NOT NULL,
+    `image`             TEXT            NOT NULL,
+    `is_active`         TINYINT         NOT NULL DEFAULT 1,
+    `priority`          ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT')     NOT NULL DEFAULT 'LOW',
+    `action`            ENUM('NONE', 'LINK', 'SHARE', 'CHECKIN')    NOT NULL DEFAULT 'NONE',
+    `start_time`        DATETIME        NOT NULL,
+    `end_time`          DATETIME        NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+) ENGINE = InnoDB;
