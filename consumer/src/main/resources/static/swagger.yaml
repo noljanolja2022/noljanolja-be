@@ -1231,6 +1231,19 @@ paths:
       description: Get all active banners
       security:
         - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: number
+            format: integer
+          required: false
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+            format: integer
+          required: false
       responses:
         "200":
           description: On success
