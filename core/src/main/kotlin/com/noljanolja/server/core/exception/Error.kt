@@ -16,6 +16,7 @@ sealed class Error(
         const val STICKER_PACK_NOT_FOUND = 404_006
         const val STICKERS_NOT_FOUND = 404_007
         const val REACTION_NOT_FOUND = 404_013
+        const val BANNER_NOT_FOUND = 404_014
         const val USER_NOT_PARTICIPATE_IN_CONVERSATION = 400_001
         const val INVALID_PARTICIPANTS_SIZE = 400_002
         const val PARTICIPANTS_NOT_FOUND = 400_003
@@ -112,6 +113,12 @@ sealed class Error(
     object ReactionNotFound : Error(
         REACTION_NOT_FOUND,
         "Reaction not found",
+        null,
+    )
+
+    object BannerNotFound : Error(
+        BANNER_NOT_FOUND,
+        "Banner not found",
         null,
     )
 }

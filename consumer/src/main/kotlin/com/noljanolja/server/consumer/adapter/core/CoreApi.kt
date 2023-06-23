@@ -4,6 +4,7 @@ import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.exception.CoreServiceError
+import com.noljanolja.server.consumer.model.Banner
 import com.noljanolja.server.consumer.model.SimpleUser
 import com.noljanolja.server.consumer.model.StickerPack
 import com.noljanolja.server.consumer.rest.request.AddFriendRequest
@@ -35,6 +36,7 @@ class CoreApi(
         const val LOYALTY_ENDPOINT = "/api/v1/loyalty"
         const val REWARD_ENDPOINT = "/api/v1/reward"
         const val GIFT_ENDPOINT = "/api/v1/gifts"
+        const val BANNER_ENDPOINT = "/api/v1/banners"
 
         val coreErrorsMapping = mapOf(
             404_001 to CoreServiceError.UserNotFound
@@ -853,4 +855,29 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreMessageReactionIcon>>>().data!!
+
+    suspend fun getBanners(
+        page: Int,
+        pageSize: Int,
+        isActive: Boolean = true,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path(BANNER_ENDPOINT)
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .queryParam("isActive", isActive)
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreBanner>>>().let {
+            Pair(it.data!!, it.pagination!!)
+        }
 }
