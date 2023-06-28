@@ -30,6 +30,27 @@ data class VideoRewardConfigModel(
     @Column("rewarded_points")
     var rewardedPoints: Long = 0,
 
+    @Column("comment_reward_points")
+    var commentRewardPoints: Long = 0,
+
+    @Column("min_comment_length")
+    var minCommentLength: Int = 0,
+
+    @Column("comment_max_apply_times")
+    var commentMaxApplyTimes: Int = 0,
+
+    @Column("comment_total_applied_times")
+    var commentTotalAppliedTimes: Int = 0,
+
+    @Column("like_reward_points")
+    var likeRewardPoints: Long = 0,
+
+    @Column("like_max_apply_times")
+    var likeMaxApplyTimes: Int = 0,
+
+    @Column("like_total_applied_times")
+    var likeTotalAppliedTimes: Int = 0,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -53,5 +74,10 @@ fun VideoRewardConfigModel.toVideoRewardConfig() = VideoRewardConfig(
             point = it.rewardPoint,
             progress = it.progress,
         )
-    }
+    },
+    commentMaxApplyTimes = commentMaxApplyTimes,
+    commentRewardPoints = commentRewardPoints,
+    minCommentLength = minCommentLength,
+    likeMaxApplyTimes = likeMaxApplyTimes,
+    likeRewardPoints = likeRewardPoints,
 )

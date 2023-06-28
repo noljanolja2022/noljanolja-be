@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface VideoRewardConfigRepo : CoroutineCrudRepository<VideoRewardConfigModel, Long> {
-    fun findAllByVideoIdInAndActiveIsTrue(videoIds: Set<String>): Flow<VideoRewardConfigModel>
+    fun findAllByVideoIdIn(videoIds: Set<String>): Flow<VideoRewardConfigModel>
 
     suspend fun findByVideoId(videoId: String): VideoRewardConfigModel?
 

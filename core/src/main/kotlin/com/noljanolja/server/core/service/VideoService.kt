@@ -7,6 +7,7 @@ import com.noljanolja.server.core.model.VideoComment
 import com.noljanolja.server.core.repo.media.*
 import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
+import com.noljanolja.server.reward.service.VideoRewardService
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -23,6 +24,7 @@ class VideoService(
     private val videoChannelRepo: VideoChannelRepo,
     private val videoCategoryRepo: VideoCategoryRepo,
     private val userRepo: UserRepo,
+    private val videoRewardService: VideoRewardService,
 ) {
     suspend fun getVideoDetails(
         videoId: String,

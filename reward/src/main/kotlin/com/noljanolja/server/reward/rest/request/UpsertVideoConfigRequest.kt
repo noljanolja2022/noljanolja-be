@@ -6,6 +6,11 @@ data class UpsertVideoConfigRequest(
     val totalPoints: Long?,
     val maxApplyTimes: Int,
     val rewardProgresses: List<VideoConfigProgress>,
+    val minCommentLength: Int = 0,
+    val commentMaxApplyTimes: Int = 0,
+    val commentRewardPoints: Long = 0,
+    val likeMaxApplyTimes: Int = 0,
+    val likeRewardPoints: Long = 0,
 ) {
     data class VideoConfigProgress(
         val progress: Double,

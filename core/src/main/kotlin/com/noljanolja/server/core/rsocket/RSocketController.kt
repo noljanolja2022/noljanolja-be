@@ -18,7 +18,7 @@ class RSocketController(
         with(request) {
             coroutineScope {
                 launch {
-                    videoRewardService.handleRewardUser(
+                    videoRewardService.handleRewardUserWatchVideo(
                         userId = userId,
                         videoId = videoId,
                         progressPercentage = progressPercentage,
@@ -36,6 +36,27 @@ class RSocketController(
                 conversationId = conversationId,
                 roomType = roomType,
                 creatorId = creatorId,
+            )
+        }
+    }
+
+    @MessageMapping("like-video")
+    suspend fun handleUserLikeVideo(request: UserVideoLike) {
+        with(request) {
+            videoRewardService.handleRewardUserLikeVideo(
+                videoId = videoId,
+                userId = userId,
+            )
+        }
+    }
+
+    @MessageMapping("comment-video")
+    suspend fun handleUserCommentVideo(request: UserVideoComment) {
+        with(request) {
+            videoRewardService.handleRewardUserCommentVideo(
+                comment = comment,
+                videoId = videoId,
+                userId = userId,
             )
         }
     }

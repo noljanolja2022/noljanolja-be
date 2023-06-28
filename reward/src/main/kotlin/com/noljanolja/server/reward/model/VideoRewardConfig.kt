@@ -7,6 +7,11 @@ data class VideoRewardConfig(
     val maxApplyTimes: Int,
     val totalPoints: Long?,
     val rewardProgresses: List<RewardProgress>,
+    val minCommentLength: Int,
+    val commentMaxApplyTimes: Int,
+    val commentRewardPoints: Long,
+    val likeMaxApplyTimes: Int,
+    val likeRewardPoints: Long,
 ) {
     data class RewardProgress(
         val progress: Double,

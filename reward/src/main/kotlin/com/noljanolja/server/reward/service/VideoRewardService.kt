@@ -17,9 +17,11 @@ class VideoRewardService(
     private val videoRewardConfigRepo: VideoRewardConfigRepo,
     private val videoRewardRecordRepo: VideoRewardRecordRepo,
     private val videoRewardProgressConfigRepo: VideoRewardProgressConfigRepo,
+    private val videoCommentRewardRecordRepo: VideoCommentRewardRecordRepo,
+    private val videoLikeRewardRecordRepo: VideoLikeRewardRecordRepo,
     private val loyaltyService: LoyaltyService,
 ) {
-    suspend fun handleRewardUser(
+    suspend fun handleRewardUserWatchVideo(
         progressPercentage: Double,
         userId: String,
         videoId: String,
@@ -62,13 +64,72 @@ class VideoRewardService(
                 )
             } else null
         }.takeIf { it.isNotEmpty() }?.let {
+            videoRewardConfigRepo.save(configForVideo)
+            videoRewardRecordRepo.saveAll(it).toList()
             loyaltyService.addTransaction(
                 memberId = userId,
                 point = totalReceivedPoints,
                 reason = "Watch video",
             )
-            videoRewardConfigRepo.save(configForVideo)
-            videoRewardRecordRepo.saveAll(it).toList()
+        }
+    }
+
+    suspend fun handleRewardUserCommentVideo(
+        comment: String,
+        userId: String,
+        videoId: String,
+    ) {
+        videoRewardConfigRepo.findByVideoId(videoId)?.let { config ->
+            if (config.commentMaxApplyTimes > config.commentTotalAppliedTimes
+                && comment.length >= config.minCommentLength
+                && (config.totalPoints == null || config.commentRewardPoints + config.rewardedPoints <= config.totalPoints!!)
+            ) {
+                config.commentTotalAppliedTimes++
+                config.rewardedPoints += config.commentRewardPoints
+                videoCommentRewardRecordRepo.save(
+                    VideoCommentRewardRecordModel(
+                        configId = config.id,
+                        userId = userId,
+                    )
+                )
+                videoRewardConfigRepo.save(config)
+                loyaltyService.addTransaction(
+                    memberId = userId,
+                    point = config.commentRewardPoints,
+                    reason = "Comment video",
+                )
+            }
+        }
+    }
+
+    suspend fun handleRewardUserLikeVideo(
+        videoId: String,
+        userId: String,
+    ) {
+        videoRewardConfigRepo.findByVideoId(videoId)?.let { config ->
+            videoLikeRewardRecordRepo.findByUserIdAndConfigId(
+                userId = userId,
+                configId = config.id,
+            ) ?: run {
+                if ((config.totalPoints == null || config.likeRewardPoints + config.rewardedPoints <= config.totalPoints!!)
+                    && config.likeMaxApplyTimes > config.likeTotalAppliedTimes
+                ) {
+                    config.rewardedPoints += config.likeRewardPoints
+                    config.likeTotalAppliedTimes++
+                    videoRewardConfigRepo.save(config)
+                    videoLikeRewardRecordRepo.save(
+                        VideoLikeRewardRecordModel(
+                            configId = config.id,
+                            userId = userId,
+                        )
+                    )
+                    loyaltyService.addTransaction(
+                        memberId = userId,
+                        point = config.likeRewardPoints,
+                        reason = "Like video",
+                    )
+                }
+            }
         }
     }
 
@@ -77,7 +138,7 @@ class VideoRewardService(
         videoIds: Set<String>,
     ): List<UserVideoRewardRecord> {
         if (videoIds.isEmpty() || userId.isBlank()) return emptyList()
-        val configs = videoRewardConfigRepo.findAllByVideoIdInAndActiveIsTrue(videoIds).toList().toMutableList()
+        val configs = videoRewardConfigRepo.findAllByVideoIdIn(videoIds).toList().toMutableList()
             .ifEmpty { return emptyList() }
         val userRewardRecords = videoRewardRecordRepo.findAllByUserIdAndConfigIdIn(
             userId = userId,
@@ -85,7 +146,7 @@ class VideoRewardService(
         ).toList()
         val rewardProgressesConfigs = videoRewardProgressConfigRepo.findAllByConfigIdIn(configs.map { it.id }).toList()
         return videoIds.mapNotNull { videoId ->
-            (configs.find { it.videoId == videoId } ?: configs.find { it.videoId.isEmpty() })?.let { config ->
+            (configs.find { it.videoId == videoId })?.let { config ->
                 val rewardProgresses = rewardProgressesConfigs.mapNotNull { progressConfig ->
                     if (progressConfig.configId == config.id) {
                         val claimedAts = userRewardRecords.mapNotNull { record ->
@@ -104,12 +165,24 @@ class VideoRewardService(
                         )
                     } else null
                 }
+                val commentCount = videoCommentRewardRecordRepo.countAllByUserIdAndConfigId(
+                    userId = userId,
+                    configId = config.id,
+                )
+                val didLike = videoLikeRewardRecordRepo.existsByUserIdAndConfigId(
+                    userId = userId,
+                    configId = config.id,
+                )
                 UserVideoRewardRecord(
                     videoId = videoId,
-                    rewardProgresses = rewardProgresses,
-                    completed = rewardProgresses.all { it.completed },
-                    totalPoints = rewardProgressesConfigs.sumOf { it.rewardPoint * config.maxApplyTimes },
-                    earnedPoints = rewardProgresses.sumOf { it.point * it.claimedAts.size },
+                    rewardProgresses = rewardProgresses.takeIf { config.isActive }.orEmpty(),
+                    completed = rewardProgresses.all { it.completed }.takeIf { config.isActive } ?: false,
+                    totalPoints = rewardProgressesConfigs
+                        .sumOf { it.rewardPoint * config.maxApplyTimes }
+                        .takeIf { config.isActive } ?: 0,
+                    earnedPoints = rewardProgresses.sumOf { it.point * it.claimedAts.size }
+                            + commentCount * config.commentRewardPoints
+                            + (config.likeRewardPoints.takeIf { didLike } ?: 0),
                 )
             }
         }
@@ -159,6 +232,11 @@ class VideoRewardService(
                 maxApplyTimes = newConfig.maxApplyTimes
                 videoId = newConfig.videoId
                 totalPoints = newConfig.totalPoints
+                minCommentLength = newConfig.minCommentLength
+                commentMaxApplyTimes = newConfig.commentMaxApplyTimes
+                commentRewardPoints = newConfig.commentRewardPoints
+                likeRewardPoints = newConfig.likeRewardPoints
+                likeMaxApplyTimes = newConfig.likeMaxApplyTimes
             }
         )
         val progresses = newConfig.rewardProgresses.map {

@@ -25,4 +25,22 @@ class SocketRequester(
             .data(userSendChatMessage)
             .sendAndAwait()
     }
+
+    suspend fun emitUserLikeVideo(
+        userVideoLike: UserVideoLike,
+    ) {
+        coreRSocketRequester
+            .route("like-video")
+            .data(userVideoLike)
+            .sendAndAwait()
+    }
+
+    suspend fun emitUserCommentVideo(
+        userVideoComment: UserVideoComment,
+    ) {
+        coreRSocketRequester
+            .route("comment-video")
+            .data(userVideoComment)
+            .sendAndAwait()
+    }
 }

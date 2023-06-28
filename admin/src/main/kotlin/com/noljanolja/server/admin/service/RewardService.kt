@@ -34,7 +34,7 @@ class RewardService(
     ) = coreApi.getVideoRewardConfig(configId).toVideoRewardConfig()
 
     suspend fun getVideoRewardConfig(
-        videoId: String
+        videoId: String,
     ) = coreApi.getVideoRewardConfig(videoId)?.toVideoRewardConfig()
 
     suspend fun deleteVideoConfig(
@@ -60,13 +60,18 @@ class RewardService(
                     previousProgressPoint = it.point
                     progress
                 }
-            }
+            },
+            minCommentLength = request.minCommentLength,
+            commentMaxApplyTimes = request.maxApplyTimes,
+            commentRewardPoints = request.commentRewardPoints,
+            likeRewardPoints = request.likeRewardPoints,
+            likeMaxApplyTimes = request.likeMaxApplyTimes,
         )
     ).toVideoRewardConfig()
 
     suspend fun getChatConfigs(
         roomType: RoomType? = null,
-    ) = coreApi.getChatConfigs(roomType?.name).map{it.toChatRewardConfig()}
+    ) = coreApi.getChatConfigs(roomType?.name).map { it.toChatRewardConfig() }
 
     suspend fun upsertChatConfig(
         payload: UpsertChatConfigRequest,

@@ -10,6 +10,9 @@ import com.noljanolja.server.consumer.model.StickerPack
 import com.noljanolja.server.consumer.model.Video
 import com.noljanolja.server.consumer.model.VideoComment
 import com.noljanolja.server.consumer.model.VideoProgress
+import com.noljanolja.server.consumer.rsocket.SocketRequester
+import com.noljanolja.server.consumer.rsocket.UserVideoComment
+import com.noljanolja.server.consumer.rsocket.UserVideoLike
 import org.springframework.stereotype.Component
 
 @Component
@@ -17,6 +20,7 @@ class MediaService(
     private val coreApi: CoreApi,
     private val youtubeApi: YoutubeApi,
     private val videoPubSubService: VideoPubSubService,
+    private val socketRequester: SocketRequester,
 ) {
     suspend fun getAllStickerPacks(userId: String): List<StickerPack> {
         return coreApi.getAllStickerPacksFromUser(userId)!!
@@ -34,6 +38,12 @@ class MediaService(
             videoId = videoId,
             payload = LikeVideoRequest(userId)
         )
+        socketRequester.emitUserLikeVideo(
+            UserVideoLike(
+                userId = userId,
+                videoId = videoId,
+            )
+        )
     }
 
     suspend fun postComment(
@@ -46,13 +56,21 @@ class MediaService(
             val youtubeRes = youtubeApi.addToplevelComment(videoId, youtubeBearer, comment)
             println("Posted comment success with id ${youtubeRes.id}")
         }
-        return coreApi.postComment(
+        val videoComment = coreApi.postComment(
             videoId = videoId,
             payload = PostCommentRequest(
                 commenterId = userId,
                 comment = comment,
             )
         ).toConsumerVideoComment()
+        socketRequester.emitUserCommentVideo(
+            UserVideoComment(
+                userId = userId,
+                videoId = videoId,
+                comment = comment,
+            )
+        )
+        return videoComment
     }
 
     suspend fun getVideos(
