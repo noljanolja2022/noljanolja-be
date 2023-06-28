@@ -608,6 +608,8 @@ CREATE TABLE IF NOT EXISTS `message_reactions`
     `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `code`              VARCHAR(50)     NOT NULL,
     `description`       VARCHAR(255)    NOT NULL,
+    `code_inactive`     VARCHAR(50)     NOT NULL,
+    `is_default`        TINY            NOT NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;

@@ -426,6 +426,18 @@ class ConversationService(
         notifyParticipants(conversation)
     }
 
+    suspend fun clearAllReactions(
+        userId: String,
+        messageId: Long,
+        conversationId: Long,
+    ) {
+        coreApi.clearAllReactions(
+            messageId = messageId,
+            conversationId = conversationId,
+            participantId = userId,
+        )
+    }
+
     suspend fun getAllReactionIcons() = coreApi.getAllReactionIcons().map { it.toMessageReactionIcon() }
 
     private suspend fun notifyParticipants(

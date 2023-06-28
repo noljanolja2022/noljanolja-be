@@ -279,6 +279,21 @@ class ConversationHandler(
             )
     }
 
+    suspend fun clearAllReactions(request: ServerRequest): ServerResponse {
+        val messageId = request.pathVariable("messageId").toLongOrNull() ?: throw InvalidParamsException("messageId")
+        val conversationId = request.pathVariable("conversationId").toLongOrNull()
+            ?: throw InvalidParamsException("conversationId")
+        conversationService.clearAllReactions(
+            userId = AuthUserHolder.awaitUser().id,
+            messageId = messageId,
+            conversationId = conversationId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
     suspend fun getAllReactionIcons(request: ServerRequest): ServerResponse {
         val reactionIcons = conversationService.getAllReactionIcons()
         return ServerResponse.ok()

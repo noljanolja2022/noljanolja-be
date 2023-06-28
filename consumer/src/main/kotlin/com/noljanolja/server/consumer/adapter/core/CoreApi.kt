@@ -842,6 +842,28 @@ class CoreApi(
         }
         .awaitBody<Response<Nothing>>()
 
+    suspend fun clearAllReactions(
+        messageId: Long,
+        participantId: String,
+        conversationId: Long,
+    ) = webClient.delete()
+        .uri { builder ->
+            builder.path("$CONVERSATION_ENDPOINT/{conversationId}/messages/{messageId}/reactions")
+                .queryParam("participantId", participantId)
+                .build(conversationId, messageId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
+
 
     suspend fun getAllReactionIcons() = webClient.get()
         .uri { builder -> builder.path("$CONVERSATION_ENDPOINT/react-icons").build() }

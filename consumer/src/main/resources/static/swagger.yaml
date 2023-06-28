@@ -640,6 +640,32 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/BaseResponse"
+  /api/v1/conversations/{conversationId}/messages/{messageId}/reactions:
+    delete:
+      tags: [ Message ]
+      summary: Clear all reactions from a message
+      description: Clear all reactions from a message
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+        - in: path
+          name: messageId
+          schema:
+            type: number
+          description: the id of the message
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
   /api/v1/conversations/react-icons:
     get:
       tags: [ Message ]
@@ -1765,6 +1791,10 @@ components:
         code:
           type: string
         description:
+          type: string
+        isDefault:
+          type: boolean
+        codeInactive:
           type: string
     Banner:
       type: object

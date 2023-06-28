@@ -31,6 +31,7 @@ class ConversationRouter(
                         PUT("", conversationHandler::updateMessageStatus)
                         POST("/attachments", conversationHandler::saveAttachments)
                         PUT("/reactions/{reactionId}", conversationHandler::reactMessage)
+                        DELETE("/reactions", conversationHandler::clearAllReactions)
                     }
                 }
 

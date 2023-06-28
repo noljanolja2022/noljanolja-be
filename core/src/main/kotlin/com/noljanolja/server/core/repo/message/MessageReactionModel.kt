@@ -17,6 +17,12 @@ data class MessageReactionModel(
     @Column("code")
     val code: String = "",
 
+    @Column("code_inactive")
+    val codeInactive: String = "",
+
+    @Column("is_default")
+    val isDefault: Boolean = false,
+
     @Column("description")
     val description: String = "",
 
@@ -33,4 +39,6 @@ fun MessageReactionModel.toMessageReactionIcon() = MessageReactionIcon(
     id = id,
     code = code,
     description = description,
+    isDefault = isDefault,
+    codeInactive = codeInactive,
 )

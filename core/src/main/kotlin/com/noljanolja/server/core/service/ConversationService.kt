@@ -370,6 +370,23 @@ class ConversationService(
         )
     }
 
+    suspend fun clearAllReactions(
+        participantId: String,
+        conversationId: Long,
+        messageId: Long,
+    ) {
+        val message = messageRepo.findById(messageId) ?: throw Error.MessageNotFound
+        if (message.conversationId != conversationId) throw Error.MessageNotBelongToConversation
+        conversationParticipantRepo.findAllByParticipantIdAndConversationId(
+            participantId = participantId,
+            conversationId = message.conversationId,
+        ).toList().ifEmpty { throw Error.UserNotParticipateInConversation }
+        messageParticipantReactionRepo.deleteAllByMessageIdAndParticipantId(
+            messageId = messageId,
+            participantId = participantId,
+        )
+    }
+
     private suspend fun getAdminOfConversationModel(conversation: ConversationModel) {
         conversation.admin = if (conversation.creatorId == conversation.adminId)
             conversation.creator
@@ -429,7 +446,7 @@ class ConversationService(
         }
     }
 
-    suspend fun getAllReactions() = messageReactionRepo.findAll().toList().map {
+    suspend fun getAllReactions() = messageReactionRepo.findAllByOrderByCreatedAtAsc().toList().map {
         it.toMessageReactionIcon()
     }
 }

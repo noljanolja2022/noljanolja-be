@@ -36,6 +36,7 @@ class ConversationRouter(
                     "/{messageId}".nest {
                         POST("seen", conversationHandler::seenMessage)
                         PUT("/reactions/{reactionId}", conversationHandler::reactMessage)
+                        DELETE("/reactions", conversationHandler::clearAllReactions)
                     }
                 }
 

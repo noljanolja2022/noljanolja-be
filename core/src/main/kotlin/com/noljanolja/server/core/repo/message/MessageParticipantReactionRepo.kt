@@ -6,13 +6,12 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface MessageParticipantReactionRepo : CoroutineCrudRepository<MessageParticipantReactionModel, Long> {
-    suspend fun findFirstByMessageIdAndParticipantIdAndReactionId(
-        messageId: Long,
-        participantId: String,
-        reactionId: Long,
-    ): MessageParticipantReactionModel?
-
     fun findAllByMessageIdIn(
         messageId: List<Long>,
     ): Flow<MessageParticipantReactionModel>
+
+    suspend fun deleteAllByMessageIdAndParticipantId(
+        messageId: Long,
+        participantId: String,
+    )
 }
