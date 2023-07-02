@@ -26,6 +26,7 @@ class CoreApi(
         const val VIDEO_ENDPOINT = "/api/v1/media/videos"
         const val REWARD_ENDPOINT = "/api/v1/reward"
         const val GIFT_ROUTES = "/api/v1/gifts"
+        const val BANNER_ENDPOINT = "/api/v1/banners"
     }
 
     suspend fun getUser(
@@ -515,4 +516,63 @@ class CoreApi(
         }
         .awaitBody<Response<List<Gift.Category>>>().data!!
 
+    suspend fun getBanners(
+        page: Int,
+        pageSize: Int,
+        isActive: Boolean?,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path(BANNER_ENDPOINT)
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .queryParamIfPresent("isActive", Optional.ofNullable(isActive))
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreBanner>>>()
+
+    suspend fun updateBanner(
+        payload: UpsertBannerRequest
+    ) = webClient.put()
+        .uri { builder ->
+            builder.path(BANNER_ENDPOINT)
+                .build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreBanner>>()
+
+    suspend fun deleteBanner(
+        id: Long
+    ) = webClient.delete()
+        .uri { builder ->
+            builder.path("$BANNER_ENDPOINT/$id")
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
 }

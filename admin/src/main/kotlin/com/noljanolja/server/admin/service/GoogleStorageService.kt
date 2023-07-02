@@ -8,12 +8,15 @@ import com.noljanolja.server.admin.exception.Error
 import com.noljanolja.server.admin.model.FileExceedMaxSize
 import com.noljanolja.server.admin.model.ResourceInfo
 import com.noljanolja.server.admin.model.UploadInfo
+import com.noljanolja.server.common.utils.toByteBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
 import java.nio.ByteBuffer
+import java.util.*
 
 @Component
 class GoogleStorageService(
@@ -73,6 +76,17 @@ class GoogleStorageService(
             data = blob.getContent().inputStream(),
             contentType = blob.contentType,
             fileName = fileName
+        )
+    }
+
+    suspend fun uploadFilePart(filePart: FilePart, bucket: String): UploadInfo {
+        val fileExtension = filePart.filename().split(".").last()
+        val fileName = UUID.randomUUID()
+        return uploadFile(
+            path = "$bucket/$fileName.$fileExtension",
+            contentType = "image/$fileExtension",
+            content = filePart.toByteBuffer(),
+            isPublicAccessible = true
         )
     }
 }
