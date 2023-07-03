@@ -16,8 +16,8 @@ class BannerService(
         pageSize: Int,
         isActive: Boolean? = null,
         name: String? = null,
-    ) : Pair<List<Banner>, Pagination?> {
-        val res = coreApi.getBanners(page, pageSize, isActive)
+    ): Pair<List<Banner>, Pagination?> {
+        val res = coreApi.getBanners(name, page, pageSize, isActive)
         val data = res.data.orEmpty().map { it.toBanner() }
         return Pair(data, res.pagination)
     }

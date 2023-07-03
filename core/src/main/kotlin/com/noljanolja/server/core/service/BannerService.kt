@@ -37,6 +37,7 @@ class BannerService(
         name: String? = null,
     ) = Pair(
         bannerRepo.findAllBy(
+            title = name,
             isActive = isActive,
             limit = pageSize,
             offset = (page - 1) * pageSize,

@@ -517,12 +517,14 @@ class CoreApi(
         .awaitBody<Response<List<Gift.Category>>>().data!!
 
     suspend fun getBanners(
+        name: String?,
         page: Int,
         pageSize: Int,
         isActive: Boolean?,
     ) = webClient.get()
         .uri { builder ->
             builder.path(BANNER_ENDPOINT)
+                .queryParamIfPresent("name", Optional.ofNullable(name))
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
                 .queryParamIfPresent("isActive", Optional.ofNullable(isActive))
