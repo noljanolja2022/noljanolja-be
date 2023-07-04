@@ -15,6 +15,9 @@ data class Message(
     var localId: String = "",
     val createdAt: Instant = Instant.now(),
     val reactions: List<Reaction> = emptyList(),
+    val isDeleted: Boolean,
+    val shareMessage: Message? = null,
+    val replyToMessage: Message? = null,
 ) {
     data class Reaction(
         val reactionId: Long,

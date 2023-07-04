@@ -569,6 +569,14 @@ paths:
                     format: binary
                 localId:
                   type: string
+                shareMessageId:
+                  type: number
+                  format: int64
+                  nullable: true
+                replyToMessageId:
+                  type: number
+                  format: int64
+                  nullable: true
       responses:
         "200":
           description: On success
@@ -583,6 +591,37 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/Message"
+  /api/v1/conversations/{conversationId}/messages/{messageId}:
+    delete:
+      tags: [ Message ]
+      summary: Delete a message
+      description: Delete a message
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+        - in: query
+          name: messageId
+          schema:
+            type: number
+          description: the id of the message to remove
+        - in: query
+          name: removeForSelfOnly
+          schema:
+            type: boolean
+          required: true
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
   /api/v1/conversations/{conversationId}/messages/{messageId}/seen:
     post:
       tags: [ Message ]
@@ -1458,6 +1497,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/MessageReaction"
+        replyToMessage:
+          $ref: "#/components/schemas/Message"
+        shareMessage:
+          $ref: "#/components/schemas/Message"
+
     MessageType:
       type: string
       enum: [ PLAINTEXT, STICKER, GIF, PHOTO, DOCUMENT, EVENT_UPDATED, EVENT_LEFT, EVENT_JOIN ]

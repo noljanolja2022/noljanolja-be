@@ -4,7 +4,6 @@ import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.exception.CoreServiceError
-import com.noljanolja.server.consumer.model.Banner
 import com.noljanolja.server.consumer.model.SimpleUser
 import com.noljanolja.server.consumer.model.StickerPack
 import com.noljanolja.server.consumer.rest.request.AddFriendRequest
@@ -223,8 +222,7 @@ class CoreApi(
         conversationId: Long,
     ): CoreMessage = webClient.post()
         .uri { builder ->
-            builder
-                .path(MESSAGE_ENDPOINT)
+            builder.path(MESSAGE_ENDPOINT)
                 .build(conversationId)
         }
         .bodyValue(request)
@@ -864,7 +862,6 @@ class CoreApi(
         .awaitBody<Response<Nothing>>()
 
 
-
     suspend fun getAllReactionIcons() = webClient.get()
         .uri { builder -> builder.path("$CONVERSATION_ENDPOINT/react-icons").build() }
         .retrieve()
@@ -902,4 +899,27 @@ class CoreApi(
         .awaitBody<Response<List<CoreBanner>>>().let {
             Pair(it.data!!, it.pagination!!)
         }
+
+    suspend fun removeMessage(
+        removeForSelfOnly: Boolean,
+        messageId: Long,
+        conversationId: Long,
+        userId: String,
+    ) = webClient.delete()
+        .uri { builder ->
+            builder.path("${CONVERSATION_ENDPOINT}/{conversationId}/messages/{messageId}")
+                .queryParam("removeForSelfOnly", removeForSelfOnly)
+                .queryParam("userId", userId)
+                .build(conversationId, messageId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
 }

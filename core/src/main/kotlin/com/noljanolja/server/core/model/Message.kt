@@ -14,6 +14,9 @@ data class Message(
     val createdAt: Instant = Instant.now(),
     val attachments: List<Attachment> = listOf(),
     val reactions: List<Reaction> = emptyList(),
+    val isDeleted: Boolean = false,
+    val replyToMessage: Message? = null,
+    val shareMessage: Message? = null,
 ) {
     data class Reaction(
         val reactionId: Long,
@@ -36,5 +39,6 @@ data class Message(
 
     enum class Status {
         SEEN,
+        REMOVED,
     }
 }

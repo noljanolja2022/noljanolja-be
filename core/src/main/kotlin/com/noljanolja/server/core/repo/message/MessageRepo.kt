@@ -13,12 +13,14 @@ interface MessageRepo : CoroutineCrudRepository<MessageModel, Long> {
         WHERE conversation_id = :conversationId 
         AND IF(:beforeMessageId IS NULL, TRUE, id < :beforeMessageId) 
         AND IF(:afterMessageId IS NULL, TRUE, id > :afterMessageId)
+        AND id NOT IN (SELECT message_id FROM message_status WHERE user_id = :userId AND status = 'REMOVED')
         ORDER BY id DESC LIMIT :limit
     """
     )
      fun findAllByConversationId(
         conversationId: Long,
         limit: Long,
+        userId: String,
         afterMessageId: Long? = null,
         beforeMessageId: Long? = null,
     ): Flow<MessageModel>

@@ -161,6 +161,8 @@ class ConversationService(
         conversationId: Long,
         localId: String,
         attachments: Attachments,
+        replyToMessageId: Long?,
+        shareMessageId: Long?,
     ): Message = coroutineScope {
         validateAttachments(type, attachments)
         var savedMessage = coreApi.saveMessage(
@@ -168,6 +170,8 @@ class ConversationService(
                 message = message,
                 type = CoreMessage.Type.valueOf(type.name),
                 senderId = userId,
+                replyToMessageId = replyToMessageId,
+                shareMessageId = shareMessageId,
             ),
             conversationId = conversationId,
         ).toConsumerMessage()
@@ -418,12 +422,14 @@ class ConversationService(
             participantId = userId,
             conversationId = conversationId,
         )
-        val conversation = coreApi.getConversationDetail(
-            userId = userId,
-            conversationId = conversationId,
-            messageId = messageId,
-        ).toConsumerConversation()
-        notifyParticipants(conversation)
+        CoroutineScope(Dispatchers.IO).launch {
+            val conversation = coreApi.getConversationDetail(
+                userId = userId,
+                conversationId = conversationId,
+                messageId = messageId,
+            ).toConsumerConversation()
+            notifyParticipants(conversation)
+        }
     }
 
     suspend fun clearAllReactions(
@@ -439,6 +445,28 @@ class ConversationService(
     }
 
     suspend fun getAllReactionIcons() = coreApi.getAllReactionIcons().map { it.toMessageReactionIcon() }
+
+    suspend fun removeMessage(
+        userId: String,
+        conversationId: Long,
+        messageId: Long,
+        removeForSelfOnly: Boolean,
+    ) {
+        coreApi.removeMessage(
+            removeForSelfOnly = removeForSelfOnly,
+            conversationId = conversationId,
+            messageId = messageId,
+            userId = userId,
+        )
+        CoroutineScope(Dispatchers.IO).launch {
+            val conversation = coreApi.getConversationDetail(
+                userId = userId,
+                conversationId = conversationId,
+                messageId = messageId,
+            ).toConsumerConversation()
+            notifyParticipants(conversation)
+        }
+    }
 
     private suspend fun notifyParticipants(
         conversation: Conversation,

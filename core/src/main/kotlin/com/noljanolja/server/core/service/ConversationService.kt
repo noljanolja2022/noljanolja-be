@@ -35,6 +35,8 @@ class ConversationService(
         senderId: String,
         message: String,
         type: Message.Type,
+        replyToMessageId: Long?,
+        shareMessageId: Long?,
     ): Message {
         // Handle special case so a leaving message can be sent by quitting user
         if (type != Message.Type.EVENT_LEFT)
@@ -43,11 +45,26 @@ class ConversationService(
                     throw Error.UserNotParticipateInConversation
                 }
         val sender = userRepo.findById(senderId)!!
+        replyToMessageId?.let {
+            val replyToMessage = messageRepo.findById(replyToMessageId) ?: throw Error.MessageNotFound
+            if (replyToMessage.conversationId != conversationId) throw Error.CannotReplyToMessageFromAnotherConversation
+        }
+        shareMessageId?.let {
+            val shareMessage = messageRepo.findById(shareMessageId) ?: throw Error.MessageNotFound
+            if (shareMessage.conversationId == conversationId) throw Error.CannotShareMessageSameConversation
+            conversationParticipantRepo.findAllByParticipantIdAndConversationId(senderId, shareMessage.conversationId)
+                .toList()
+                .ifEmpty {
+                    throw Error.UserNotParticipateInConversation
+                }
+        }
         val savingMessage = MessageModel(
             message = message,
             senderId = senderId,
             conversationId = conversationId,
             type = type,
+            replyToMessageId = replyToMessageId,
+            shareMessageId = shareMessageId,
         )
 
         var leftJoinParticipants = emptyList<UserModel>()
@@ -65,6 +82,8 @@ class ConversationService(
             savingMessage
         ).apply {
             this.sender = sender
+            this.replyToMessage = replyToMessageId?.let { messageRepo.findById(it) }
+            this.shareMessage = shareMessageId?.let { messageRepo.findById(it) }
             if (type == Message.Type.EVENT_LEFT) this.leftParticipants = leftJoinParticipants
             if (type == Message.Type.EVENT_JOINED) this.joinParticipants = leftJoinParticipants
         }.toMessage(objectMapper)
@@ -83,6 +102,7 @@ class ConversationService(
         val messages = messageRepo.findAllByConversationId(
             conversationId = conversationId,
             limit = limit,
+            userId = userId,
             beforeMessageId = beforeMessageId,
             afterMessageId = afterMessageId,
         ).toList()
@@ -101,7 +121,11 @@ class ConversationService(
 //        }
         return conversationRepo.findById(conversationId)?.apply {
             val messages = if (messageId == null) {
-                messageRepo.findAllByConversationId(id, messageLimit).toList()
+                messageRepo.findAllByConversationId(
+                    conversationId = id,
+                    limit = messageLimit,
+                    userId = userId,
+                ).toList()
             } else listOfNotNull(messageRepo.findById(messageId))
 
             populateMessages(messages)
@@ -120,7 +144,11 @@ class ConversationService(
         return userRepo.findById(userId)?.let { user ->
             val conversations = conversationRepo.findAllByUserId(user.id).toList()
             conversations.forEach { conversation ->
-                val messages = messageRepo.findAllByConversationId(conversation.id, messageLimit).toList()
+                val messages = messageRepo.findAllByConversationId(
+                    conversationId = conversation.id,
+                    limit = messageLimit,
+                    userId = userId,
+                ).toList()
                 populateMessages(messages)
                 val latestSenders = userRepo.findLatestSender(
                     conversationId = conversation.id,
@@ -404,6 +432,10 @@ class ConversationService(
             messageIds = messages.map { it.id },
             status = Message.Status.SEEN,
         ).toList().distinctBy { it.userId }
+        val replayToMessageAndShareMessageIds = messages.flatMap {
+            listOfNotNull(it.shareMessageId, it.replyToMessageId)
+        }.toSet()
+        val additionalMessages = messageRepo.findAllById(replayToMessageAndShareMessageIds).toList()
         val leftParticipantIds = messages.flatMap {
             it.leftParticipantIds.orEmpty().split(",")
         }.distinct().filter { it.isNotEmpty() }
@@ -443,10 +475,45 @@ class ConversationService(
             message.seenBy = messageStatusSeen.filter { it.messageId == message.id }.map { it.userId }
             message.attachments = attachments.filter { it.messageId == message.id }
             message.reactions = messageReactions.filter { it.messageId == message.id }
+            message.replyToMessage = additionalMessages.find { it.id == message.replyToMessageId }
+            message.shareMessage = additionalMessages.find { it.id == message.shareMessageId }
         }
     }
 
     suspend fun getAllReactions() = messageReactionRepo.findAllByOrderByCreatedAtAsc().toList().map {
         it.toMessageReactionIcon()
+    }
+
+    suspend fun removeMessage(
+        removeForSelfOnly: Boolean,
+        userId: String,
+        messageId: Long,
+        conversationId: Long,
+    ) {
+        val message = messageRepo.findById(messageId) ?: throw Error.MessageNotFound
+        if (message.conversationId != conversationId) throw Error.MessageNotBelongToConversation
+        conversationParticipantRepo.findAllByParticipantIdAndConversationId(
+            participantId = userId,
+            conversationId = message.conversationId,
+        ).toList().ifEmpty { throw Error.UserNotParticipateInConversation }
+        if (removeForSelfOnly) {
+            messageStatusRepo.save(
+                MessageStatusModel(
+                    messageId = messageId,
+                    userId = userId,
+                    status = Message.Status.REMOVED,
+                )
+            )
+        } else {
+            val conversation = conversationRepo.findById(message.conversationId)!!
+            if (message.senderId != userId && (conversation.adminId != userId || conversation.type != Conversation.Type.GROUP))
+                throw Error.NotAllowedToRemoveMessage
+            messageRepo.save(
+                message.apply {
+                    isDeleted = true
+                    this.message = "This message was removed"
+                }
+            )
+        }
     }
 }

@@ -6,4 +6,6 @@ data class SaveMessageRequest(
     val senderId: String,
     val message: String,
     val type: CoreMessage.Type,
+    val replyToMessageId: Long? = null,
+    val shareMessageId: Long? = null,
 )

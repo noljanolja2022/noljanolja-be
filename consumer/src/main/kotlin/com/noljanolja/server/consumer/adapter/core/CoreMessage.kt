@@ -15,6 +15,9 @@ data class CoreMessage(
     val createdAt: Instant = Instant.now(),
     val attachments: List<CoreAttachment> = listOf(),
     val reactions: List<Reaction> = emptyList(),
+    val isDeleted: Boolean,
+    val shareMessage: CoreMessage? = null,
+    val replyToMessage: CoreMessage? = null,
 ) {
     data class Reaction(
         val reactionId: Long,
@@ -36,7 +39,7 @@ data class CoreMessage(
     }
 }
 
-fun CoreMessage.toConsumerMessage() = Message(
+fun CoreMessage.toConsumerMessage(): Message = Message(
     id = id,
     conversationId = conversationId,
     message = message,
@@ -55,5 +58,8 @@ fun CoreMessage.toConsumerMessage() = Message(
             userName = it.userName,
             userId = it.userId,
         )
-    }
+    },
+    isDeleted = isDeleted,
+    shareMessage = shareMessage?.toConsumerMessage(),
+    replyToMessage = replyToMessage?.toConsumerMessage(),
 )

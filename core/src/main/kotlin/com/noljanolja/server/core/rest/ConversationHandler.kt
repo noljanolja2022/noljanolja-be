@@ -140,6 +140,8 @@ class ConversationHandler(
                 senderId = senderId,
                 type = type,
                 message = message,
+                shareMessageId = shareMessageId,
+                replyToMessageId = replyToMessageId,
             )
         }
         return ServerResponse
@@ -253,7 +255,8 @@ class ConversationHandler(
         val messageId = request.pathVariable("messageId").toLongOrNull() ?: throw InvalidParamsException("messageId")
         val participantId = request.queryParamOrNull("participantId")?.takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("participantId")
-        val conversationId = request.pathVariable("conversationId").toLongOrNull() ?: throw InvalidParamsException("conversationId")
+        val conversationId =
+            request.pathVariable("conversationId").toLongOrNull() ?: throw InvalidParamsException("conversationId")
         conversationService.reactMessage(
             participantId = participantId,
             reactionId = reactionId,
@@ -270,7 +273,8 @@ class ConversationHandler(
         val messageId = request.pathVariable("messageId").toLongOrNull() ?: throw InvalidParamsException("messageId")
         val participantId = request.queryParamOrNull("participantId")?.takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("participantId")
-        val conversationId = request.pathVariable("conversationId").toLongOrNull() ?: throw InvalidParamsException("conversationId")
+        val conversationId =
+            request.pathVariable("conversationId").toLongOrNull() ?: throw InvalidParamsException("conversationId")
         conversationService.clearAllReactions(
             participantId = participantId,
             messageId = messageId,
@@ -289,6 +293,27 @@ class ConversationHandler(
                 body = Response(
                     data = reactionIcons,
                 )
+            )
+    }
+
+    suspend fun removeMessage(request: ServerRequest): ServerResponse {
+        val messageId = request.pathVariable("messageId").toLongOrNull()
+            ?: throw InvalidParamsException("messageId")
+        val userId = request.queryParamOrNull("userId")?.takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("userId")
+        val conversationId =
+            request.pathVariable("conversationId").toLongOrNull() ?: throw InvalidParamsException("conversationId")
+        val removeForSelfOnly = request.queryParamOrNull("removeForSelfOnly")?.toBooleanStrictOrNull()
+            ?: throw InvalidParamsException("removeForSelfOnly")
+        conversationService.removeMessage(
+            removeForSelfOnly = removeForSelfOnly,
+            userId = userId,
+            messageId = messageId,
+            conversationId = conversationId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>(),
             )
     }
 }

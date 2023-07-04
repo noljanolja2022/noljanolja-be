@@ -131,15 +131,18 @@ DROP TABLE IF EXISTS `messages`;
 
 CREATE TABLE IF NOT EXISTS `messages`
 (
-    `id`                BIGINT                  NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `message`           TEXT                    NOT NULL,
-    `sender_id`         VARCHAR(36)             NOT NULL,
-    `conversation_id`   BIGINT                  NOT NULL,
-    `type`              ENUM('PLAINTEXT', 'STICKER', 'GIF', 'PHOTO', 'DOCUMENT', 'EVENT_UPDATED', 'EVENT_LEFT', 'EVENT_JOINED') NOT NULL,
-    `created_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`        DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `left_participant_ids` VARCHAR(255)         NULL,
-    `join_participant_ids` VARCHAR(255)         NULL,
+    `id`                    BIGINT                  NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `message`               TEXT                    NOT NULL,
+    `sender_id`             VARCHAR(36)             NOT NULL,
+    `conversation_id`       BIGINT                  NOT NULL,
+    `type`                  ENUM('PLAINTEXT', 'STICKER', 'GIF', 'PHOTO', 'DOCUMENT', 'EVENT_UPDATED', 'EVENT_LEFT', 'EVENT_JOINED') NOT NULL,
+    `created_at`            DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`            DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `is_deleted`            TINYINT                 NOT NULL,
+    `reply_to_message_id`   BIGINT                  NULL,
+    `share_message_id`      BIGINT                  NULL,
+    `left_participant_ids`  VARCHAR(255)            NULL,
+    `join_participant_ids`  VARCHAR(255)            NULL,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
@@ -175,7 +178,7 @@ CREATE TABLE IF NOT EXISTS `message_status`
     `id`           BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `user_id`      VARCHAR(36)  NOT NULL,
     `message_id`   BIGINT       NOT NULL,
-    `status`       ENUM('SEEN') NOT NULL,
+    `status`       ENUM('SEEN','REMOVED') NOT NULL,
     `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

@@ -156,6 +156,12 @@ class ConversationHandler(
         val localId = payload.getFirst("localId")?.content()?.awaitSingle()?.let {
             String(it.asInputStream().readAllBytes())
         }.orEmpty()
+        val shareMessageId = payload.getFirst("shareMessageId")?.content()?.awaitSingle()?.let {
+            String(it.asInputStream().readAllBytes()).toLongOrNull()
+        }
+        val replyToMessageId = payload.getFirst("replyToMessageId")?.content()?.awaitSingle()?.let {
+            String(it.asInputStream().readAllBytes()).toLongOrNull()
+        }
         val data = conversationService.createMessage(
             userId = AuthUserHolder.awaitUser().id,
             message = message,
@@ -171,7 +177,9 @@ class ConversationHandler(
                         contentLength = it.headers().contentLength
                     )
                 }
-            )
+            ),
+            shareMessageId = shareMessageId,
+            replyToMessageId = replyToMessageId,
         )
         return ServerResponse
             .ok()
@@ -301,6 +309,24 @@ class ConversationHandler(
                 body = Response(
                     data = reactionIcons,
                 )
+            )
+    }
+
+    suspend fun removeMessage(request: ServerRequest): ServerResponse {
+        val messageId = request.pathVariable("messageId").toLongOrNull() ?: throw InvalidParamsException("messageId")
+        val conversationId = request.pathVariable("conversationId").toLongOrNull()
+            ?: throw InvalidParamsException("conversationId")
+        val removeForSelfOnly = request.queryParamOrNull("removeForSelfOnly")?.toBooleanStrictOrNull()
+            ?: throw InvalidParamsException("removeForSelfOnly")
+        conversationService.removeMessage(
+            userId = AuthUserHolder.awaitUser().id,
+            messageId = messageId,
+            conversationId = conversationId,
+            removeForSelfOnly = removeForSelfOnly,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>(),
             )
     }
 }

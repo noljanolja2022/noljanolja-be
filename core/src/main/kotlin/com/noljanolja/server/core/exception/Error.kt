@@ -9,6 +9,7 @@ sealed class Error(
 ) : BaseException(code, message, cause) {
     companion object {
         const val NO_PERMISSION_TO_UPDATE_PARTICIPANTS = 403_001
+        const val NOT_ALLOWED_TO_REMOVE_MESSAGE = 403_002
         const val CONVERSATION_NOT_FOUND = 404_002
         const val MESSAGE_NOT_FOUND = 404_003
         const val ATTACHMENT_NOT_FOUND = 404_004
@@ -24,6 +25,8 @@ sealed class Error(
         const val INVALID_PHONE_NUMBER = 400_005
         const val MESSAGE_NOT_BELONG_TO_CONVERSATION = 400_006
         const val PARTICIPANT_REMOVAL_FAILED = 400_007
+        const val REPLY_TO_MESSAGE_FROM_ANOTHER_CONVERSATION = 400_017
+        const val SHARE_MESSAGE_SAME_CONVERSATION = 400_018
     }
 
     object ConversationNotFound : Error(
@@ -119,6 +122,24 @@ sealed class Error(
     object BannerNotFound : Error(
         BANNER_NOT_FOUND,
         "Banner not found",
+        null,
+    )
+
+    object NotAllowedToRemoveMessage : Error(
+        NOT_ALLOWED_TO_REMOVE_MESSAGE,
+        "Not allowed to remove message",
+        null
+    )
+
+    object CannotShareMessageSameConversation : Error(
+        SHARE_MESSAGE_SAME_CONVERSATION,
+        "Cannot share message in the same conversation",
+        null,
+    )
+
+    object CannotReplyToMessageFromAnotherConversation : Error(
+        REPLY_TO_MESSAGE_FROM_ANOTHER_CONVERSATION,
+        "Cannot reply to message from another conversation",
         null,
     )
 }

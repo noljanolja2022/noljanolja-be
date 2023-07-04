@@ -37,6 +37,15 @@ data class MessageModel(
     @Column("type")
     val type: Message.Type,
 
+    @Column("is_deleted")
+    var isDeleted: Boolean = false,
+
+    @Column("reply_to_message_id")
+    val replyToMessageId: Long? = null,
+
+    @Column("share_message_id")
+    val shareMessageId: Long? = null,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -62,9 +71,15 @@ data class MessageModel(
 
     @Transient
     var reactions: List<MessageParticipantReactionModel> = listOf()
+
+    @Transient
+    var replyToMessage: MessageModel? = null
+
+    @Transient
+    var shareMessage: MessageModel? = null
 }
 
-fun MessageModel.toMessage(objectMapper: ObjectMapper) = Message(
+fun MessageModel.toMessage(objectMapper: ObjectMapper): Message = Message(
     id = id,
     conversationId = conversationId,
     message = message,
@@ -83,5 +98,8 @@ fun MessageModel.toMessage(objectMapper: ObjectMapper) = Message(
             userId = it.participantId,
             userName = it.participant.name,
         )
-    }
+    },
+    isDeleted = isDeleted,
+    shareMessage = shareMessage?.toMessage(objectMapper),
+    replyToMessage = replyToMessage?.toMessage(objectMapper),
 )

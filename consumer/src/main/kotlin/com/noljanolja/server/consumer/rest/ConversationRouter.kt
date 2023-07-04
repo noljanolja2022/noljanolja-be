@@ -37,6 +37,7 @@ class ConversationRouter(
                         POST("seen", conversationHandler::seenMessage)
                         PUT("/reactions/{reactionId}", conversationHandler::reactMessage)
                         DELETE("/reactions", conversationHandler::clearAllReactions)
+                        DELETE("", conversationHandler::removeMessage)
                     }
                 }
 
