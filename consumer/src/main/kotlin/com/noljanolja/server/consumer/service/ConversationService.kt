@@ -459,12 +459,14 @@ class ConversationService(
             userId = userId,
         )
         CoroutineScope(Dispatchers.IO).launch {
-            val conversation = coreApi.getConversationDetail(
-                userId = userId,
-                conversationId = conversationId,
-                messageId = messageId,
-            ).toConsumerConversation()
-            notifyParticipants(conversation)
+            if (!removeForSelfOnly) {
+                val conversation = coreApi.getConversationDetail(
+                    userId = userId,
+                    conversationId = conversationId,
+                    messageId = messageId,
+                ).toConsumerConversation()
+                notifyParticipants(conversation)
+            }
         }
     }
 

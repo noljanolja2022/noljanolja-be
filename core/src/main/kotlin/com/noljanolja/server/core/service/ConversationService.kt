@@ -44,7 +44,6 @@ class ConversationService(
                 .ifEmpty {
                     throw Error.UserNotParticipateInConversation
                 }
-        val sender = userRepo.findById(senderId)!!
         replyToMessageId?.let {
             val replyToMessage = messageRepo.findById(replyToMessageId) ?: throw Error.MessageNotFound
             if (replyToMessage.conversationId != conversationId) throw Error.CannotReplyToMessageFromAnotherConversation
@@ -66,8 +65,6 @@ class ConversationService(
             replyToMessageId = replyToMessageId,
             shareMessageId = shareMessageId,
         )
-
-        var leftJoinParticipants = emptyList<UserModel>()
         if (type == Message.Type.EVENT_LEFT || type == Message.Type.EVENT_JOINED) {
             val leftJoinIds = message.split(",")
             if (leftJoinIds.isEmpty()) {
@@ -76,17 +73,12 @@ class ConversationService(
             if (type == Message.Type.EVENT_LEFT) savingMessage.leftParticipantIds = message
             else savingMessage.joinParticipantIds = message
             savingMessage.message = ""
-            leftJoinParticipants = userRepo.findAllById(leftJoinIds).toList()
         }
-        return messageRepo.save(
+        val savedMessage = messageRepo.save(
             savingMessage
-        ).apply {
-            this.sender = sender
-            this.replyToMessage = replyToMessageId?.let { messageRepo.findById(it) }
-            this.shareMessage = shareMessageId?.let { messageRepo.findById(it) }
-            if (type == Message.Type.EVENT_LEFT) this.leftParticipants = leftJoinParticipants
-            if (type == Message.Type.EVENT_JOINED) this.joinParticipants = leftJoinParticipants
-        }.toMessage(objectMapper)
+        )
+        populateMessages(listOf(savedMessage))
+        return savedMessage.toMessage(objectMapper)
     }
 
     suspend fun getConversationMessages(
@@ -436,6 +428,7 @@ class ConversationService(
             listOfNotNull(it.shareMessageId, it.replyToMessageId)
         }.toSet()
         val additionalMessages = messageRepo.findAllById(replayToMessageAndShareMessageIds).toList()
+        populateMessages(additionalMessages)
         val leftParticipantIds = messages.flatMap {
             it.leftParticipantIds.orEmpty().split(",")
         }.distinct().filter { it.isNotEmpty() }
