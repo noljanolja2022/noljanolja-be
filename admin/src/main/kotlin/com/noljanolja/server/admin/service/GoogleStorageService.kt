@@ -27,6 +27,7 @@ class GoogleStorageService(
         internal const val STICKER_BUCKET = "stickers"
         internal const val BRAND_BUCKET = "brands"
         internal const val GIFT_BUCKET = "gifts"
+        internal const val USER_AVATAR_BUCKET = "users"
     }
 
     @Value("\${gcloud.storage.bucket}")
@@ -79,9 +80,9 @@ class GoogleStorageService(
         )
     }
 
-    suspend fun uploadFilePart(filePart: FilePart, bucket: String): UploadInfo {
+    suspend fun uploadFilePart(filePart: FilePart, bucket: String, customPath : String? = null): UploadInfo {
         val fileExtension = filePart.filename().split(".").last()
-        val fileName = UUID.randomUUID()
+        val fileName = customPath ?: UUID.randomUUID()
         return uploadFile(
             path = "$bucket/$fileName.$fileExtension",
             contentType = "image/$fileExtension",

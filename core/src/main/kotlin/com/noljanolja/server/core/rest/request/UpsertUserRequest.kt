@@ -16,3 +16,13 @@ data class UpsertUserRequest(
     val gender: Gender? = null,
     val preferences: UserPreferences? = null,
 )
+
+data class UpdateUserRequest(
+    val name: String? = null,
+    val avatar: String? = null,
+    val phone: String? = null,
+    val email: String? = null,
+    val dob: LocalDate? = null,
+    val gender: Gender? = null,
+    val isActive: Boolean? = null
+)

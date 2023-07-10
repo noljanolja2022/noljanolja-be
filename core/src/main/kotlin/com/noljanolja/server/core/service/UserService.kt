@@ -38,6 +38,7 @@ class UserService(
         pageSize: Int,
         friendId: String?,
         phoneNumber: String?,
+        name: String?,
     ): Pair<List<User>, Long> = coroutineScope {
         // friendId does not exist -> Find all
         if (!friendId.isNullOrBlank()) {

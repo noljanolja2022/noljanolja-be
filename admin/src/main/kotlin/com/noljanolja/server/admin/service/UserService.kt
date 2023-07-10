@@ -4,8 +4,10 @@ import com.noljanolja.server.admin.adapter.auth.AuthApi
 import com.noljanolja.server.admin.adapter.core.CoreApi
 import com.noljanolja.server.admin.adapter.core.CoreUser
 import com.noljanolja.server.admin.adapter.core.toAdminUser
+import com.noljanolja.server.admin.model.CoreUserUpdateReq
 import com.noljanolja.server.admin.model.CreateUserRequest
 import com.noljanolja.server.admin.model.User
+import com.noljanolja.server.admin.model.UserActivationRequest
 import com.noljanolja.server.common.rest.Response
 import org.springframework.stereotype.Component
 
@@ -14,9 +16,11 @@ class UserService(
     private val authApi: AuthApi,
     private val coreApi: CoreApi,
 ) {
-    suspend fun getCurrentUser(userId: String): User? {
-        val coreUser = coreApi.getUser(userId)
-        return coreUser?.toAdminUser()
+    suspend fun createAdminUser(
+        token: String,
+        createUserReq: CreateUserRequest
+    ): User {
+        return authApi.createUser(token, createUserReq).toUser()
     }
 
     suspend fun createUser(
@@ -24,7 +28,7 @@ class UserService(
         createUserReq: CreateUserRequest
     ): User? {
         val createdUser = authApi.createUser(token, createUserReq)
-        val coreUser = coreApi.upsertUser(
+        val coreUser = coreApi.createUser(
             CoreUser(
                 id = createdUser.id,
                 email = createdUser.email,
@@ -34,7 +38,19 @@ class UserService(
     }
 
     suspend fun getUsers(page: Int, pageSize: Int, phoneNumber: String?): Response<List<CoreUser>> {
-        val res = coreApi.getUsers()
+        val res = coreApi.getUsers(page, pageSize, phoneNumber)
         return res
+    }
+
+    suspend fun updateUser(userId: String, req: UserActivationRequest): User {
+        return coreApi.updateUser(userId, CoreUserUpdateReq(
+            isActive = req.isActive
+        )).toAdminUser()
+    }
+
+    suspend fun deleteUser(userId: String): User {
+        return coreApi.updateUser(userId, CoreUserUpdateReq(
+            isDeleted = true
+        )).toAdminUser()
     }
 }

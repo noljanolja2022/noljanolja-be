@@ -17,9 +17,10 @@ class UserRouter(
     fun userRoutes() = coRouter {
         (USERS_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             GET("/me", userHandler::getCurrentUser)
-            POST("/manage", userHandler::createUser)
-
             GET("", userHandler::getUsers)
+            PUT("", userHandler::createAdminUser)
+            PATCH("/{id}", userHandler::updateUser)
+            DELETE("/{id}", userHandler::deleteUser)
         }
     }
 }

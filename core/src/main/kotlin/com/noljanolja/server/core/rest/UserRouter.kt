@@ -21,6 +21,7 @@ class UserRouter(
 
             "/{userId}".nest {
                 GET("", userHandler::getUserDetails)
+                PATCH("", userHandler::updateUser)
                 DELETE("", userHandler::deleteUser)
 
                 "/contacts".nest {

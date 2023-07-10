@@ -1,6 +1,7 @@
 package com.noljanolja.server.admin.adapter.auth
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.noljanolja.server.admin.model.User
 
 data class AuthUser(
     val id: String,
@@ -19,4 +20,13 @@ data class AuthUser(
     @JsonIgnore
     var bearerToken: String = ""
 
+    fun toUser() : User {
+        return User(
+            id = id,
+            name = name ?: "",
+            avatar = avatar,
+            phone = phone ?: "",
+            email = email,
+        )
+    }
 }

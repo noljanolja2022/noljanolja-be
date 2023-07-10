@@ -9,6 +9,7 @@ import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserPreferences
 import com.noljanolja.server.core.rest.request.AddFriendRequest
+import com.noljanolja.server.core.rest.request.UpdateUserRequest
 import com.noljanolja.server.core.rest.request.UpsertUserContactsRequest
 import com.noljanolja.server.core.rest.request.UpsertUserRequest
 import com.noljanolja.server.core.service.UserService
@@ -33,6 +34,7 @@ class UserHandler(
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_PAGE_SIZE
         val friendId = request.queryParamOrNull("friendId")
         var phoneNumber = request.queryParamOrNull("phoneNumber")
+        val name = request.queryParamOrNull("name")
         if (!phoneNumber.isNullOrBlank()) {
             phoneNumber = UriUtils.decode(phoneNumber, StandardCharsets.UTF_8)
         }
@@ -40,7 +42,8 @@ class UserHandler(
             page = page,
             pageSize = pageSize,
             friendId = friendId,
-            phoneNumber = phoneNumber
+            phoneNumber = phoneNumber,
+            name = name,
         )
         return ServerResponse
             .ok()
@@ -64,6 +67,27 @@ class UserHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = user,
+                )
+            )
+    }
+
+    suspend fun updateUser(request: ServerRequest): ServerResponse {
+        val userId = request.pathVariable("userId")
+        val req = request.awaitBodyOrNull<UpdateUserRequest>() ?: throw RequestBodyRequired
+        val existingUser = userService.getUser(userId) ?: throw UserNotFound
+        val updatedUser = userService.upsertUser(existingUser.copy(
+            name = req.name?.takeIf { it.isNotBlank() } ?: existingUser.name,
+            email = req.email?.takeIf { it.isNotBlank() } ?: existingUser.email,
+            avatar = req.avatar?.takeIf { it.isNotBlank() } ?: existingUser.avatar,
+            dob = req.dob ?: existingUser.dob,
+            gender = req.gender ?: existingUser.gender,
+            isActive = req.isActive ?: existingUser.isActive
+        ))
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = updatedUser,
                 )
             )
     }

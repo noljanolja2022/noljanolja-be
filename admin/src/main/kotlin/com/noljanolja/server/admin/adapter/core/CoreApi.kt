@@ -29,23 +29,6 @@ class CoreApi(
         const val BANNER_ENDPOINT = "/api/v1/banners"
     }
 
-    suspend fun getUser(
-        userId: String,
-    ): CoreUser? = webClient.get()
-        .uri { builder ->
-            builder.path("$USERS_ENDPOINT/{userId}").build(userId)
-        }
-        .retrieve()
-        .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
-        }
-        .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
-        }
-        .awaitBody<Response<CoreUser>>().data
-
     suspend fun getUsers(
         page: Int = 1,
         pageSize: Int = 10,
@@ -72,13 +55,32 @@ class CoreApi(
         }
         .awaitBody<Response<List<CoreUser>>>()
 
-    suspend fun upsertUser(
+    suspend fun createUser(
         user: CoreUser,
     ): CoreUser = webClient.post()
         .uri { builder ->
             builder.path(USERS_ENDPOINT).build()
         }
         .bodyValue(user)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreUser>>().data!!
+
+    suspend fun updateUser(
+        userId: String,
+        data: CoreUserUpdateReq
+    )   = webClient.patch()
+        .uri { builder ->
+            builder.path("$USERS_ENDPOINT/$userId").build()
+        }
+        .bodyValue(data)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
