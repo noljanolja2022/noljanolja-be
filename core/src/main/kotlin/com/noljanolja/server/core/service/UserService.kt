@@ -44,7 +44,10 @@ class UserService(
         if (!friendId.isNullOrBlank()) {
             // Get all contacts by friendId -> Collect phone
             val phones = mutableListOf<String>()
-            contactsRepo.findAllByUserId(userId = friendId).toList().forEach { contact ->
+            contactsRepo.findAllContactsOfUser(
+                userId = friendId,
+                isBlocked = false,
+            ).toList().forEach { contact ->
                 contact.phoneNumber.takeIf { !it.isNullOrBlank() }?.let { phones.add(it) }
             }
             // Count the total
@@ -78,6 +81,73 @@ class UserService(
         }
     }
 
+    suspend fun getBlackListOfUser(
+        page: Int,
+        pageSize: Int,
+        userId: String,
+    ): Pair<List<User>, Long> {
+        val phones = mutableListOf<String>()
+        contactsRepo.findAllContactsOfUser(
+            userId = userId,
+            isBlocked = true,
+        ).toList().forEach { contact ->
+            contact.phoneNumber.takeIf { !it.isNullOrBlank() }?.let { phones.add(it) }
+        }
+        // Count the total
+        val total = userRepo.countByPhoneNumberIn(
+            phones = phones.sorted(),
+        )
+        // Get users
+        val users = userRepo.findAllByPhoneNumberIn(
+            phones = phones.sorted(),
+            pageable = PageRequest.of(page - 1, pageSize),
+        ).map { it.toUser(objectMapper) }.toList()
+        return Pair(users, total)
+    }
+
+    suspend fun findAllBlackListedUser(
+        userId: String,
+    ): List<User> {
+        val phones = mutableListOf<String>()
+        contactsRepo.findAllContactsOfUser(
+            userId = userId,
+            isBlocked = true,
+        ).toList().forEach { contact ->
+            contact.phoneNumber.takeIf { !it.isNullOrBlank() }?.let { phones.add(it) }
+        }
+        // Get users
+        return userRepo.findAllByPhoneNumberIn(
+            phones = phones.sorted(),
+        ).map { it.toUser(objectMapper) }.toList()
+    }
+
+    suspend fun userBlockUser(
+        userId: String,
+        blockedUserId: String,
+        isBlocked: Boolean,
+    ) {
+        if (userId == blockedUserId) return
+        val usersInfo = userRepo.findAllById(listOf(userId, blockedUserId)).toList()
+        usersInfo.find { it.id == userId } ?: throw UserNotFound
+        val blockedUser = usersInfo.find { it.id == blockedUserId } ?: throw UserNotFound
+        val blockedUserContact = contactsRepo.findByPhoneNumberAndCountryCode(
+            phone = blockedUser.phoneNumber,
+            countryCode = blockedUser.countryCode,
+        ).toList().first()
+        (userContactsRepo.findByUserIdAndContactId(
+            userId = userId,
+            contactId = blockedUserContact.id,
+        ).toList().firstOrNull()?.apply {
+            this.isBlocked = isBlocked
+        } ?: UserContactModel(
+            userId = userId,
+            contactId = blockedUserContact.id,
+            contactName = blockedUser.name,
+        )).also {
+            userContactsRepo.save(it)
+        }
+    }
+
     suspend fun getUser(
         userId: String,
     ): User? = userRepo.findById(userId)?.toUser(objectMapper)
@@ -88,7 +158,19 @@ class UserService(
                 objectMapper = objectMapper,
                 isNewUser = isNewUser
             )
-        ).toUser(objectMapper)
+        ).also {
+            contactsRepo.findByPhoneNumberAndCountryCode(
+                phone = it.phoneNumber,
+                countryCode = it.countryCode,
+            ).toList().ifEmpty {
+                contactsRepo.save(
+                    ContactModel(
+                        countryCode = it.countryCode,
+                        phoneNumber = it.phoneNumber,
+                    )
+                )
+            }
+        }.toUser(objectMapper)
     }
 
     suspend fun deleteUser(
@@ -182,7 +264,8 @@ class UserService(
 
     private suspend fun addUserToContact(recipientId: String, personTobeAddedId: String) {
         val friend = userRepo.findById(personTobeAddedId) ?: throw UserNotFound
-        val friendPn = parsePhoneNumber(friend.phoneNumber, friend.countryCode.toInt()) ?: throw Error.InvalidPhoneNumber
+        val friendPn =
+            parsePhoneNumber(friend.phoneNumber, friend.countryCode.toInt()) ?: throw Error.InvalidPhoneNumber
         var existingContact = contactsRepo.findByPhoneNumberAndCountryCode(
             friendPn.nationalNumber.toString(),
             friendPn.countryCode.toString()
@@ -191,7 +274,8 @@ class UserService(
         if (existingContact == null) {
             existingContact = contactsRepo.save(
                 ContactModel(
-                    id = 0, countryCode = friendPn.countryCode.toString(),
+                    id = 0,
+                    countryCode = friendPn.countryCode.toString(),
                     phoneNumber = friendPn.nationalNumber.toString()
                 )
             )

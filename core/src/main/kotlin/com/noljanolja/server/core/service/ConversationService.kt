@@ -28,6 +28,7 @@ class ConversationService(
     private val attachmentRepo: AttachmentRepo,
     private val messageReactionRepo: MessageReactionRepo,
     private val messageParticipantReactionRepo: MessageParticipantReactionRepo,
+    private val userService: UserService,
     private val objectMapper: ObjectMapper,
 ) {
     suspend fun createMessage(
@@ -39,11 +40,19 @@ class ConversationService(
         shareMessageId: Long?,
     ): Message {
         // Handle special case so a leaving message can be sent by quitting user
-        if (type != Message.Type.EVENT_LEFT)
-            conversationParticipantRepo.findAllByParticipantIdAndConversationId(senderId, conversationId).toList()
-                .ifEmpty {
-                    throw Error.UserNotParticipateInConversation
-                }
+        if (type != Message.Type.EVENT_LEFT) {
+            val participants = conversationParticipantRepo.findAllByConversationId(
+                conversationId = conversationId
+            ).toList().also { participants ->
+                if (!participants.any { it.participantId == senderId }) throw Error.UserNotParticipateInConversation
+            }
+            participants.firstOrNull { it.participantId != senderId }?.let { otherParticipant ->
+                val conversation = conversationRepo.findById(conversationId)!!
+                if (conversation.type == Conversation.Type.SINGLE
+                    && userService.findAllBlackListedUser(otherParticipant.participantId).any { it.id == senderId }
+                ) throw Error.BlockedFromConversation
+            }
+        }
         replyToMessageId?.let {
             val replyToMessage = messageRepo.findById(replyToMessageId) ?: throw Error.MessageNotFound
             if (replyToMessage.conversationId != conversationId) throw Error.CannotReplyToMessageFromAnotherConversation
@@ -91,12 +100,14 @@ class ConversationService(
         conversationParticipantRepo.findAllByParticipantIdAndConversationId(userId, conversationId).toList().ifEmpty {
             throw Error.UserNotParticipateInConversation
         }
+        val blackListedUserIds = userService.findAllBlackListedUser(userId).map { it.id }
         val messages = messageRepo.findAllByConversationId(
             conversationId = conversationId,
             limit = limit,
             userId = userId,
             beforeMessageId = beforeMessageId,
             afterMessageId = afterMessageId,
+            blackListedUserIds = blackListedUserIds + listOf(""),
         ).toList()
         populateMessages(messages)
         return messages.map { it.toMessage(objectMapper) }
@@ -113,10 +124,12 @@ class ConversationService(
 //        }
         return conversationRepo.findById(conversationId)?.apply {
             val messages = if (messageId == null) {
+                val blackListedUserIds = userService.findAllBlackListedUser(userId).map { it.id }
                 messageRepo.findAllByConversationId(
                     conversationId = id,
                     limit = messageLimit,
                     userId = userId,
+                    blackListedUserIds = blackListedUserIds + listOf(""),
                 ).toList()
             } else listOfNotNull(messageRepo.findById(messageId))
 
@@ -134,12 +147,14 @@ class ConversationService(
         senderLimit: Long = 4,
     ): List<Conversation> {
         return userRepo.findById(userId)?.let { user ->
+            val blackListedUserIds = userService.findAllBlackListedUser(userId).map { it.id }
             val conversations = conversationRepo.findAllByUserId(user.id).toList()
             conversations.forEach { conversation ->
                 val messages = messageRepo.findAllByConversationId(
                     conversationId = conversation.id,
                     limit = messageLimit,
                     userId = userId,
+                    blackListedUserIds = blackListedUserIds + listOf(""),
                 ).toList()
                 populateMessages(messages)
                 val latestSenders = userRepo.findLatestSender(
@@ -155,7 +170,15 @@ class ConversationService(
                 conversation.creator = creator
                 getAdminOfConversationModel(conversation)
             }
-            conversations.map { it.toConversation(objectMapper) }
+            conversations.mapNotNull { conversation ->
+                if (
+                    when (conversation.type) {
+                        Conversation.Type.SINGLE -> conversation.participants.all { !blackListedUserIds.contains(it.id) }
+                        Conversation.Type.GROUP -> true
+                    }
+                ) conversation.toConversation(objectMapper)
+                else null
+            }
         }.orEmpty()
     }
 

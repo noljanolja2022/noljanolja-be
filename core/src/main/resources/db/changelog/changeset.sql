@@ -1,6 +1,6 @@
---liquibase formatted sql
+-- liquibase formatted sql
 
---changeset itanchi.dev@gmail.com:1
+-- changeset itanchi.dev@gmail.com:1
 
 SET NAMES utf8mb4;
 
@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS `user_contacts`
     `user_id`      VARCHAR(36)  NOT NULL,
     `contact_id`   BIGINT       NOT NULL,
     `contact_name` VARCHAR(255) NOT NULL,
+    `is_blocked`   TINYINT      NOT NULL,
     `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -101,7 +102,7 @@ ALTER TABLE `user_devices`
 
 SET FOREIGN_KEY_CHECKS = 1;
 
---changeset tranhieu956230@gmail.com:2
+-- changeset tranhieu956230@gmail.com:2
 
 -- -----------------------------------------------------
 -- Table `conversations`
@@ -165,7 +166,7 @@ CREATE TABLE IF NOT EXISTS `conversations_participants`
 
 CREATE UNIQUE INDEX `idx_conversation_participant` ON `conversations_participants` (`conversation_id`, `participant_id`);
 
---changeset tranhieu956230@gmail.com:3
+-- changeset tranhieu956230@gmail.com:3
 
 -- -----------------------------------------------------
 -- Table `message_status`
@@ -188,7 +189,7 @@ CREATE TABLE IF NOT EXISTS `message_status`
 
 CREATE UNIQUE INDEX `idx_user_message_status` ON `message_status` (`user_id`, `message_id`, `status`);
 
---changeset nguyenbrother9x@gmail.com:4
+-- changeset nguyenbrother9x@gmail.com:4
 
 -- -----------------------------------------------------
 -- Table `sticker_packs`
@@ -226,7 +227,7 @@ CREATE TABLE IF NOT EXISTS `stickers`
 
 CREATE UNIQUE INDEX `idx_id_pack` ON `stickers` (`id`, `pack_id`);
 
---changeset tranhieu956230@gmail.com:5
+-- changeset tranhieu956230@gmail.com:5
 
 -- -----------------------------------------------------
 -- Table `attachments`
@@ -251,7 +252,7 @@ CREATE TABLE IF NOT EXISTS `attachments`
 
 CREATE FULLTEXT INDEX idx_original_name ON attachments(original_name);
 
---changeset tranhieu956230@gmail.com:6
+-- changeset tranhieu956230@gmail.com:6
 
 -- -----------------------------------------------------
 -- Table `video_channels`
@@ -367,7 +368,7 @@ CREATE TABLE IF NOT EXISTS `video_comments`
     FOREIGN KEY (commenter_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
---changeset nguyenbrother9x@gmail.com:7
+-- changeset nguyenbrother9x@gmail.com:7
 
 -- -----------------------------------------------------
 -- Table `member_info`
@@ -382,7 +383,7 @@ CREATE TABLE IF NOT EXISTS `member_info`
     `available_points`   BIGINT           NOT NULL DEFAULT 0
 ) ENGINE = InnoDB;
 
---changeset tranhieu956230@gmail.com:8
+-- changeset tranhieu956230@gmail.com:8
 
 -- -----------------------------------------------------
 -- Table `tier_configs`
@@ -416,7 +417,7 @@ CREATE TABLE IF NOT EXISTS `transactions`
     FOREIGN KEY (member_id) REFERENCES member_info(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
---changeset tranhieu956230@gmail.com:9
+-- changeset tranhieu956230@gmail.com:9
 
 -- -----------------------------------------------------
 -- Table `chat_reward_configs`
@@ -497,7 +498,7 @@ CREATE TABLE IF NOT EXISTS `video_reward_records`
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
 
---changeset tranhieu956230@gmail.com:10
+-- changeset tranhieu956230@gmail.com:10
 
 -- -----------------------------------------------------
 -- Table `chat_reward_records`
@@ -521,7 +522,7 @@ ALTER TABLE `videos`
     ADD `like_count` BIGINT NOT NULL DEFAULT 0,
     ADD `comment_count` BIGINT NOT NULL DEFAULT 0;
 
---changeset tranhieu956230@gmail.com:11
+-- changeset tranhieu956230@gmail.com:11
 
 -- -----------------------------------------------------
 -- Table `gift_brands`
@@ -598,7 +599,7 @@ CREATE TABLE IF NOT EXISTS `gift_codes`
     FOREIGN KEY (gift_id) REFERENCES gifts(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
---changeset tranhieu956230@gmail.com:12
+-- changeset tranhieu956230@gmail.com:12
 
 -- -----------------------------------------------------
 -- Table `message_reactions`
@@ -612,7 +613,7 @@ CREATE TABLE IF NOT EXISTS `message_reactions`
     `code`              VARCHAR(50)     NOT NULL,
     `description`       VARCHAR(255)    NOT NULL,
     `code_inactive`     VARCHAR(50)     NOT NULL,
-    `is_default`        TINY            NOT NULL,
+    `is_default`        TINYINT         NOT NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
@@ -637,7 +638,7 @@ CREATE TABLE IF NOT EXISTS `messages_participants_reactions`
     FOREIGN KEY (reaction_id) REFERENCES message_reactions(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
---changeset tranhieu956230@gmail.com:13
+-- changeset tranhieu956230@gmail.com:13
 
 -- -----------------------------------------------------
 -- Table `banners`
@@ -661,7 +662,7 @@ CREATE TABLE IF NOT EXISTS `banners`
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
 
---changeset tranhieu956230@gmail.com:14
+-- changeset tranhieu956230@gmail.com:14
 
 -- -----------------------------------------------------
 -- Table `video_comment_reward_records`

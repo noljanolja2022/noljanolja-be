@@ -82,8 +82,8 @@ data class UserModel(
                 name = name,
                 avatar = avatar,
                 // need this here else toString will return "null"
-                countryCode = if (phoneNumber != null) phoneNumber.countryCode.toString() else "",
-                phoneNumber = if (phoneNumber != null) phoneNumber.nationalNumber.toString() else "",
+                countryCode = phoneNumber?.countryCode?.toString().orEmpty(),
+                phoneNumber = phoneNumber?.nationalNumber?.toString().orEmpty(),
                 email = email,
                 dob = dob,
                 gender = gender,

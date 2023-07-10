@@ -12,6 +12,7 @@ import com.noljanolja.server.core.rest.request.AddFriendRequest
 import com.noljanolja.server.core.rest.request.UpdateUserRequest
 import com.noljanolja.server.core.rest.request.UpsertUserContactsRequest
 import com.noljanolja.server.core.rest.request.UpsertUserRequest
+import com.noljanolja.server.core.rest.request.UserBlockUserRequest
 import com.noljanolja.server.core.service.UserService
 import com.noljanolja.server.loyalty.service.LoyaltyService
 import org.springframework.stereotype.Component
@@ -163,5 +164,42 @@ class UserHandler(
         return ServerResponse
             .ok()
             .bodyValueAndAwait(Response<Nothing>())
+    }
+
+    suspend fun userBlockUser(request: ServerRequest): ServerResponse {
+        val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
+        with(request.awaitBodyOrNull<UserBlockUserRequest>() ?: throw RequestBodyRequired) {
+            userService.userBlockUser(
+                userId = userId,
+                blockedUserId = blockedUserId,
+                isBlocked = isBlocked,
+            )
+        }
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
+    suspend fun getBlackListOfUser(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_PAGE_SIZE
+        val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
+        val (blockedUsers, total) = userService.getBlackListOfUser(
+            page = page,
+            pageSize = pageSize,
+            userId = userId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = blockedUsers,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = total,
+                    )
+                )
+            )
     }
 }

@@ -922,4 +922,48 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Nothing>>()
+
+    suspend fun blockUser(
+        userId: String,
+        request: BlockUserRequest,
+    ) = webClient.put()
+        .uri { builder ->
+            builder.path("${USERS_ENDPOINT}/{userId}/block")
+                .build(userId)
+        }
+        .bodyValue(request)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
+    suspend fun getBlackList(
+        userId: String,
+        page: Int,
+        pageSize: Int,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("${USERS_ENDPOINT}/{userId}/black-list")
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .build(userId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<SimpleUser>>>().let {
+            Pair(it.data!!, it.pagination!!)
+        }
 }

@@ -9,11 +9,15 @@ import org.springframework.stereotype.Repository
 interface ContactRepo : CoroutineCrudRepository<ContactModel, Long> {
     @Query(
         """
-        SELECT * FROM `contacts`
-        INNER JOIN `user_contacts` ON `contacts`.id = `user_contacts`.contact_id AND `user_contacts`.user_id = :userId
+        SELECT contacts.* FROM `contacts` INNER JOIN `user_contacts` ON `contacts`.id = `user_contacts`.contact_id
+        WHERE `user_contacts`.user_id = :userId 
+        AND IF(:isBlocked IS NOT NULL, user_contacts.is_blocked = :isBlocked, TRUE)
         """
     )
-    fun findAllByUserId(userId: String): Flow<ContactModel>
+    fun findAllContactsOfUser(
+        userId: String,
+        isBlocked: Boolean? = null,
+    ): Flow<ContactModel>
 
     fun findAllByPhoneNumberIn(
         phones: List<String>,

@@ -7,7 +7,10 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ConversationParticipantRepo : CoroutineCrudRepository<ConversationParticipantModel, Long> {
-    fun findAllByParticipantIdAndConversationId(participantId: String, conversationId: Long): Flow<ConversationParticipantModel>
+    fun findAllByParticipantIdAndConversationId(
+        participantId: String,
+        conversationId: Long
+    ): Flow<ConversationParticipantModel>
 
     fun findAllByConversationId(conversationId: Long): Flow<ConversationParticipantModel>
 

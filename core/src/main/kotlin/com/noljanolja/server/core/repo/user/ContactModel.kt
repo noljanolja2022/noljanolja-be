@@ -11,7 +11,7 @@ import java.time.Instant
 data class ContactModel(
     @Id
     @Column("id")
-    val id: Long,
+    val id: Long = 0,
 
     @Column("country_code")
     val countryCode: String?,

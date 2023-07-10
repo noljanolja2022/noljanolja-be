@@ -11,7 +11,7 @@ import java.time.Instant
 data class UserContactModel(
     @Id
     @Column("id")
-    val id: Long,
+    val id: Long = 0,
 
     @Column("user_id")
     val userId: String,
@@ -21,6 +21,9 @@ data class UserContactModel(
 
     @Column("contact_name")
     var contactName: String,
+
+    @Column("is_blocked")
+    var isBlocked: Boolean = false,
 
     @Column("created_at")
     @CreatedDate

@@ -24,6 +24,8 @@ class UserRouter(
                 POST("/contacts", userHandler::syncCurrentUserContact)
                 GET("/contacts", userHandler::getCurrentUserContacts)
                 POST("/contacts/invite", userHandler::sendFriendRequest)
+                GET("/black-list", userHandler::getBlackList)
+                PUT("/block", userHandler::blockUser)
             }
         }
         (USERS_ROUTE and accept(MediaType.MULTIPART_FORM_DATA)).nest {

@@ -5,10 +5,7 @@ import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.User
-import com.noljanolja.server.consumer.rest.request.AddFriendRequest
-import com.noljanolja.server.consumer.rest.request.SyncUserContactsRequest
-import com.noljanolja.server.consumer.rest.request.UpdateCurrentUserRequest
-import com.noljanolja.server.consumer.rest.request.UploadType
+import com.noljanolja.server.consumer.rest.request.*
 import com.noljanolja.server.consumer.service.GoogleStorageService
 import com.noljanolja.server.consumer.service.UserService
 import kotlinx.coroutines.flow.map
@@ -151,6 +148,35 @@ class UserHandler(
             .ok()
             .bodyValueAndAwait(
                 Response<Nothing>()
+            )
+    }
+
+    suspend fun blockUser(request: ServerRequest): ServerResponse {
+        userService.blockUser(
+            userId = AuthUserHolder.awaitUser().id,
+            request = request.awaitBodyOrNull() ?: throw RequestBodyRequired,
+        )
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                Response<Nothing>()
+            )
+    }
+
+    suspend fun getBlackList(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull()?.takeIf { it > 0 } ?: 1
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 } ?: 100
+        val (users, pagination) = userService.getBlackList(
+            userId = AuthUserHolder.awaitUser().id,
+            page = page,
+            pageSize = pageSize,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = users,
+                    pagination = pagination,
+                )
             )
     }
 }

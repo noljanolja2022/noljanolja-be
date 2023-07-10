@@ -124,6 +124,64 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BaseResponse"
+  /api/v1/users/me/block:
+    put:
+      tags: [ User ]
+      summary: Block a user
+      description: Block a user
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                blockedUserId:
+                  type: string
+                isBlocked:
+                  type: boolean
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+  /api/v1/users/me/black-list:
+    get:
+      tags: [ User ]
+      summary: Get user black list
+      description: Get user black list
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: string
+        - in: query
+          name: pageSize
+          schema:
+            type: string
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/SimpleUser"
+                      pagination:
+                        $ref: "#/components/schemas/Pagination"
   /api/v1/users:
     get:
       tags: [ User ]

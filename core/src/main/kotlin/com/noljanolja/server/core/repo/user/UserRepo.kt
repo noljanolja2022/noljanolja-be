@@ -21,6 +21,10 @@ interface UserRepo : CoroutineCrudRepository<UserModel, String> {
         pageable: Pageable,
     ): Flow<UserModel>
 
+    fun findAllByPhoneNumberIn(
+        phones: List<String>,
+    ): Flow<UserModel>
+
     @Query(
         """
         UPDATE users 

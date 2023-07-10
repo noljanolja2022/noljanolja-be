@@ -27,6 +27,7 @@ sealed class Error(
         const val PARTICIPANT_REMOVAL_FAILED = 400_007
         const val REPLY_TO_MESSAGE_FROM_ANOTHER_CONVERSATION = 400_017
         const val SHARE_MESSAGE_SAME_CONVERSATION = 400_018
+        const val BLOCKED_FROM_CONVERSATION = 400_019
     }
 
     object ConversationNotFound : Error(
@@ -140,6 +141,12 @@ sealed class Error(
     object CannotReplyToMessageFromAnotherConversation : Error(
         REPLY_TO_MESSAGE_FROM_ANOTHER_CONVERSATION,
         "Cannot reply to message from another conversation",
+        null,
+    )
+
+    object BlockedFromConversation: Error(
+        BLOCKED_FROM_CONVERSATION,
+        "You have been blocked from this conversation",
         null,
     )
 }

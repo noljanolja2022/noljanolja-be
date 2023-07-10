@@ -23,6 +23,8 @@ class UserRouter(
                 GET("", userHandler::getUserDetails)
                 PATCH("", userHandler::updateUser)
                 DELETE("", userHandler::deleteUser)
+                GET("/black-list", userHandler::getBlackListOfUser)
+                PUT("/block", userHandler::userBlockUser)
 
                 "/contacts".nest {
                     POST("", userHandler::upsertUserContacts)

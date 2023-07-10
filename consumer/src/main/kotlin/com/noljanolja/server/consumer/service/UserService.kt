@@ -12,7 +12,9 @@ import com.noljanolja.server.consumer.model.LocalContact
 import com.noljanolja.server.consumer.model.SimpleUser
 import com.noljanolja.server.consumer.model.User
 import com.noljanolja.server.consumer.rest.request.AddFriendRequest
+import com.noljanolja.server.consumer.rest.request.BlockUserRequest
 import com.noljanolja.server.consumer.rest.request.UpdateCurrentUserRequest
+import com.noljanolja.server.consumer.adapter.core.request.BlockUserRequest as CoreBlockUserRequest
 import org.springframework.stereotype.Component
 
 @Component
@@ -71,7 +73,7 @@ class UserService(
         userId: String,
         page: Int = 1,
         pageSize: Int = 100
-    ) : List<SimpleUser> {
+    ): List<SimpleUser> {
         val res = coreApi.getUsers(friendId = userId, page = page, pageSize = pageSize)
         return res?.first ?: emptyList()
     }
@@ -107,5 +109,29 @@ class UserService(
         req: AddFriendRequest
     ) {
         coreApi.addFriend(userId, req)
+    }
+
+
+    suspend fun getBlackList(
+        userId: String,
+        page: Int,
+        pageSize: Int,
+    ) = coreApi.getBlackList(
+        userId = userId,
+        page = page,
+        pageSize = pageSize,
+    )
+
+    suspend fun blockUser(
+        userId: String,
+        request: BlockUserRequest,
+    ) {
+        coreApi.blockUser(
+            userId = userId,
+            request = CoreBlockUserRequest(
+                blockedUserId = request.blockedUserId,
+                isBlocked = request.isBlocked,
+            )
+        )
     }
 }

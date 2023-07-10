@@ -14,6 +14,7 @@ interface MessageRepo : CoroutineCrudRepository<MessageModel, Long> {
         AND IF(:beforeMessageId IS NULL, TRUE, id < :beforeMessageId) 
         AND IF(:afterMessageId IS NULL, TRUE, id > :afterMessageId)
         AND id NOT IN (SELECT message_id FROM message_status WHERE user_id = :userId AND status = 'REMOVED')
+        AND sender_id NOT IN (:blackListedUserIds)
         ORDER BY id DESC LIMIT :limit
     """
     )
@@ -23,5 +24,6 @@ interface MessageRepo : CoroutineCrudRepository<MessageModel, Long> {
         userId: String,
         afterMessageId: Long? = null,
         beforeMessageId: Long? = null,
+        blackListedUserIds: List<String> = emptyList(),
     ): Flow<MessageModel>
 }
