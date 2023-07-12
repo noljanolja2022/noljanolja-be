@@ -129,7 +129,8 @@ class MediaHandler(
     suspend fun getVideo(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull(QUERY_PAGE)?.toIntOrNull() ?: 1
         val pageSize = request.queryParamOrNull(QUERY_PAGE_SIZE)?.toIntOrNull() ?: 10
-        val res = videoService.getVideo(page, pageSize)
+        val query = request.queryParamOrNull("query")
+        val res = videoService.getVideo(query, page, pageSize)
         return ServerResponse.ok().bodyValueAndAwait(
             Response(
                 data = res.data,

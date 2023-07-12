@@ -1,10 +1,9 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 4/6/2023:
-      - Update API findUsers
-      - Add API to add friend to contacts
-  version: 1.0.4
+    Changelog - 7/12/2023:
+      - Allow search for video using query
+  version: 1.0.5
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -866,6 +865,10 @@ paths:
       security:
         - bearerAuth: [ ]
       parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
         - name: page
           in: query
           schema:

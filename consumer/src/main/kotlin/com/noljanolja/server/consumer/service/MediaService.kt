@@ -76,11 +76,13 @@ class MediaService(
     suspend fun getVideos(
         page: Int,
         pageSize: Int,
+        query: String? = null,
         isHighlighted: Boolean? = null,
         categoryId: String? = null,
         userId: String,
     ): Pair<List<Video>, Long> {
         return coreApi.getVideos(
+            query = query,
             page = page,
             pageSize = pageSize,
             isHighlighted = isHighlighted,

@@ -48,18 +48,21 @@ class VideoService(
     suspend fun getVideos(
         page: Int,
         pageSize: Int,
+        query: String? = null,
         isHighlighted: Boolean? = null,
         categoryId: String? = null,
     ): Pair<List<Video>, Long> {
         val videos = videoRepo.findAllBy(
             isHighlighted = isHighlighted,
             categoryId = categoryId,
+            query = query,
             offset = (page - 1) * pageSize,
             limit = pageSize,
         ).toList()
         val total = videoRepo.countAllBy(
             isHighlighted = isHighlighted,
             categoryId = categoryId,
+            query = query,
         )
         val channels = videoChannelRepo.findAllById(videos.map { it.channelId }.toSet()).toList()
         val categories = videoCategoryRepo.findAllById(videos.map { it.categoryId }.toSet()).toList()

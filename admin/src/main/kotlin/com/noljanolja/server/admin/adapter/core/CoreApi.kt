@@ -138,11 +138,13 @@ class CoreApi(
         .awaitBody<Response<Nothing>>()
 
     suspend fun getVideo(
+        query: String? = null,
         page: Int,
         pageSize: Int
     ) = webClient.get()
         .uri { builder ->
             builder.path(VIDEO_ENDPOINT)
+                .queryParamIfPresent("query", Optional.ofNullable(query))
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
                 .build()

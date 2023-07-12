@@ -48,8 +48,10 @@ class VideoHandler(
             ?: DEFAULT_QUERY_PARAM_PAGE_SIZE
         val isHighlighted = request.queryParamOrNull("isHighlighted")?.toBoolean()
         val categoryId = request.queryParamOrNull("categoryId")
+        val query = request.queryParamOrNull("query")
         val (videos, total) = videoService.getVideos(
             isHighlighted = isHighlighted,
+            query = query,
             page = page,
             pageSize = pageSize,
             categoryId = categoryId,

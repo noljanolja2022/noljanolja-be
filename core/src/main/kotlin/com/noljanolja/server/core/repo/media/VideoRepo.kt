@@ -18,7 +18,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         """
             SELECT * FROM videos WHERE 
             IF(:isHighlighted IS NOT NULL, is_highlighted = :isHighlighted, TRUE) AND
-            IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE)
+            IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
+            IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE)
             ORDER BY created_at DESC
             LIMIT :limit OFFSET :offset
         """
@@ -26,6 +27,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
     fun findAllBy(
         isHighlighted: Boolean? = null,
         categoryId: String? = null,
+        query: String? = null,
         offset: Int,
         limit: Int,
     ): Flow<VideoModel>
@@ -34,12 +36,14 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         """
             SELECT COUNT(*) FROM videos WHERE 
             IF(:isHighlighted IS NOT NULL, is_highlighted = :isHighlighted, TRUE) AND
-            IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE)
+            IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
+            IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE)
         """
     )
     suspend fun countAllBy(
         isHighlighted: Boolean? = null,
         categoryId: String? = null,
+        query: String? = null,
     ): Long
 
 

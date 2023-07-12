@@ -29,8 +29,8 @@ class VideoService(
         return coreApi.createVideo(req)
     }
 
-    suspend fun getVideo(page: Int, pageSize: Int): Response<List<Video>> {
-        val res = coreApi.getVideo(page, pageSize)
+    suspend fun getVideo(query: String? = null, page: Int, pageSize: Int): Response<List<Video>> {
+        val res = coreApi.getVideo(query, page, pageSize)
         return res
     }
 

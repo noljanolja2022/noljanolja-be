@@ -142,7 +142,9 @@ class MediaHandler(
             ?: 10
         val isHighlighted = serverRequest.queryParamOrNull("isHighlighted")?.toBoolean()
         val categoryId = serverRequest.queryParamOrNull("categoryId")
+        val query = serverRequest.queryParamOrNull("query")
         val (videos, total) = mediaService.getVideos(
+            query = query,
             isHighlighted = isHighlighted,
             page = page,
             pageSize = pageSize,

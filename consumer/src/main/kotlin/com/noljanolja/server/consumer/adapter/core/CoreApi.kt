@@ -525,6 +525,7 @@ class CoreApi(
     suspend fun getVideos(
         page: Int,
         pageSize: Int,
+        query: String? = null,
         isHighlighted: Boolean? = null,
         categoryId: String? = null,
     ) = webClient.get()
@@ -532,6 +533,7 @@ class CoreApi(
             builder.path("$MEDIA_ENDPOINT/videos")
                 .queryParamIfPresent("isHighlighted", Optional.ofNullable(isHighlighted))
                 .queryParamIfPresent("categoryId", Optional.ofNullable(categoryId))
+                .queryParamIfPresent("query", Optional.ofNullable(query))
                 .build()
         }
         .retrieve()
