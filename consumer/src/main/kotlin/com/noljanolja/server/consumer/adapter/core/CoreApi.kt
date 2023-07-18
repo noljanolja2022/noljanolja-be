@@ -968,4 +968,37 @@ class CoreApi(
         .awaitBody<Response<List<SimpleUser>>>().let {
             Pair(it.data!!, it.pagination!!)
         }
+
+    suspend fun checkin(
+        userId: String,
+    ) = webClient.post()
+        .uri { builder -> builder.path("${REWARD_ENDPOINT}/users/{userId}").build(userId) }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
+    suspend fun getMyCheckinProgresses(
+        userId: String,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("${REWARD_ENDPOINT}/users/{userId}")
+                .build(userId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreCheckinProgress>>>().data!!
 }

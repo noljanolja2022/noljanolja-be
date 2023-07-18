@@ -2,7 +2,6 @@ package com.noljanolja.server.loyalty.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
-import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.loyalty.model.Transaction
 import com.noljanolja.server.loyalty.model.request.AddTransactionRequest
@@ -11,7 +10,6 @@ import com.noljanolja.server.loyalty.service.LoyaltyService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import java.time.Instant
-import java.time.LocalDate
 
 @Component
 class LoyaltyHandler(
@@ -44,7 +42,7 @@ class LoyaltyHandler(
         val memberId = request.pathVariable("memberId").ifBlank { throw InvalidParamsException("memberId") }
         val transaction = loyaltyService.addTransaction(
             memberId = memberId,
-            point = addTransactionRequest.point,
+            points = addTransactionRequest.point,
             reason = addTransactionRequest.reason,
         )
         return ServerResponse.ok()

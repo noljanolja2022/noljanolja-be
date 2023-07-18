@@ -6,8 +6,10 @@ import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.reward.repo.RoomType
 import com.noljanolja.server.reward.rest.request.UpsertChatConfigRequest
+import com.noljanolja.server.reward.rest.request.UpsertCheckinConfigsRequest
 import com.noljanolja.server.reward.rest.request.UpsertVideoConfigRequest
 import com.noljanolja.server.reward.service.ChatRewardService
+import com.noljanolja.server.reward.service.CheckinRewardService
 import com.noljanolja.server.reward.service.VideoRewardService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -16,6 +18,7 @@ import org.springframework.web.reactive.function.server.*
 class RewardHandler(
     private val videoRewardService: VideoRewardService,
     private val chatRewardService: ChatRewardService,
+    private val checkinRewardService: CheckinRewardService,
 ) {
     companion object {
         const val DEFAULT_PAGE = 1
@@ -135,6 +138,37 @@ class RewardHandler(
                 body = Response(
                     data = newConfig,
                 )
+            )
+    }
+
+    suspend fun getUserCheckinProgresses(request: ServerRequest): ServerResponse {
+        val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
+        val progresses = checkinRewardService.getUserCheckinProgresses(userId)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = progresses,
+                )
+            )
+    }
+
+    suspend fun upsertCheckinConfigs(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<UpsertCheckinConfigsRequest>() ?: throw RequestBodyRequired
+        val configs = checkinRewardService.upsertCheckinConfigs(payload.configs)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = configs,
+                )
+            )
+    }
+
+    suspend fun userCheckin(request: ServerRequest): ServerResponse {
+        val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
+        checkinRewardService.userCheckin(userId)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
             )
     }
 }

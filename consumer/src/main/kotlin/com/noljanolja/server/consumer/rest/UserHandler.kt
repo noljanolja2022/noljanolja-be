@@ -179,4 +179,26 @@ class UserHandler(
                 )
             )
     }
+
+    suspend fun checkin(request: ServerRequest): ServerResponse {
+        userService.checkin(
+            AuthUserHolder.awaitUser().id,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
+    suspend fun getMyCheckinProgresses(request: ServerRequest): ServerResponse {
+        val progresses = userService.getMyCheckinProgresses(
+            AuthUserHolder.awaitUser().id,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = progresses,
+                )
+            )
+    }
 }

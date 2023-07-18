@@ -58,23 +58,23 @@ class LoyaltyService(
 
     suspend fun addTransaction(
         memberId: String,
-        point: Long,
+        points: Long,
         reason: String,
     ): Transaction {
         memberInfoRepo.findByMemberIdForUpdate(memberId)?.let {
-            if (it.availablePoints + point < 0) throw Error.InsufficientBalance
+            if (it.availablePoints + points < 0) throw Error.InsufficientBalance
             memberInfoRepo.save(
                 MemberInfoModel(
                     memberId = memberId,
-                    availablePoints = it.availablePoints + point,
-                    accumulatedPoints = it.accumulatedPoints + (point.takeIf { it > 0 } ?: 0),
+                    availablePoints = it.availablePoints + points,
+                    accumulatedPoints = it.accumulatedPoints + (points.takeIf { it > 0 } ?: 0),
                 )
             )
         } ?: throw Error.MemberNotFound
         return transactionRepo.save(
             TransactionModel(
                 memberId = memberId,
-                amount = point,
+                amount = points,
                 reason = reason,
             )
         ).toTransaction()

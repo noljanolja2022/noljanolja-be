@@ -699,3 +699,37 @@ CREATE TABLE IF NOT EXISTS `video_like_reward_records`
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (config_id) REFERENCES video_reward_configs(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
+
+-- changeset tranhieu956230@gmail.com:15
+
+-- -----------------------------------------------------
+-- Table `checkin_reward_configs`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `checkin_reward_configs`;
+
+CREATE TABLE IF NOT EXISTS `checkin_reward_configs`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `day`               INT             NOT NULL,
+    `reward_points`     BIGINT          NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `user_checkin_records`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `user_checkin_records`;
+
+CREATE TABLE IF NOT EXISTS `user_checkin_records`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `day`               INT             NOT NULL,
+    `user_id`           VARCHAR(255)    NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE = InnoDB;

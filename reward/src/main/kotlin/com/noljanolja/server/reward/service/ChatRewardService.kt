@@ -46,7 +46,7 @@ class ChatRewardService(
             rewardRecord.applyTimes++
             loyaltyService.addTransaction(
                 memberId = memberId,
-                point = rewardConfig.rewardPoint,
+                points = rewardConfig.rewardPoint,
                 reason = "Send messages",
             )
         }

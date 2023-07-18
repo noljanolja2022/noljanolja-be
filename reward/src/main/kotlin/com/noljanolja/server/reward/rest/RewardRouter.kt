@@ -27,6 +27,13 @@ class RewardRouter(
                 GET("", rewardHandler::getChatConfigs)
                 PUT("", rewardHandler::upsertChatConfig)
             }
+            "/users/{userId}".nest {
+                GET("", rewardHandler::getUserCheckinProgresses)
+                POST("", rewardHandler::userCheckin)
+            }
+            "/checkin/configs".nest {
+                POST("", rewardHandler::upsertCheckinConfigs)
+            }
         }
         GET("/api/v2/reward/videos/configs/{videoId}", rewardHandler::getVideoRewardConfigV2)
     }

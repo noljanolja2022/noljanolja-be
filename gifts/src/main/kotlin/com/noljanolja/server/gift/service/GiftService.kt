@@ -33,7 +33,7 @@ class GiftService(
         ) throw Error.MaximumBuyTimesReached
         loyaltyService.addTransaction(
             memberId = userId,
-            point = -gift.price,
+            points = -gift.price,
             reason = "Buy gift"
         )
         val savedGift = giftRepo.save(

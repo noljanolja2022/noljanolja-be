@@ -68,7 +68,7 @@ class VideoRewardService(
             videoRewardRecordRepo.saveAll(it).toList()
             loyaltyService.addTransaction(
                 memberId = userId,
-                point = totalReceivedPoints,
+                points = totalReceivedPoints,
                 reason = "Watch video",
             )
         }
@@ -95,7 +95,7 @@ class VideoRewardService(
                 videoRewardConfigRepo.save(config)
                 loyaltyService.addTransaction(
                     memberId = userId,
-                    point = config.commentRewardPoints,
+                    points = config.commentRewardPoints,
                     reason = "Comment video",
                 )
             }
@@ -125,7 +125,7 @@ class VideoRewardService(
                     )
                     loyaltyService.addTransaction(
                         memberId = userId,
-                        point = config.likeRewardPoints,
+                        points = config.likeRewardPoints,
                         reason = "Like video",
                     )
                 }

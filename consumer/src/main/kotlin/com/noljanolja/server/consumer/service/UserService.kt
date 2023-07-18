@@ -2,11 +2,8 @@ package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.consumer.adapter.auth.AuthApi
 import com.noljanolja.server.consumer.adapter.auth.AuthUser
-import com.noljanolja.server.consumer.adapter.core.CoreApi
+import com.noljanolja.server.consumer.adapter.core.*
 import com.noljanolja.server.consumer.adapter.core.CoreLocalContact.Companion.toCoreLocalContact
-import com.noljanolja.server.consumer.adapter.core.CoreUser
-import com.noljanolja.server.consumer.adapter.core.CoreUserPreferences
-import com.noljanolja.server.consumer.adapter.core.toConsumerUser
 import com.noljanolja.server.consumer.exception.CoreServiceError
 import com.noljanolja.server.consumer.model.LocalContact
 import com.noljanolja.server.consumer.model.SimpleUser
@@ -134,4 +131,13 @@ class UserService(
             )
         )
     }
+
+
+    suspend fun checkin(
+        userId: String,
+    ) = coreApi.checkin(userId)
+
+    suspend fun getMyCheckinProgresses(
+        userId: String,
+    ) = coreApi.getMyCheckinProgresses(userId).map { it.toCheckinProgress() }
 }
