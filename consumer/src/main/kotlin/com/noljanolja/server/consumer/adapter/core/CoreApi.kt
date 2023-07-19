@@ -972,7 +972,7 @@ class CoreApi(
     suspend fun checkin(
         userId: String,
     ) = webClient.post()
-        .uri { builder -> builder.path("${REWARD_ENDPOINT}/users/{userId}").build(userId) }
+        .uri { builder -> builder.path("${REWARD_ENDPOINT}/users/{userId}/checkin").build(userId) }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
@@ -988,7 +988,7 @@ class CoreApi(
         userId: String,
     ) = webClient.get()
         .uri { builder ->
-            builder.path("${REWARD_ENDPOINT}/users/{userId}")
+            builder.path("${REWARD_ENDPOINT}/users/{userId}/checkin-progresses")
                 .build(userId)
         }
         .retrieve()

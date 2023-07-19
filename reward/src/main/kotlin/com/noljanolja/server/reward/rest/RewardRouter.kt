@@ -28,8 +28,8 @@ class RewardRouter(
                 PUT("", rewardHandler::upsertChatConfig)
             }
             "/users/{userId}".nest {
-                GET("", rewardHandler::getUserCheckinProgresses)
-                POST("", rewardHandler::userCheckin)
+                GET("/checkin-progresses", rewardHandler::getUserCheckinProgresses)
+                POST("/checkin", rewardHandler::userCheckin)
             }
             "/checkin/configs".nest {
                 POST("", rewardHandler::upsertCheckinConfigs)

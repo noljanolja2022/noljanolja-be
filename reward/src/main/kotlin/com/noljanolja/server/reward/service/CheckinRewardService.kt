@@ -8,9 +8,12 @@ import com.noljanolja.server.reward.rest.request.UpsertCheckinConfigsRequest
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.time.LocalDate
 import java.time.Period
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
+import kotlin.math.abs
 
 @Component
 @Transactional
@@ -26,10 +29,12 @@ class CheckinRewardService(
         val totalDays = configs.size
         val userLastCheckinRecord = userCheckinRecordRepo.findFirstByUserIdOrderByCreatedAtDesc(userId)
         val checkinRecord = userLastCheckinRecord?.let {
-            val diff = Period.between(LocalDate.now(), it.createdAt.atZone(ZoneOffset.UTC).toLocalDate()).days
+            val diffDays = abs(
+                ChronoUnit.DAYS.between(LocalDate.now(), it.createdAt.atZone(ZoneOffset.UTC).toLocalDate()).toInt()
+            )
             when {
-                diff == 0 -> return
-                diff == 1 && it.day < totalDays -> UserCheckinRecordModel(
+                diffDays == 0 -> return
+                diffDays == 1 && it.day < totalDays -> UserCheckinRecordModel(
                     day = it.day + 1,
                     userId = userId,
                 )
@@ -71,9 +76,11 @@ class CheckinRewardService(
         val totalDays = configs.size
         val userLastCheckinRecord = userCheckinRecordRepo.findFirstByUserIdOrderByCreatedAtDesc(userId)
         val userCheckinRecords = userLastCheckinRecord?.let {
-            val diff = Period.between(LocalDate.now(), it.createdAt.atZone(ZoneOffset.UTC).toLocalDate()).days
+            val diffDays = abs(
+                ChronoUnit.DAYS.between(LocalDate.now(), it.createdAt.atZone(ZoneOffset.UTC).toLocalDate()).toInt()
+            )
             when {
-                diff == 0 || (diff == 1 && it.day < totalDays)
+                diffDays == 0 || (diffDays == 1 && it.day < totalDays)
                 -> userCheckinRecordRepo.findActiveCheckinRecords(userId).toList()
 
                 else -> emptyList()

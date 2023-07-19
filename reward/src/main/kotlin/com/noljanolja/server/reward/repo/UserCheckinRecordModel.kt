@@ -11,7 +11,7 @@ import java.time.Instant
 data class UserCheckinRecordModel(
     @Id
     @Column("id")
-    val id: Long = 1,
+    val id: Long = 0,
 
     @Column("day")
     val day: Int,
