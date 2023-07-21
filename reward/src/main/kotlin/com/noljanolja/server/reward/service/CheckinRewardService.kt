@@ -8,9 +8,7 @@ import com.noljanolja.server.reward.rest.request.UpsertCheckinConfigsRequest
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 import java.time.LocalDate
-import java.time.Period
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import kotlin.math.abs
@@ -53,6 +51,12 @@ class CheckinRewardService(
             points = activeConfig.rewardPoints,
             reason = "Daily checkin",
         )
+    }
+
+    suspend fun getAll(): List<CheckinRewardConfig> {
+        return checkinRewardConfigRepo.findAll().toList().map {
+            it.toCheckinRewardConfig()
+        }
     }
 
     suspend fun upsertCheckinConfigs(

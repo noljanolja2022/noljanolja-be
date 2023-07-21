@@ -222,6 +222,7 @@ class GiftService(
     }
 
     suspend fun getBrands(
+        query: String? = null,
         page: Int,
         pageSize: Int,
     ): Pair<List<Gift.Brand>, Long> {

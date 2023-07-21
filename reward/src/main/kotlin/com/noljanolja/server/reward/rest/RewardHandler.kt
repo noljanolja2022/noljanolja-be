@@ -152,6 +152,16 @@ class RewardHandler(
             )
     }
 
+    suspend fun getCheckinConfigs(request: ServerRequest): ServerResponse {
+        val res = checkinRewardService.getAll()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res,
+                )
+            )
+    }
+
     suspend fun upsertCheckinConfigs(request: ServerRequest): ServerResponse {
         val payload = request.awaitBodyOrNull<UpsertCheckinConfigsRequest>() ?: throw RequestBodyRequired
         val configs = checkinRewardService.upsertCheckinConfigs(payload.configs)

@@ -26,6 +26,10 @@ class RewardRouter(
                 GET("", rewardHandler::getChatConfigs)
                 PUT("", rewardHandler::upsertChatConfig)
             }
+            "/checkin/configs".nest {
+                GET("", rewardHandler::getCheckinConfig)
+                PUT("", rewardHandler::updateCheckinConfig)
+            }
         }
         GET("/api/v2/reward/videos/configs/{videoId}", rewardHandler::getRewardConfigByVideo)
     }

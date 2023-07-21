@@ -7,8 +7,6 @@ data class VideoCreationReq(
     val isHighlighted: Boolean = false
 )
 
-
-
 data class Video(
     val id: String,
     val url: String,

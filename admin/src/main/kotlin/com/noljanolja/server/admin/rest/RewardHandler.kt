@@ -2,11 +2,11 @@ package com.noljanolja.server.admin.rest
 
 import com.noljanolja.server.admin.model.RoomType
 import com.noljanolja.server.admin.rest.request.UpsertChatConfigRequest
+import com.noljanolja.server.admin.rest.request.UpsertCheckinConfigRequest
 import com.noljanolja.server.admin.rest.request.UpsertVideoConfigRequest
 import com.noljanolja.server.admin.service.RewardService
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
-import com.noljanolja.server.common.exception.TokenExpiredException
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import org.springframework.stereotype.Component
@@ -119,4 +119,24 @@ class RewardHandler(
             )
     }
 
+    suspend fun getCheckinConfig(request: ServerRequest): ServerResponse {
+        val res = rewardService.getCheckinConfig()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res,
+                )
+            )
+    }
+
+    suspend fun updateCheckinConfig(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<UpsertCheckinConfigRequest>() ?: throw RequestBodyRequired
+        val res = rewardService.updateCheckinConfig(payload)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res,
+                )
+            )
+    }
 }

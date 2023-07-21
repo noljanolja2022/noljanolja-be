@@ -4,6 +4,7 @@ package com.noljanolja.server.admin.adapter.core
 import com.noljanolja.server.admin.adapter.core.request.CoreUpsertChatConfigRequest
 import com.noljanolja.server.admin.adapter.core.request.CoreUpsertVideoConfigRequest
 import com.noljanolja.server.admin.model.*
+import com.noljanolja.server.admin.rest.request.UpsertCheckinConfigRequest
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatusCode
@@ -327,6 +328,43 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreChatRewardConfig>>().data!!
+
+    suspend fun getCheckinConfig(
+
+    )= webClient.get()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/checkin/configs")
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreCheckinConfig>>>().data!!
+
+    suspend fun updateCheckinConfig(
+        payload: UpsertCheckinConfigRequest
+    )= webClient.post()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/checkin/configs")
+                .build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreCheckinConfig>>>().data!!
 
     suspend fun getGifts(
         categoryId: Long?,

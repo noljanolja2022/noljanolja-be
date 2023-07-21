@@ -7,9 +7,11 @@ import com.noljanolja.server.admin.adapter.core.request.CoreUpsertVideoConfigReq
 import com.noljanolja.server.admin.adapter.core.toChatRewardConfig
 import com.noljanolja.server.admin.adapter.core.toVideoRewardConfig
 import com.noljanolja.server.admin.exception.Error
+import com.noljanolja.server.admin.model.CheckinConfig
 import com.noljanolja.server.admin.model.RoomType
 import com.noljanolja.server.admin.model.VideoRewardConfig
 import com.noljanolja.server.admin.rest.request.UpsertChatConfigRequest
+import com.noljanolja.server.admin.rest.request.UpsertCheckinConfigRequest
 import com.noljanolja.server.admin.rest.request.UpsertVideoConfigRequest
 import org.springframework.stereotype.Component
 
@@ -85,4 +87,12 @@ class RewardService(
             onlyRewardCreator = payload.onlyRewardCreator,
         )
     ).toChatRewardConfig()
+
+    suspend fun getCheckinConfig(): List<CheckinConfig> {
+        return coreApi.getCheckinConfig().map { it.toCheckinConfig() }
+    }
+
+    suspend fun updateCheckinConfig(payload: UpsertCheckinConfigRequest): List<CheckinConfig> {
+        return coreApi.updateCheckinConfig(payload).map { it.toCheckinConfig() }
+    }
 }

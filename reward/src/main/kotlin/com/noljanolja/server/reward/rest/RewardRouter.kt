@@ -32,6 +32,7 @@ class RewardRouter(
                 POST("/checkin", rewardHandler::userCheckin)
             }
             "/checkin/configs".nest {
+                GET("", rewardHandler::getCheckinConfigs)
                 POST("", rewardHandler::upsertCheckinConfigs)
             }
         }
