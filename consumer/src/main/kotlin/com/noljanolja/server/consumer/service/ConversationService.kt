@@ -164,62 +164,25 @@ class ConversationService(
         replyToMessageId: Long?,
         shareMessageId: Long?,
     ): Message = coroutineScope {
-        validateAttachments(type, attachments)
-        var savedMessage = coreApi.saveMessage(
-            request = SaveMessageRequest(
-                message = message,
-                type = CoreMessage.Type.valueOf(type.name),
-                senderId = userId,
-                replyToMessageId = replyToMessageId,
-                shareMessageId = shareMessageId,
-            ),
-            conversationId = conversationId,
-        ).toConsumerMessage()
-        val saveAttachments = attachments.files.map {
-            val fileName = "${Instant.now().epochSecond}_${userId}_${it.filename}"
-            val contentType = Tika().detect(it.data.first().asInputStream())
-            val uploadInfo = storageService.uploadFile(
-                path = getAttachmentPath(conversationId, fileName),
-                contentType = contentType,
-                content = it.data.map { it.asByteBuffer() },
-                limitSize = getLimitSize(
-                    messageType = type,
-                    contentType = contentType
-                )
-            )
-            Message.Attachment(
-                name = fileName,
-                originalName = it.filename,
-                type = contentType,
-                size = uploadInfo.size,
-                md5 = uploadInfo.md5,
-            )
-        }
-        if (saveAttachments.isNotEmpty()) {
-            savedMessage = coreApi.saveAttachments(
-                payload = SaveAttachmentsRequest(
-                    attachments = saveAttachments.map {
-                        SaveAttachmentsRequest.Attachment(
-                            name = it.name,
-                            type = it.type,
-                            originalName = it.originalName,
-                            size = it.size,
-                            md5 = it.md5,
-                        )
-                    },
-                ),
-                conversationId = conversationId,
-                messageId = savedMessage.id,
-            ).toConsumerMessage()
+        val savedMessage = createMessageInMultipleConversations(
+            userId = userId,
+            message = message,
+            type = type,
+            conversationIds = listOf(conversationId),
+            attachments = attachments,
+            replyToMessageId = replyToMessageId,
+            shareMessageId = shareMessageId,
+        ).first().apply {
+            this.localId = localId.ifBlank { UUID.randomUUID().toString() }
         }
         val conversation = coreApi.getConversationDetail(
             userId = userId,
             conversationId = conversationId,
-            messageId = savedMessage.id,
+            messageLimit = 0,
         ).toConsumerConversation().apply {
-            this.messages.firstOrNull()?.localId = localId
+            this.messages = listOf(savedMessage)
         }
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             launch {
                 socketRequester.emitUserSendChatMessage(
                     UserSendChatMessage(
@@ -237,9 +200,127 @@ class ConversationService(
                 pushNotifications(conversation)
             }
         }
-        savedMessage.apply {
-            this.localId = localId
+        savedMessage
+    }
+
+    private suspend fun createMessageInMultipleConversations(
+        userId: String,
+        message: String,
+        type: Message.Type,
+        conversationIds: List<Long>,
+        attachments: Attachments,
+        replyToMessageId: Long? = null,
+        shareMessageId: Long?,
+        shareVideoId: String? = null,
+    ): List<Message> = coroutineScope {
+        validateAttachments(type, attachments)
+        val savedMessages = coreApi.createMessageInMultipleConversations(
+            payload = SaveMessageRequest(
+                message = message,
+                type = CoreMessage.Type.valueOf(type.name),
+                senderId = userId,
+                replyToMessageId = replyToMessageId,
+                shareMessageId = shareMessageId,
+                shareVideoId = shareVideoId,
+                conversationIds = conversationIds,
+            ),
+        )
+        savedMessages.map { savedMessage ->
+            async {
+                val uploadedAttachments = attachments.files.map {
+                    async {
+                        val fileName = "${Instant.now().epochSecond}_${userId}_${it.filename}"
+                        val contentType = Tika().detect(it.data.first().asInputStream())
+                        val uploadInfo = storageService.uploadFile(
+                            path = getAttachmentPath(savedMessage.conversationId, fileName),
+                            contentType = contentType,
+                            content = it.data.map { it.asByteBuffer() },
+                            limitSize = getLimitSize(
+                                messageType = type,
+                                contentType = contentType
+                            )
+                        )
+                        Message.Attachment(
+                            name = fileName,
+                            originalName = it.filename,
+                            type = contentType,
+                            size = uploadInfo.size,
+                            md5 = uploadInfo.md5,
+                        )
+                    }
+                }.awaitAll()
+                if (uploadedAttachments.isNotEmpty()) {
+                    coreApi.saveAttachments(
+                        payload = SaveAttachmentsRequest(
+                            attachments = uploadedAttachments.map {
+                                SaveAttachmentsRequest.Attachment(
+                                    name = it.name,
+                                    type = it.type,
+                                    originalName = it.originalName,
+                                    size = it.size,
+                                    md5 = it.md5,
+                                )
+                            },
+                        ),
+                        messageId = savedMessage.id,
+                        conversationId = savedMessage.conversationId,
+                    )
+                } else savedMessage
+            }
+        }.awaitAll().map { it.toConsumerMessage() }
+    }
+
+    /**
+     * Share a message to multiple conversations
+     */
+    suspend fun shareMessage(
+        userId: String,
+        message: String,
+        type: Message.Type,
+        conversationIds: List<Long>,
+        localId: String,
+        attachments: Attachments,
+        shareMessageId: Long?,
+        shareVideoId: String?,
+    ): List<Message> {
+        val savedMessages = createMessageInMultipleConversations(
+            userId = userId,
+            message = message,
+            type = type,
+            conversationIds = conversationIds,
+            attachments = attachments,
+            shareMessageId = shareMessageId,
+            shareVideoId = shareVideoId,
+        ).onEach { it.localId = UUID.randomUUID().toString() }
+        val conversations = coreApi.getConversationDetails(
+            userId = userId,
+            conversationIds = conversationIds,
+            messageLimit = 0,
+        ).map { conversation ->
+            conversation.messages = savedMessages.filter { it.conversationId == conversation.id }
+            conversation.toConsumerConversation()
         }
+        withContext(Dispatchers.IO) {
+            conversations.forEach { conversation ->
+                launch {
+                    socketRequester.emitUserSendChatMessage(
+                        UserSendChatMessage(
+                            userId = userId,
+                            conversationId = conversation.id,
+                            roomType = conversation.type,
+                            creatorId = conversation.creator.id,
+                        )
+                    )
+                }
+                launch {
+                    notifyParticipants(conversation)
+                }
+                launch {
+                    pushNotifications(conversation)
+                }
+            }
+        }
+        return savedMessages
     }
 
     suspend fun createEventMessage(
@@ -255,13 +336,13 @@ class ConversationService(
                 senderId = userId,
             ),
             conversationId = conversationId,
-        ).toConsumerMessage()
+        ).toConsumerMessage().apply { this.localId = UUID.randomUUID().toString() }
         val conversation = coreApi.getConversationDetail(
             userId = userId,
             conversationId = conversationId,
-            messageId = savedMessage.id,
+            messageLimit = 0,
         ).toConsumerConversation().apply {
-            this.messages.firstOrNull()?.localId = UUID.randomUUID().toString()
+            this.messages = listOf(savedMessage)
         }
         notifyParticipants(conversation)
     }

@@ -140,7 +140,7 @@ class ConversationHandler(
             )
     }
 
-    suspend fun sendConversationMessages(request: ServerRequest): ServerResponse {
+    suspend fun sendMessage(request: ServerRequest): ServerResponse {
         val payload = request.awaitMultipartData()
         val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
             ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
@@ -186,6 +186,57 @@ class ConversationHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = data,
+                )
+            )
+    }
+
+    suspend fun shareMessage(request: ServerRequest): ServerResponse {
+        val payload = request.awaitMultipartData()
+        val message = payload.getFirst("message")?.content()?.awaitSingle()?.let {
+            String(it.asInputStream().readAllBytes())
+        }.orEmpty()
+        val type = payload.getFirst("type")?.content()?.awaitSingle()?.let {
+            Message.Type.valueOf(String(it.asInputStream().readAllBytes()))
+        } ?: Message.Type.PLAINTEXT
+        val attachments = (payload["attachments"] as? List<FilePart>)?.also {
+            if (it.size > MAX_ATTACHMENTS_SIZE) throw Error.ExceedMaxAttachmentsSize
+        }.orEmpty()
+        val localId = payload.getFirst("localId")?.content()?.awaitSingle()?.let {
+            String(it.asInputStream().readAllBytes())
+        }.orEmpty()
+        val shareMessageId = payload.getFirst("shareMessageId")?.content()?.awaitSingle()?.let {
+            String(it.asInputStream().readAllBytes()).toLongOrNull()
+        }
+        val conversationIds = payload["conversationIds"]?.mapNotNullTo(mutableSetOf()) {
+            String(it.content().awaitSingle().asInputStream().readAllBytes()).toLongOrNull()
+        }.orEmpty().ifEmpty { throw InvalidParamsException("conversationIds") }
+        val shareVideoId = payload.getFirst("shareVideoId")?.content()?.awaitSingle()?.let {
+            String(it.asInputStream().readAllBytes())
+        }
+        val messages = conversationService.shareMessage(
+            userId = AuthUserHolder.awaitUser().id,
+            message = message,
+            type = type,
+            conversationIds = conversationIds.toList(),
+            localId = localId,
+            attachments = Attachments(
+                files = attachments.map {
+                    FileAttachment(
+                        filename = it.filename(),
+                        contentType = it.headers().contentType?.toString(),
+                        data = it.content().asFlow(),
+                        contentLength = it.headers().contentLength
+                    )
+                }
+            ),
+            shareMessageId = shareMessageId,
+            shareVideoId = shareVideoId,
+        )
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = messages,
                 )
             )
     }

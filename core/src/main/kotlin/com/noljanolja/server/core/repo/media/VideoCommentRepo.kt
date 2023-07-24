@@ -17,8 +17,4 @@ interface VideoCommentRepo : CoroutineCrudRepository<VideoCommentModel, Long> {
         beforeCommentId: Long,
         pageable: Pageable
     ): Flow<VideoCommentModel>
-
-    suspend fun countAllByVideoId(
-        videoId: String,
-    ): Long
 }

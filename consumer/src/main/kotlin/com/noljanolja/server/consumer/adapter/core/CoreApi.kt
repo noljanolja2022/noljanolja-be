@@ -217,26 +217,6 @@ class CoreApi(
         }
         .awaitBody<Response<CoreConversation>>().data!!
 
-    suspend fun saveMessage(
-        request: SaveMessageRequest,
-        conversationId: Long,
-    ): CoreMessage = webClient.post()
-        .uri { builder ->
-            builder.path(MESSAGE_ENDPOINT)
-                .build(conversationId)
-        }
-        .bodyValue(request)
-        .retrieve()
-        .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
-        }
-        .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
-        }
-        .awaitBody<Response<CoreMessage>>().data!!
-
     suspend fun getUserConversations(
         userId: String,
         messageLimit: Long = 1,
@@ -1001,4 +981,48 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreCheckinProgress>>>().data!!
+
+    suspend fun saveMessage(
+        request: SaveMessageRequest,
+        conversationId: Long,
+    ) = createMessageInMultipleConversations(request.apply { this.conversationIds = listOf(conversationId) }).first()
+
+    suspend fun createMessageInMultipleConversations(
+        payload: SaveMessageRequest,
+    ) = webClient.post()
+        .uri { builder -> builder.path("${CONVERSATION_ENDPOINT}/messages").build() }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreMessage>>>().data!!
+
+    suspend fun getConversationDetails(
+        userId: String,
+        messageLimit: Int = 20,
+        conversationIds: List<Long>,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("${CONVERSATION_ENDPOINT}/details")
+                .queryParam("userId", userId)
+                .queryParam("messageLimit", messageLimit)
+                .queryParam("conversationIds", conversationIds.joinToString(","))
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreConversation>>>().data!!
 }

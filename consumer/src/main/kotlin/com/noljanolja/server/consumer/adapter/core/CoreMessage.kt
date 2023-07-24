@@ -18,6 +18,7 @@ data class CoreMessage(
     val isDeleted: Boolean,
     val shareMessage: CoreMessage? = null,
     val replyToMessage: CoreMessage? = null,
+    val shareVideo: CoreVideo? = null,
 ) {
     data class Reaction(
         val reactionId: Long,
@@ -62,4 +63,5 @@ fun CoreMessage.toConsumerMessage(): Message = Message(
     isDeleted = isDeleted,
     shareMessage = shareMessage?.toConsumerMessage(),
     replyToMessage = replyToMessage?.toConsumerMessage(),
+    shareVideo = shareVideo?.toConsumerVideo(),
 )

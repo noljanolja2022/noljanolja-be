@@ -7,6 +7,10 @@ import com.noljanolja.server.core.model.Attachment
 import com.noljanolja.server.core.model.Conversation
 import com.noljanolja.server.core.model.Message
 import com.noljanolja.server.core.repo.conversation.*
+import com.noljanolja.server.core.repo.media.VideoCategoryRepo
+import com.noljanolja.server.core.repo.media.VideoChannelRepo
+import com.noljanolja.server.core.repo.media.VideoModel
+import com.noljanolja.server.core.repo.media.VideoRepo
 import com.noljanolja.server.core.repo.message.*
 import com.noljanolja.server.core.repo.user.UserModel
 import com.noljanolja.server.core.repo.user.UserRepo
@@ -28,66 +32,76 @@ class ConversationService(
     private val attachmentRepo: AttachmentRepo,
     private val messageReactionRepo: MessageReactionRepo,
     private val messageParticipantReactionRepo: MessageParticipantReactionRepo,
+    private val videoChannelRepo: VideoChannelRepo,
+    private val videoCategoryRepo: VideoCategoryRepo,
+    private val videoRepo: VideoRepo,
     private val userService: UserService,
     private val objectMapper: ObjectMapper,
 ) {
-    suspend fun createMessage(
-        conversationId: Long,
+    suspend fun createMessageInMultipleConversations(
+        conversationIds: List<Long>,
+        type: Message.Type,
+        shareMessageId: Long? = null,
+        replyToMessageId: Long? = null,
         senderId: String,
         message: String,
-        type: Message.Type,
-        replyToMessageId: Long?,
-        shareMessageId: Long?,
-    ): Message {
-        // Handle special case so a leaving message can be sent by quitting user
-        if (type != Message.Type.EVENT_LEFT) {
-            val participants = conversationParticipantRepo.findAllByConversationId(
-                conversationId = conversationId
-            ).toList().also { participants ->
-                if (!participants.any { it.participantId == senderId }) throw Error.UserNotParticipateInConversation
-            }
-            participants.firstOrNull { it.participantId != senderId }?.let { otherParticipant ->
-                val conversation = conversationRepo.findById(conversationId)!!
-                if (conversation.type == Conversation.Type.SINGLE
-                    && userService.findAllBlackListedUser(otherParticipant.participantId).any { it.id == senderId }
-                ) throw Error.BlockedFromConversation
-            }
-        }
-        replyToMessageId?.let {
-            val replyToMessage = messageRepo.findById(replyToMessageId) ?: throw Error.MessageNotFound
-            if (replyToMessage.conversationId != conversationId) throw Error.CannotReplyToMessageFromAnotherConversation
-        }
-        shareMessageId?.let {
-            val shareMessage = messageRepo.findById(shareMessageId) ?: throw Error.MessageNotFound
-            if (shareMessage.conversationId == conversationId) throw Error.CannotShareMessageSameConversation
-            conversationParticipantRepo.findAllByParticipantIdAndConversationId(senderId, shareMessage.conversationId)
-                .toList()
-                .ifEmpty {
-                    throw Error.UserNotParticipateInConversation
+        shareVideoId: String?,
+    ): List<Message> {
+        shareVideoId?.let { videoRepo.findById(shareVideoId) ?: throw Error.VideoNotFound }
+        val createdMessages = conversationIds.map { conversationId ->
+            // Handle special case so a leaving message can be sent by quitting user
+            if (type != Message.Type.EVENT_LEFT) {
+                val participants = conversationParticipantRepo.findAllByConversationId(
+                    conversationId = conversationId
+                ).toList().also { participants ->
+                    if (!participants.any { it.participantId == senderId }) throw Error.UserNotParticipateInConversation
                 }
-        }
-        val savingMessage = MessageModel(
-            message = message,
-            senderId = senderId,
-            conversationId = conversationId,
-            type = type,
-            replyToMessageId = replyToMessageId,
-            shareMessageId = shareMessageId,
-        )
-        if (type == Message.Type.EVENT_LEFT || type == Message.Type.EVENT_JOINED) {
-            val leftJoinIds = message.split(",")
-            if (leftJoinIds.isEmpty()) {
-                throw InvalidParamsException("message")
+                participants.firstOrNull { it.participantId != senderId }?.let { otherParticipant ->
+                    val conversation = conversationRepo.findById(conversationId)!!
+                    if (conversation.type == Conversation.Type.SINGLE
+                        && userService.findAllBlackListedUser(otherParticipant.participantId).any { it.id == senderId }
+                    ) throw Error.BlockedFromConversation
+                }
             }
-            if (type == Message.Type.EVENT_LEFT) savingMessage.leftParticipantIds = message
-            else savingMessage.joinParticipantIds = message
-            savingMessage.message = ""
+            replyToMessageId?.let {
+                val replyToMessage = messageRepo.findById(replyToMessageId) ?: throw Error.MessageNotFound
+                if (replyToMessage.conversationId != conversationId) throw Error.CannotReplyToMessageFromAnotherConversation
+            }
+            shareMessageId?.let {
+                val shareMessage = messageRepo.findById(shareMessageId) ?: throw Error.MessageNotFound
+                if (shareMessage.conversationId == conversationId) throw Error.CannotShareMessageSameConversation
+                conversationParticipantRepo.findAllByParticipantIdAndConversationId(
+                    senderId,
+                    shareMessage.conversationId
+                )
+                    .toList()
+                    .ifEmpty {
+                        throw Error.UserNotParticipateInConversation
+                    }
+            }
+            MessageModel(
+                message = message,
+                senderId = senderId,
+                conversationId = conversationId,
+                type = type,
+                replyToMessageId = replyToMessageId,
+                shareMessageId = shareMessageId,
+                shareVideoId = shareVideoId,
+            ).apply {
+                if (type == Message.Type.EVENT_LEFT || type == Message.Type.EVENT_JOINED) {
+                    val leftJoinIds = message.split(",")
+                    if (leftJoinIds.isEmpty()) {
+                        throw InvalidParamsException("message")
+                    }
+                    if (type == Message.Type.EVENT_LEFT) this.leftParticipantIds = message
+                    else this.joinParticipantIds = message
+                    this.message = ""
+                }
+            }
         }
-        val savedMessage = messageRepo.save(
-            savingMessage
-        )
-        populateMessages(listOf(savedMessage))
-        return savedMessage.toMessage(objectMapper)
+        val savedMessages = messageRepo.saveAll(createdMessages).toList()
+        populateMessages(savedMessages)
+        return savedMessages.map { it.toMessage(objectMapper) }
     }
 
     suspend fun getConversationMessages(
@@ -113,6 +127,33 @@ class ConversationService(
         return messages.map { it.toMessage(objectMapper) }
     }
 
+    suspend fun getConversationsDetails(
+        conversationIds: List<Long>,
+        userId: String,
+        messageLimit: Long = 20,
+    ): List<Conversation> {
+        return conversationRepo.findAllById(conversationIds).toList()
+            .also { if (it.size < conversationIds.size) throw Error.ConversationNotFound }
+            .map {
+                val messages = if (messageLimit > 0) {
+                    val blackListedUserIds = userService.findAllBlackListedUser(userId).map { it.id }
+                    messageRepo.findAllByConversationId(
+                        conversationId = it.id,
+                        limit = messageLimit,
+                        userId = userId,
+                        blackListedUserIds = blackListedUserIds + listOf(""),
+                    ).toList()
+                } else emptyList()
+
+                populateMessages(messages)
+                it.messages = messages
+                it.participants = userRepo.findAllParticipants(it.id).toList()
+                it.creator = userRepo.findById(it.creatorId)!!
+                getAdminOfConversationModel(it)
+                it.toConversation(objectMapper)
+            }
+    }
+
     suspend fun getConversationDetail(
         conversationId: Long,
         userId: String,
@@ -123,16 +164,20 @@ class ConversationService(
 //            throw Error.UserNotParticipateInConversation
 //        }
         return conversationRepo.findById(conversationId)?.apply {
-            val messages = if (messageId == null) {
-                val blackListedUserIds = userService.findAllBlackListedUser(userId).map { it.id }
-                messageRepo.findAllByConversationId(
-                    conversationId = id,
-                    limit = messageLimit,
-                    userId = userId,
-                    blackListedUserIds = blackListedUserIds + listOf(""),
-                ).toList()
-            } else listOfNotNull(messageRepo.findById(messageId))
+            val messages = when {
+                messageLimit > 0 -> {
+                    val blackListedUserIds = userService.findAllBlackListedUser(userId).map { it.id }
+                    messageRepo.findAllByConversationId(
+                        conversationId = id,
+                        limit = messageLimit,
+                        userId = userId,
+                        blackListedUserIds = blackListedUserIds + listOf(""),
+                    ).toList()
+                }
 
+                messageId != null -> messageRepo.findAllById(listOf(messageId)).toList()
+                else -> emptyList()
+            }
             populateMessages(messages)
             this.messages = messages
             this.participants = userRepo.findAllParticipants(id).toList()
@@ -291,29 +336,22 @@ class ConversationService(
     }
 
     suspend fun saveAttachments(
-        conversationId: Long,
         messageId: Long,
         attachments: List<SaveAttachmentsRequest.Attachment> = listOf(),
     ): Message {
-        val message = messageRepo.findById(messageId)
-        if (message?.conversationId != conversationId) throw Error.MessageNotBelongToConversation
-        val savedAttachments = attachmentRepo.saveAll(
-            attachments.map {
-                AttachmentModel(
-                    messageId = messageId,
-                    name = it.name,
-                    originalName = it.originalName,
-                    type = it.type,
-                    md5 = it.md5,
-                    size = it.size,
-                )
-            }
-        ).toList()
-        val sender = userRepo.findById(message.senderId)!!
-        message.apply {
-            this.attachments = savedAttachments
-            this.sender = sender
+        val message = messageRepo.findById(messageId) ?: throw Error.MessageNotFound
+        val createdAttachments = attachments.map {
+            AttachmentModel(
+                messageId = messageId,
+                name = it.name,
+                originalName = it.originalName,
+                type = it.type,
+                md5 = it.md5,
+                size = it.size,
+            )
         }
+        attachmentRepo.saveAll(createdAttachments).toList()
+        populateMessages(listOf(message))
         return message.toMessage(objectMapper)
     }
 
@@ -436,6 +474,18 @@ class ConversationService(
         else userRepo.findById(conversation.adminId)!!
     }
 
+
+    private suspend fun populateVideos(
+        videos: List<VideoModel>,
+    ) {
+        val channels = videoChannelRepo.findAllById(videos.mapTo(mutableSetOf()) { it.channelId }).toList()
+        val categories = videoCategoryRepo.findAllById(videos.mapTo(mutableSetOf()) { it.categoryId }).toList()
+        videos.forEach { video ->
+            video.channel = channels.first { video.channelId == it.id }
+            video.category = categories.first { video.categoryId == it.id }
+        }
+    }
+
     private suspend fun populateMessages(
         messages: List<MessageModel>,
     ) {
@@ -443,6 +493,9 @@ class ConversationService(
         val uniqueSenderIds = messages.mapTo(mutableSetOf()) { it.senderId }
         val participants = userRepo.findAllById(uniqueSenderIds).toList()
         val attachments = attachmentRepo.findAllByMessageIdIn(messages.map { it.id }.distinct()).toList()
+        val shareVideoIds = messages.mapNotNullTo(mutableSetOf()) { it.shareVideoId }
+        val shareVideos = videoRepo.findAllById(shareVideoIds).toList()
+        populateVideos(shareVideos)
         val messageStatusSeen = messageStatusRepo.findAllByMessageIdInAndStatusOrderByMessageIdDesc(
             messageIds = messages.map { it.id },
             status = Message.Status.SEEN,
@@ -493,6 +546,7 @@ class ConversationService(
             message.reactions = messageReactions.filter { it.messageId == message.id }
             message.replyToMessage = additionalMessages.find { it.id == message.replyToMessageId }
             message.shareMessage = additionalMessages.find { it.id == message.shareMessageId }
+            message.shareVideo = shareVideos.find { it.id == message.shareVideoId }
         }
     }
 

@@ -19,14 +19,16 @@ class ConversationRouter(
             GET("", conversationHandler::getConversations)
             POST("", conversationHandler::createConversation)
             GET("/react-icons", conversationHandler::getAllReactionIcons)
+            GET("/details", conversationHandler::getConversationDetails)
+            POST("/messages", conversationHandler::createMessageInMultipleConversations)
 
             "/{conversationId}".nest {
-                GET("", conversationHandler::getConversationDetails)
+                GET("", conversationHandler::getConversationDetail)
                 PUT("", conversationHandler::updateConversation)
 
                 "/messages".nest {
                     GET("", conversationHandler::getConversationMessages)
-                    POST("", conversationHandler::saveConversationMessages)
+
                     "/{messageId}".nest {
                         PUT("", conversationHandler::updateMessageStatus)
                         POST("/attachments", conversationHandler::saveAttachments)

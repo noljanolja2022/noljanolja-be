@@ -18,6 +18,7 @@ data class Message(
     val isDeleted: Boolean,
     val shareMessage: Message? = null,
     val replyToMessage: Message? = null,
+    val shareVideo: Video? = null,
 ) {
     data class Reaction(
         val reactionId: Long,

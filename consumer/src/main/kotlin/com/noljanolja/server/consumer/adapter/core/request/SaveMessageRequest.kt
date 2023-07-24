@@ -8,4 +8,6 @@ data class SaveMessageRequest(
     val type: CoreMessage.Type,
     val replyToMessageId: Long? = null,
     val shareMessageId: Long? = null,
+    val shareVideoId: String? = null,
+    var conversationIds: List<Long> = emptyList(),
 )

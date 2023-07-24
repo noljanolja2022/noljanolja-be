@@ -2,6 +2,8 @@ package com.noljanolja.server.core.repo.message
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.noljanolja.server.core.model.Message
+import com.noljanolja.server.core.repo.media.VideoModel
+import com.noljanolja.server.core.repo.media.toVideo
 import com.noljanolja.server.core.repo.user.UserModel
 import com.noljanolja.server.core.repo.user.toUser
 import org.springframework.data.annotation.CreatedDate
@@ -46,6 +48,9 @@ data class MessageModel(
     @Column("share_message_id")
     val shareMessageId: Long? = null,
 
+    @Column("share_video_id")
+    val shareVideoId: String? = null,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -77,6 +82,9 @@ data class MessageModel(
 
     @Transient
     var shareMessage: MessageModel? = null
+
+    @Transient
+    var shareVideo: VideoModel? = null
 }
 
 fun MessageModel.toMessage(objectMapper: ObjectMapper): Message = Message(
@@ -102,4 +110,5 @@ fun MessageModel.toMessage(objectMapper: ObjectMapper): Message = Message(
     isDeleted = isDeleted,
     shareMessage = shareMessage?.toMessage(objectMapper),
     replyToMessage = replyToMessage?.toMessage(objectMapper),
+    shareVideo = shareVideo?.toVideo(),
 )

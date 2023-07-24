@@ -682,6 +682,63 @@ paths:
                   - type: object
                     properties:
                       data:
+                        $ref: "#/components/schemas/Message"
+  /api/v1/conversations/messages:
+    post:
+      tags: [ Message ]
+      summary: Share a message/chat
+      description: Share message to multiple conversations
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [ message, type ]
+              properties:
+                message:
+                  type: string
+                  description: |
+                    The content of the message. Format varies depending on the type.  
+                    Examples:
+                    - PLAINTEXT: Hi this is a message
+                    - STICKER: 3/01.png {stickerPackId}/{stickerFileName}
+                type:
+                  $ref: "#/components/schemas/MessageType"
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                shareMessageId:
+                  type: number
+                  format: int64
+                  nullable: true
+                replyToMessageId:
+                  type: number
+                  format: int64
+                  nullable: true
+                shareVideoId:
+                  type: string
+                  nullable: true
+                conversationIds:
+                  type: array
+                  items:
+                    type: number
+                    format: int64
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
                         type: array
                         items:
                           $ref: "#/components/schemas/Message"
@@ -1599,6 +1656,8 @@ components:
           $ref: "#/components/schemas/Message"
         shareMessage:
           $ref: "#/components/schemas/Message"
+        shareVideo:
+          $ref: "#/components/schemas/Video"
 
     MessageType:
       type: string

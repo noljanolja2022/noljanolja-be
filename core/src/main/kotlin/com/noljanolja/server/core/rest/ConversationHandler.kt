@@ -84,10 +84,10 @@ class ConversationHandler(
             )
     }
 
-    suspend fun getConversationDetails(request: ServerRequest): ServerResponse {
+    suspend fun getConversationDetail(request: ServerRequest): ServerResponse {
         val userId = request.queryParamOrNull(QUERY_PARAM_USER_ID)?.takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException(QUERY_PARAM_USER_ID)
-        val messageLimit = request.queryParamOrNull("messageLimit")?.toLongOrNull()?.takeIf { it > 0 } ?: 20
+        val messageLimit = request.queryParamOrNull("messageLimit")?.toLongOrNull()?.takeIf { it >= 0 } ?: 20
         val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
             ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
         val messageId = request.queryParamOrNull("messageId")?.toLongOrNull()
@@ -102,6 +102,27 @@ class ConversationHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = conversation,
+                )
+            )
+    }
+
+    suspend fun getConversationDetails(request: ServerRequest): ServerResponse {
+        val userId = request.queryParamOrNull(QUERY_PARAM_USER_ID)?.takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException(QUERY_PARAM_USER_ID)
+        val messageLimit = request.queryParamOrNull("messageLimit")?.toLongOrNull()?.takeIf { it >= 0 } ?: 20
+        val conversationIds = request.queryParamOrNull("conversationIds").orEmpty().split(",")
+            .mapNotNull { it.toLongOrNull() }
+            .ifEmpty { throw InvalidParamsException("conversationId") }
+        val conversations = conversationService.getConversationsDetails(
+            conversationIds = conversationIds,
+            userId = userId,
+            messageLimit = messageLimit,
+        )
+        return ServerResponse
+            .ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = conversations,
                 )
             )
     }
@@ -130,25 +151,24 @@ class ConversationHandler(
             )
     }
 
-    suspend fun saveConversationMessages(request: ServerRequest): ServerResponse {
-        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
-            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
+    suspend fun createMessageInMultipleConversations(request: ServerRequest): ServerResponse {
         val payload = request.awaitBodyOrNull<SaveMessageRequest>() ?: throw RequestBodyRequired
-        val message = with(payload) {
-            conversationService.createMessage(
-                conversationId = conversationId,
+        val messages = with(payload) {
+            conversationService.createMessageInMultipleConversations(
+                conversationIds = conversationIds,
                 senderId = senderId,
                 type = type,
                 message = message,
                 shareMessageId = shareMessageId,
                 replyToMessageId = replyToMessageId,
+                shareVideoId = shareVideoId,
             )
         }
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
                 body = Response(
-                    data = message,
+                    data = messages,
                 )
             )
     }
@@ -171,14 +191,10 @@ class ConversationHandler(
     }
 
     suspend fun saveAttachments(request: ServerRequest): ServerResponse {
+        val messageId = request.pathVariable("messageId").toLongOrNull() ?: throw InvalidParamsException("messageId")
         val payload = request.awaitBodyOrNull<SaveAttachmentsRequest>() ?: throw RequestBodyRequired
-        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
-            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
-        val messageId = request.pathVariable(QUERY_PARAM_MESSAGE_ID).toLongOrNull()
-            ?: throw InvalidParamsException(QUERY_PARAM_MESSAGE_ID)
         val message = conversationService.saveAttachments(
             attachments = payload.attachments,
-            conversationId = conversationId,
             messageId = messageId,
         )
         return ServerResponse.ok()

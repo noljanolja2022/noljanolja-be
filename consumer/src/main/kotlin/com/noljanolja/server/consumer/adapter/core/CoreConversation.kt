@@ -11,7 +11,7 @@ data class CoreConversation(
     val creator: SimpleUser,
     val admin: SimpleUser,
     val type: Type,
-    val messages: List<Message>,
+    var messages: List<Message>,
     val participants: List<SimpleUser>,
     val imageUrl: String,
     val createdAt: Instant = Instant.now(),

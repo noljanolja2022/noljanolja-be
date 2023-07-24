@@ -19,6 +19,7 @@ class ConversationRouter(
             GET("", conversationHandler::getConversations)
             (accept(MediaType.MULTIPART_FORM_DATA)).nest {
                 POST("", conversationHandler::createConversation)
+                POST("/messages", conversationHandler::shareMessage)
             }
             GET("/react-icons", conversationHandler::getAllReactionIcons)
 
@@ -31,7 +32,7 @@ class ConversationRouter(
                 "/messages".nest {
                     GET("", conversationHandler::getConversationMessages)
                     (accept(MediaType.MULTIPART_FORM_DATA)).nest {
-                        POST("", conversationHandler::sendConversationMessages)
+                        POST("", conversationHandler::sendMessage)
                     }
                     "/{messageId}".nest {
                         POST("seen", conversationHandler::seenMessage)

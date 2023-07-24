@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS `messages`
     `is_deleted`            TINYINT                 NOT NULL,
     `reply_to_message_id`   BIGINT                  NULL,
     `share_message_id`      BIGINT                  NULL,
+    `share_video_id`        VARCHAR(255)            NULL,
     `left_participant_ids`  VARCHAR(255)            NULL,
     `join_participant_ids`  VARCHAR(255)            NULL,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
