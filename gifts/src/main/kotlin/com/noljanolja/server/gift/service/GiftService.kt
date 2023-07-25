@@ -226,9 +226,19 @@ class GiftService(
         page: Int,
         pageSize: Int,
     ): Pair<List<Gift.Brand>, Long> {
+        val pageable = PageRequest.of(page - 1, pageSize)
+        if (query != null) {
+            val res =
+                giftBrandRepo.findAllByNameContains(
+                    query,
+                    pageable = pageable
+                ).toList().map { it.toGiftBrand() }
+            val count = giftBrandRepo.countByNameContains(query)
+            return Pair(res, count)
+        }
         return Pair(
             giftBrandRepo.findAllBy(
-                pageable = PageRequest.of(page - 1, pageSize)
+                pageable = pageable
             ).toList().map { it.toGiftBrand() },
             giftBrandRepo.count(),
         )

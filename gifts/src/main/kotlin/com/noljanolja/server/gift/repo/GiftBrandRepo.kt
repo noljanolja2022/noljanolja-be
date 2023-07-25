@@ -10,4 +10,7 @@ interface GiftBrandRepo : CoroutineCrudRepository<GiftBrandModel, Long> {
     fun findAllBy(
         pageable: Pageable,
     ): Flow<GiftBrandModel>
+
+    fun findAllByNameContains(name: String, pageable: Pageable): Flow<GiftBrandModel>
+    suspend fun countByNameContains(name: String): Long
 }

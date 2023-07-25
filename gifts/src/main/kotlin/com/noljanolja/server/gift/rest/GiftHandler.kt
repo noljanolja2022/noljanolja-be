@@ -53,6 +53,7 @@ class GiftHandler(
         val categoryId = request.queryParamOrNull("categoryId")?.toLongOrNull()
         val brandId = request.queryParamOrNull("brandId")?.toLongOrNull()
         val userId = request.pathVariable("userId").takeIf { it.isNotBlank() } ?: throw InvalidParamsException("userId")
+        val query = request.queryParamOrNull("query")
         val (gifts, total) = giftService.getUserGifts(
             categoryId = categoryId,
             brandId = brandId,
@@ -177,6 +178,7 @@ class GiftHandler(
         val (brands, total) = giftService.getBrands(
             page = page,
             pageSize = pageSize,
+            query = query
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

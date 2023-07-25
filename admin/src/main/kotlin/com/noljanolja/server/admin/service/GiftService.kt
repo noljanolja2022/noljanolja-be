@@ -35,8 +35,8 @@ class GiftService(
         coreApi.deleteGift(giftId)
     }
 
-    suspend fun getBrands(page: Int, pageSize: Int): List<Gift.Brand> {
-        return coreApi.getBrands(page, pageSize)
+    suspend fun getBrands(page: Int, pageSize: Int, query : String? = null): List<Gift.Brand> {
+        return coreApi.getBrands(page, pageSize, query)
     }
 
     suspend fun createBrand(

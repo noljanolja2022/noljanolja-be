@@ -37,8 +37,12 @@ class UserService(
         return coreUser.toAdminUser()
     }
 
-    suspend fun getUsers(page: Int, pageSize: Int, phoneNumber: String?): Response<List<CoreUser>> {
-        val res = coreApi.getUsers(page, pageSize, phoneNumber)
+    suspend fun getUsers(page: Int, pageSize: Int, query: String?): Response<List<CoreUser>> {
+        var cleanedQuery = query?.trim()
+        if (query != null && query == "") {
+            cleanedQuery = null
+        }
+        val res = coreApi.getUsers(page, pageSize, cleanedQuery)
         return res
     }
 

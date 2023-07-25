@@ -38,7 +38,7 @@ class UserService(
         pageSize: Int,
         friendId: String?,
         phoneNumber: String?,
-        name: String?,
+        query: String?,
     ): Pair<List<User>, Long> = coroutineScope {
         // friendId does not exist -> Find all
         if (!friendId.isNullOrBlank()) {
@@ -71,6 +71,18 @@ class UserService(
                 phones = listOf(phoneNumberString),
             )
             Pair(users, total)
+        } else if (query != null) {
+            val pn = parsePhoneNumber(query)
+            if (pn != null) {
+                val users = userRepo.findAllByPhoneNumberContains(pn.nationalNumber.toString(), PageRequest.of(page - 1, pageSize))
+                    .map { it.toUser(objectMapper) }.toList()
+                val count = userRepo.countByPhoneNumberContains(pn.nationalNumber.toString())
+                Pair(users, count)
+            } else {
+                val users = userRepo.findAllByNameContains(query, PageRequest.of(page - 1, pageSize)).map { it.toUser(objectMapper) }.toList()
+                val count = userRepo.countByNameContains(query)
+                Pair(users, count)
+            }
         } else { // if friendId exists -> Find by contact phones
             // Count the total
             val total = userRepo.count()

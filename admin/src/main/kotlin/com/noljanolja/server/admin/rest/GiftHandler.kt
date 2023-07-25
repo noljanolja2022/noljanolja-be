@@ -117,9 +117,11 @@ class GiftHandler(
     suspend fun getBrands(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
+        val query = request.queryParamOrNull("query")
         val brands = giftService.getBrands(
             page = page,
             pageSize = pageSize,
+            query = query
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

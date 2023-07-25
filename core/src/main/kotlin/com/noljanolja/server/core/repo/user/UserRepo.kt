@@ -21,6 +21,11 @@ interface UserRepo : CoroutineCrudRepository<UserModel, String> {
         pageable: Pageable,
     ): Flow<UserModel>
 
+    fun findAllByNameContains(name: String, pageable: Pageable): Flow<UserModel>
+    suspend fun countByNameContains(name: String): Long
+    fun findAllByPhoneNumberContains(phone: String, pageable: Pageable): Flow<UserModel>
+    suspend fun countByPhoneNumberContains(phone: String): Long
+
     fun findAllByPhoneNumberIn(
         phones: List<String>,
     ): Flow<UserModel>
@@ -49,10 +54,12 @@ interface UserRepo : CoroutineCrudRepository<UserModel, String> {
         senderLimit: Long,
     ): Flow<UserModel>
 
-    @Query("""
+    @Query(
+        """
         SELECT users.* FROM users INNER JOIN conversations_participants 
         ON users.id = conversations_participants.participant_id
         WHERE conversations_participants.conversation_id = :conversationId
-    """)
+    """
+    )
     fun findAllParticipants(conversationId: Long): Flow<UserModel>
 }

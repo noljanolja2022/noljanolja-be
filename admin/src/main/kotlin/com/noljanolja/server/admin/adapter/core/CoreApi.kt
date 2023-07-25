@@ -33,15 +33,15 @@ class CoreApi(
     suspend fun getUsers(
         page: Int = 1,
         pageSize: Int = 10,
-        phoneNumber: String? = null,
+        query: String? = null,
     ): Response<List<CoreUser>> = webClient.get()
         .uri { builder ->
             builder.path(USERS_ENDPOINT)
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
                 .queryParamIfPresent(
-                    "phoneNumber",
-                    Optional.ofNullable(phoneNumber?.let { UriUtils.encode(it, StandardCharsets.UTF_8) })
+                    "query",
+                    Optional.ofNullable(query?.let { UriUtils.encode(it, StandardCharsets.UTF_8) })
                 )
                 .build()
         }
@@ -465,12 +465,13 @@ class CoreApi(
         .awaitBody<Response<Nothing>>()
 
     suspend fun getBrands(
-        page: Int, pageSize: Int
+        page: Int, pageSize: Int, query: String?
     ) = webClient.get()
         .uri { builder ->
             builder.path("$GIFT_ROUTES/brands")
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
+                .queryParamIfPresent("query", Optional.ofNullable(query))
                 .build()
         }
         .retrieve()

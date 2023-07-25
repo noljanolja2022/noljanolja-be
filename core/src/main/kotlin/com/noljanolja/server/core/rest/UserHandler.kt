@@ -8,11 +8,7 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserPreferences
-import com.noljanolja.server.core.rest.request.AddFriendRequest
-import com.noljanolja.server.core.rest.request.UpdateUserRequest
-import com.noljanolja.server.core.rest.request.UpsertUserContactsRequest
-import com.noljanolja.server.core.rest.request.UpsertUserRequest
-import com.noljanolja.server.core.rest.request.UserBlockUserRequest
+import com.noljanolja.server.core.rest.request.*
 import com.noljanolja.server.core.service.UserService
 import com.noljanolja.server.loyalty.service.LoyaltyService
 import org.springframework.stereotype.Component
@@ -35,7 +31,10 @@ class UserHandler(
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_PAGE_SIZE
         val friendId = request.queryParamOrNull("friendId")
         var phoneNumber = request.queryParamOrNull("phoneNumber")
-        val name = request.queryParamOrNull("name")
+        var query = request.queryParamOrNull("query")
+        if (!query.isNullOrBlank()) {
+            query = UriUtils.decode(query, StandardCharsets.UTF_8)
+        }
         if (!phoneNumber.isNullOrBlank()) {
             phoneNumber = UriUtils.decode(phoneNumber, StandardCharsets.UTF_8)
         }
@@ -44,7 +43,7 @@ class UserHandler(
             pageSize = pageSize,
             friendId = friendId,
             phoneNumber = phoneNumber,
-            name = name,
+            query = query,
         )
         return ServerResponse
             .ok()

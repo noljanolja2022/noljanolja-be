@@ -29,8 +29,8 @@ class UserHandler(
         val page = request.queryParamOrNull("page")?.toIntOrNull()?.takeIf { it > 0 } ?: 1
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()?.takeIf { it > 0 }
             ?: 10
-        val phoneNumber = request.queryParamOrNull("phoneNumber")
-        val searchUserRes = userService.getUsers(page, pageSize, phoneNumber)
+        val query = request.queryParamOrNull("query")
+        val searchUserRes = userService.getUsers(page, pageSize, query)
         return ServerResponse
             .ok()
             .bodyValueAndAwait(
