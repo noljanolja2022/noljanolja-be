@@ -196,6 +196,21 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/BaseResponse"
+  /api/v1/users/me/referral-code:
+    post:
+      tags: [ User ]
+      summary: Add a referral code to get get reward
+      description: Add a referral code to get reward
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
   /api/v1/users/me/checkin-progresses:
     get:
       tags: [ User ]
@@ -1551,6 +1566,9 @@ components:
           type: string
           description: in date format
           example: 2023-03-10 04:04:43
+        referralCode:
+          type: string
+          required: true
     SimpleUser:
       type: object
       required: [ id ]
