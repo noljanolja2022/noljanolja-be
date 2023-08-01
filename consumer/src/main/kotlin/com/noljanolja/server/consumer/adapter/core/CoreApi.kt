@@ -7,6 +7,7 @@ import com.noljanolja.server.consumer.exception.CoreServiceError
 import com.noljanolja.server.consumer.model.SimpleUser
 import com.noljanolja.server.consumer.model.StickerPack
 import com.noljanolja.server.consumer.rest.request.AddFriendRequest
+import com.noljanolja.server.consumer.rest.request.AssignReferralRequest
 import com.noljanolja.server.consumer.rest.request.CoreUpdateAdminOfConversationReq
 import com.noljanolja.server.consumer.rest.request.CoreUpdateMemberOfConversationReq
 import org.springframework.beans.factory.annotation.Qualifier
@@ -1028,11 +1029,12 @@ class CoreApi(
 
     suspend fun assignReferral(
         userId: String,
-        referredByCode: String,
+        payload: AssignReferralRequest,
     ) = webClient.put()
         .uri { builder ->
             builder.path("${USERS_ENDPOINT}/{userId}/referral").build(userId)
         }
+        .bodyValue(payload)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->

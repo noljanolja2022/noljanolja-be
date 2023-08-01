@@ -9,6 +9,7 @@ import com.noljanolja.server.consumer.model.LocalContact
 import com.noljanolja.server.consumer.model.SimpleUser
 import com.noljanolja.server.consumer.model.User
 import com.noljanolja.server.consumer.rest.request.AddFriendRequest
+import com.noljanolja.server.consumer.rest.request.AssignReferralRequest
 import com.noljanolja.server.consumer.rest.request.BlockUserRequest
 import com.noljanolja.server.consumer.rest.request.UpdateCurrentUserRequest
 import com.noljanolja.server.consumer.adapter.core.request.BlockUserRequest as CoreBlockUserRequest
@@ -146,6 +147,6 @@ class UserService(
         referredByCode: String,
     ) = coreApi.assignReferral(
         userId = userId,
-        referredByCode = referredByCode,
+        payload = AssignReferralRequest(referredByCode)
     )
 }

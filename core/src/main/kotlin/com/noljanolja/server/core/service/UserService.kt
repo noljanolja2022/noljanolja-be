@@ -357,13 +357,11 @@ class UserService(
         referralRewardConfigRepo.findAll().toList().firstOrNull()?.let { referralRewardConfig ->
             userRepo.save(user)
             listOf(user.id, referredByUser.id).forEach {
-                launch {
-                    loyaltyService.addTransaction(
-                        memberId = it,
-                        points = referralRewardConfig.rewardPoints,
-                        reason = "Referral reward",
-                    )
-                }
+                loyaltyService.addTransaction(
+                    memberId = it,
+                    points = referralRewardConfig.rewardPoints,
+                    reason = "Referral reward",
+                )
             }
         } ?: throw Error.ReferralRewardConfigNotFound
     }
