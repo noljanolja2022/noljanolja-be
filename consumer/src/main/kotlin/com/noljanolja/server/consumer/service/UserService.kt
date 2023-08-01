@@ -14,6 +14,7 @@ import com.noljanolja.server.consumer.rest.request.BlockUserRequest
 import com.noljanolja.server.consumer.rest.request.UpdateCurrentUserRequest
 import com.noljanolja.server.consumer.adapter.core.request.BlockUserRequest as CoreBlockUserRequest
 import org.springframework.stereotype.Component
+import java.time.LocalDate
 
 @Component
 class UserService(
@@ -136,11 +137,12 @@ class UserService(
 
     suspend fun checkin(
         userId: String,
-    ) = coreApi.checkin(userId)
+    ) = coreApi.checkin(userId)?.toRewardConfig()
 
     suspend fun getMyCheckinProgresses(
         userId: String,
-    ) = coreApi.getMyCheckinProgresses(userId).map { it.toCheckinProgress() }
+        localDate: LocalDate? = null,
+    ) = coreApi.getMyCheckinProgresses(userId, localDate).map { it.toCheckinProgress() }
 
     suspend fun assignReferral(
         userId: String,

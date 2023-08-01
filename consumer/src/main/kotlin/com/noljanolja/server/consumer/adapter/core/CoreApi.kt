@@ -20,6 +20,7 @@ import org.springframework.web.util.UriUtils
 import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
 import java.time.Instant
+import java.time.LocalDate
 import java.util.*
 
 @Component
@@ -963,13 +964,15 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<Nothing>>()
+        .awaitBody<Response<CoreRewardConfig>>().data
 
     suspend fun getMyCheckinProgresses(
         userId: String,
+        localDate: LocalDate? = null,
     ) = webClient.get()
         .uri { builder ->
             builder.path("${REWARD_ENDPOINT}/users/{userId}/checkin-progresses")
+                .queryParamIfPresent("localDate", Optional.ofNullable(localDate))
                 .build(userId)
         }
         .retrieve()

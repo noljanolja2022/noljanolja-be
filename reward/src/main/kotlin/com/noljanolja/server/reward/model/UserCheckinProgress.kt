@@ -1,8 +1,8 @@
 package com.noljanolja.server.reward.model
 
+import java.time.LocalDate
+
 data class UserCheckinProgress(
-    val id: Long,
-    val day: Int,
+    val day: LocalDate,
     val rewardPoints: Long,
-    val isCompleted: Boolean,
 )

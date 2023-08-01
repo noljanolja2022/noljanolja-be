@@ -22,8 +22,8 @@ class CheckinRewardService(
 ) {
     suspend fun userCheckin(
         userId: String,
-    ) {
-        val configs = checkinRewardConfigRepo.findAll().toList().ifEmpty { return }
+    ): CheckinRewardConfig? {
+        val configs = checkinRewardConfigRepo.findAll().toList().ifEmpty { return null }
         val totalDays = configs.size
         val userLastCheckinRecord = userCheckinRecordRepo.findFirstByUserIdOrderByCreatedAtDesc(userId)
         val checkinRecord = userLastCheckinRecord?.let {
@@ -31,7 +31,7 @@ class CheckinRewardService(
                 ChronoUnit.DAYS.between(LocalDate.now(), it.createdAt.atZone(ZoneOffset.UTC).toLocalDate()).toInt()
             )
             when {
-                diffDays == 0 -> return
+                diffDays == 0 -> return null
                 diffDays == 1 && it.day < totalDays -> UserCheckinRecordModel(
                     day = it.day + 1,
                     userId = userId,
@@ -44,13 +44,15 @@ class CheckinRewardService(
                 day = 1,
                 userId = userId,
             )
-        val activeConfig = configs.find { it.day == checkinRecord.day } ?: return
+        val activeConfig = configs.find { it.day == checkinRecord.day } ?: return null
         userCheckinRecordRepo.save(checkinRecord)
         loyaltyService.addTransaction(
             memberId = userId,
             points = activeConfig.rewardPoints,
             reason = "Daily checkin",
         )
+        // next reward config
+        return ((configs.find { it.day == activeConfig.day + 1 } ?: configs.minBy { it.day })).toCheckinRewardConfig()
     }
 
     suspend fun getAll(): List<CheckinRewardConfig> {
@@ -75,21 +77,24 @@ class CheckinRewardService(
 
     suspend fun getUserCheckinProgresses(
         userId: String,
+        localDate: LocalDate? = null,
     ): List<UserCheckinProgress> {
-        val configs = checkinRewardConfigRepo.findAll().toList().ifEmpty { return emptyList() }
-        val totalDays = configs.size
-        val userLastCheckinRecord = userCheckinRecordRepo.findFirstByUserIdOrderByCreatedAtDesc(userId)
-        val userCheckinRecords = userLastCheckinRecord?.let {
-            val diffDays = abs(
-                ChronoUnit.DAYS.between(LocalDate.now(), it.createdAt.atZone(ZoneOffset.UTC).toLocalDate()).toInt()
-            )
-            when {
-                diffDays == 0 || (diffDays == 1 && it.day < totalDays)
-                -> userCheckinRecordRepo.findActiveCheckinRecords(userId).toList()
-
-                else -> emptyList()
+        val currentDate = localDate ?: LocalDate.now()
+        val configs = checkinRewardConfigRepo.findAll().toList()
+        val checkinRecords = userCheckinRecordRepo.findAllCheckinRecordsOfUserInMonthYear(
+            userId = userId,
+            month = currentDate.monthValue,
+            year = currentDate.year,
+        ).toList()
+        return (1..currentDate.lengthOfMonth()).map {
+            val dayInMonth = LocalDate.of(currentDate.year, currentDate.month, it)
+            val correspondCheckinRecord = checkinRecords.find {
+                it.createdAt.atOffset(ZoneOffset.UTC).toLocalDate() == dayInMonth
             }
-        }.orEmpty()
-        return configs.toUserCheckinProgresses(userCheckinRecords)
+            UserCheckinProgress(
+                rewardPoints = configs.find { it.day == correspondCheckinRecord?.day }?.rewardPoints ?: 0,
+                day = dayInMonth,
+            )
+        }
     }
 }

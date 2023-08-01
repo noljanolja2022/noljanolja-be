@@ -30,17 +30,6 @@ data class CheckinRewardConfigModel(
     val updatedAt: Instant = Instant.now(),
 )
 
-fun List<CheckinRewardConfigModel>.toUserCheckinProgresses(
-    userCheckinRecords: List<UserCheckinRecordModel>,
-) = map {
-    UserCheckinProgress(
-        id = it.id,
-        day = it.day,
-        rewardPoints = it.rewardPoints,
-        isCompleted = userCheckinRecords.any { record -> record.day == it.day },
-    )
-}
-
 fun CheckinRewardConfigModel.toCheckinRewardConfig() = CheckinRewardConfig(
     id = id,
     day = day,

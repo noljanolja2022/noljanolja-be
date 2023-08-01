@@ -10,7 +10,6 @@ import com.noljanolja.server.core.model.UserContact
 import com.noljanolja.server.core.model.UserPreferences
 import com.noljanolja.server.core.rest.request.*
 import com.noljanolja.server.core.service.UserService
-import com.noljanolja.server.core.utils.genRandomString
 import com.noljanolja.server.core.utils.genReferralCode
 import com.noljanolja.server.loyalty.service.LoyaltyService
 import org.springframework.stereotype.Component

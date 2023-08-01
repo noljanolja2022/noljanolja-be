@@ -6,7 +6,7 @@ import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface UserCheckinRecordRepo: CoroutineCrudRepository<UserCheckinRecordModel, Long> {
+interface UserCheckinRecordRepo : CoroutineCrudRepository<UserCheckinRecordModel, Long> {
     suspend fun findFirstByUserIdOrderByCreatedAtDesc(
         userId: String,
     ): UserCheckinRecordModel?
@@ -15,11 +15,12 @@ interface UserCheckinRecordRepo: CoroutineCrudRepository<UserCheckinRecordModel,
     @Query(
         """
             SELECT * FROM user_checkin_records WHERE user_id = :userId 
-            AND id >= (SELECT id FROM user_checkin_records WHERE day = 1 and user_id = :userId ORDER BY created_at DESC LIMIT 1)
-            ORDER BY created_at ASC
+            AND MONTH(created_at) = :month AND YEAR(created_at) = :year
         """
     )
-    suspend fun findActiveCheckinRecords(
+    suspend fun findAllCheckinRecordsOfUserInMonthYear(
         userId: String,
+        month: Int,
+        year: Int,
     ): Flow<UserCheckinRecordModel>
 }

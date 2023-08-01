@@ -16,6 +16,7 @@ import org.springframework.http.codec.multipart.FormFieldPart
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import java.nio.ByteBuffer
+import java.time.LocalDate
 
 @Component
 class UserHandler(
@@ -181,18 +182,26 @@ class UserHandler(
     }
 
     suspend fun checkin(request: ServerRequest): ServerResponse {
-        userService.checkin(
+        val nextRewardConfig = userService.checkin(
             AuthUserHolder.awaitUser().id,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = Response<Nothing>()
+                body = Response(
+                    data = nextRewardConfig,
+                )
             )
     }
 
     suspend fun getMyCheckinProgresses(request: ServerRequest): ServerResponse {
+        val localDate = try {
+            LocalDate.parse(request.queryParamOrNull("date").orEmpty())
+        } catch (err: Throwable) {
+            null
+        }
         val progresses = userService.getMyCheckinProgresses(
-            AuthUserHolder.awaitUser().id,
+            userId = AuthUserHolder.awaitUser().id,
+            localDate = localDate,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

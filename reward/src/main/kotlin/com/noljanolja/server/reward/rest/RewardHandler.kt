@@ -13,6 +13,7 @@ import com.noljanolja.server.reward.service.CheckinRewardService
 import com.noljanolja.server.reward.service.VideoRewardService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
+import java.time.LocalDate
 
 @Component
 class RewardHandler(
@@ -142,8 +143,16 @@ class RewardHandler(
     }
 
     suspend fun getUserCheckinProgresses(request: ServerRequest): ServerResponse {
+        val localDate = try {
+            LocalDate.parse(request.queryParamOrNull("date").orEmpty())
+        } catch (err: Throwable) {
+            null
+        }
         val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
-        val progresses = checkinRewardService.getUserCheckinProgresses(userId)
+        val progresses = checkinRewardService.getUserCheckinProgresses(
+            userId = userId,
+            localDate = localDate,
+        )
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
@@ -175,10 +184,12 @@ class RewardHandler(
 
     suspend fun userCheckin(request: ServerRequest): ServerResponse {
         val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
-        checkinRewardService.userCheckin(userId)
+        val nextConfig = checkinRewardService.userCheckin(userId)
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = Response<Nothing>()
+                body = Response(
+                    data = nextConfig,
+                )
             )
     }
 }

@@ -196,6 +196,16 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    nullable: true
+                    properties:
+                      data:
+                        type: object
+                        description: Reward config for next checkin attempt
+                        properties:
+                          rewardPoints:
+                            type: number
+                            format: int64
   /api/v1/users/me/referral:
     put:
       tags: [ User ]
@@ -223,10 +233,18 @@ paths:
   /api/v1/users/me/checkin-progresses:
     get:
       tags: [ User ]
-      summary: Get user checkin progresses
-      description: Get user checkin progresses
+      summary: Get user checkin progresses for a month
+      description: Get user checkin progresses for a month
       security:
         - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: date
+          required: false
+          schema:
+            type: string
+            format: datetime
+            example: "2023-12-30"
       responses:
         "200":
           description: On success
@@ -2057,16 +2075,10 @@ components:
     CheckinProgress:
       type: object
       properties:
-        id:
-          type: number
-          format: int64
         day:
-          type: number
-          format: integer
+          type: string
+          format: datetime
+          example: "2023-12-30"
         rewardPoints:
           type: number
           format: Long
-        isCompleted:
-          type: boolean
-
-
