@@ -144,7 +144,7 @@ class RewardHandler(
 
     suspend fun getUserCheckinProgresses(request: ServerRequest): ServerResponse {
         val localDate = try {
-            LocalDate.parse(request.queryParamOrNull("date").orEmpty())
+            LocalDate.parse(request.queryParamOrNull("localDate").orEmpty())
         } catch (err: Throwable) {
             null
         }
