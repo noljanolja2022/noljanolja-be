@@ -17,10 +17,12 @@ data class CoreUser(
     val preferences: CoreUserPreferences = CoreUserPreferences(),
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
+    val referralCode: String = "",
+    val referredBy: String = "",
 )
 
 data class CoreUserPreferences(
-    val collectAndUsePersonalInfo: Boolean? = null
+    val collectAndUsePersonalInfo: Boolean? = null,
 )
 
 fun CoreUser.toConsumerUser() = User(
@@ -34,6 +36,8 @@ fun CoreUser.toConsumerUser() = User(
     preferences = preferences.toConsumerUserPreferences(),
     createdAt = createdAt,
     updatedAt = updatedAt,
+    referredBy = referredBy,
+    referralCode = referralCode,
 )
 
 fun CoreUserPreferences.toConsumerUserPreferences() = UserPreferences(

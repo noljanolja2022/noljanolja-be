@@ -201,4 +201,16 @@ class UserHandler(
                 )
             )
     }
+
+    suspend fun assignReferral(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<AssignReferralRequest>() ?: throw RequestBodyRequired
+        userService.assignReferral(
+            userId = AuthUserHolder.awaitUser().id,
+            referredByCode = payload.referredByCode,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
 }

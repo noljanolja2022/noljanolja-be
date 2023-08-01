@@ -69,7 +69,7 @@ class UserService(
     suspend fun getUserContacts(
         userId: String,
         page: Int = 1,
-        pageSize: Int = 100
+        pageSize: Int = 100,
     ): List<SimpleUser> {
         val res = coreApi.getUsers(friendId = userId, page = page, pageSize = pageSize)
         return res?.first ?: emptyList()
@@ -84,13 +84,13 @@ class UserService(
     }
 
     suspend fun findUsers(
-        phoneNumber: String? = null
+        phoneNumber: String? = null,
     ): List<SimpleUser> {
         return coreApi.getUsers(phoneNumber = phoneNumber)?.first.orEmpty()
     }
 
     suspend fun findUserById(
-        id: String
+        id: String,
     ): SimpleUser {
         val res = coreApi.getUserDetails(id)
         return SimpleUser(
@@ -103,7 +103,7 @@ class UserService(
 
     suspend fun sendFriendRequest(
         userId: String,
-        req: AddFriendRequest
+        req: AddFriendRequest,
     ) {
         coreApi.addFriend(userId, req)
     }
@@ -140,4 +140,12 @@ class UserService(
     suspend fun getMyCheckinProgresses(
         userId: String,
     ) = coreApi.getMyCheckinProgresses(userId).map { it.toCheckinProgress() }
+
+    suspend fun assignReferral(
+        userId: String,
+        referredByCode: String,
+    ) = coreApi.assignReferral(
+        userId = userId,
+        referredByCode = referredByCode,
+    )
 }

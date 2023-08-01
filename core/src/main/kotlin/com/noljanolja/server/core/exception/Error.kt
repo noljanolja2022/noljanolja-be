@@ -18,6 +18,8 @@ sealed class Error(
         const val STICKERS_NOT_FOUND = 404_007
         const val REACTION_NOT_FOUND = 404_013
         const val BANNER_NOT_FOUND = 404_014
+        const val REFERRAL_REWARD_CONFIG_NOT_FOUND = 404_015
+
         const val USER_NOT_PARTICIPATE_IN_CONVERSATION = 400_001
         const val INVALID_PARTICIPANTS_SIZE = 400_002
         const val PARTICIPANTS_NOT_FOUND = 400_003
@@ -28,6 +30,8 @@ sealed class Error(
         const val REPLY_TO_MESSAGE_FROM_ANOTHER_CONVERSATION = 400_017
         const val SHARE_MESSAGE_SAME_CONVERSATION = 400_018
         const val BLOCKED_FROM_CONVERSATION = 400_019
+        const val INVALID_REFERRAL_CODE = 400_020
+        const val REFERRAL_EXISTED = 400_021
     }
 
     object ConversationNotFound : Error(
@@ -144,9 +148,27 @@ sealed class Error(
         null,
     )
 
-    object BlockedFromConversation: Error(
+    object BlockedFromConversation : Error(
         BLOCKED_FROM_CONVERSATION,
         "You have been blocked from this conversation",
+        null,
+    )
+
+    object InvalidReferralCode : Error(
+        INVALID_REFERRAL_CODE,
+        "Invalid referral code",
+        null,
+    )
+
+    object ReferralExisted : Error(
+        REFERRAL_EXISTED,
+        "Referral existed",
+        null
+    )
+
+    object ReferralRewardConfigNotFound : Error(
+        REFERRAL_REWARD_CONFIG_NOT_FOUND,
+        "Referral reward config not found",
         null,
     )
 }

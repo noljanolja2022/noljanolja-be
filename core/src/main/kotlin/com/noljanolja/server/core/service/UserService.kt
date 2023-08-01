@@ -10,9 +10,12 @@ import com.noljanolja.server.core.repo.user.*
 import com.noljanolja.server.core.repo.user.UserDeviceModel.Companion.toUserDeviceModel
 import com.noljanolja.server.core.repo.user.UserModel.Companion.toUserModel
 import com.noljanolja.server.core.utils.parsePhoneNumber
+import com.noljanolja.server.loyalty.service.LoyaltyService
+import com.noljanolja.server.reward.repo.ReferralRewardConfigRepo
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -24,6 +27,8 @@ class UserService(
     private val userContactsRepo: UserContactsRepo,
     private val userDevicesRepo: UserDevicesRepo,
     private val contactsRepo: ContactRepo,
+    private val referralRewardConfigRepo: ReferralRewardConfigRepo,
+    private val loyaltyService: LoyaltyService,
     private val objectMapper: ObjectMapper,
 ) {
 
@@ -74,12 +79,16 @@ class UserService(
         } else if (query != null) {
             val pn = parsePhoneNumber(query)
             if (pn != null) {
-                val users = userRepo.findAllByPhoneNumberContains(pn.nationalNumber.toString(), PageRequest.of(page - 1, pageSize))
+                val users = userRepo.findAllByPhoneNumberContains(
+                    pn.nationalNumber.toString(),
+                    PageRequest.of(page - 1, pageSize)
+                )
                     .map { it.toUser(objectMapper) }.toList()
                 val count = userRepo.countByPhoneNumberContains(pn.nationalNumber.toString())
                 Pair(users, count)
             } else {
-                val users = userRepo.findAllByNameContains(query, PageRequest.of(page - 1, pageSize)).map { it.toUser(objectMapper) }.toList()
+                val users = userRepo.findAllByNameContains(query, PageRequest.of(page - 1, pageSize))
+                    .map { it.toUser(objectMapper) }.toList()
                 val count = userRepo.countByNameContains(query)
                 Pair(users, count)
             }
@@ -334,5 +343,28 @@ class UserService(
                 )
             }
         }
+    }
+
+    suspend fun assignReferral(
+        userId: String,
+        referredByCode: String,
+    ) = coroutineScope {
+        val user = userRepo.findById(userId) ?: throw UserNotFound
+        if (user.referredBy.isNotBlank()) throw Error.ReferralExisted
+        if (user.referralCode == referredByCode) throw Error.InvalidReferralCode
+        val referredByUser = userRepo.findByReferralCode(referredByCode) ?: throw Error.InvalidReferralCode
+        user.referredBy = referredByUser.id
+        referralRewardConfigRepo.findAll().toList().firstOrNull()?.let { referralRewardConfig ->
+            userRepo.save(user)
+            listOf(user.id, referredByUser.id).forEach {
+                launch {
+                    loyaltyService.addTransaction(
+                        memberId = it,
+                        points = referralRewardConfig.rewardPoints,
+                        reason = "Referral reward",
+                    )
+                }
+            }
+        } ?: throw Error.ReferralRewardConfigNotFound
     }
 }

@@ -62,4 +62,8 @@ interface UserRepo : CoroutineCrudRepository<UserModel, String> {
     """
     )
     fun findAllParticipants(conversationId: Long): Flow<UserModel>
+
+    suspend fun findByReferralCode(
+        referralCode: String,
+    ): UserModel?
 }

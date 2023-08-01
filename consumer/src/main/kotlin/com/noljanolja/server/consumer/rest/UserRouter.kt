@@ -21,6 +21,7 @@ class UserRouter(
                 GET("", userHandler::getCurrentUser)
                 PUT("", userHandler::updateCurrentUser)
                 DELETE("", userHandler::deleteCurrentUser)
+                PUT("/referral", userHandler::assignReferral)
                 POST("/contacts", userHandler::syncCurrentUserContact)
                 GET("/contacts", userHandler::getCurrentUserContacts)
                 POST("/contacts/invite", userHandler::sendFriendRequest)

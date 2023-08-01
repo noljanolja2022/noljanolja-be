@@ -1025,4 +1025,22 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreConversation>>>().data!!
+
+    suspend fun assignReferral(
+        userId: String,
+        referredByCode: String,
+    ) = webClient.put()
+        .uri { builder ->
+            builder.path("${USERS_ENDPOINT}/{userId}/referral").build(userId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
 }

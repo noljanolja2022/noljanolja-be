@@ -55,6 +55,12 @@ data class UserModel(
     @Column("preferences")
     val preferences: String = "",
 
+    @Column("referral_code")
+    val referralCode: String = "",
+
+    @Column("referred_by")
+    var referredBy: String = "",
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -93,6 +99,8 @@ data class UserModel(
                 preferences = objectMapper.writeValueAsString(preferences),
                 createdAt = createdAt,
                 updatedAt = updatedAt,
+                referralCode = referralCode,
+                referredBy = referredBy,
             ).apply {
                 isNewRecord = isNewUser
             }
@@ -116,4 +124,6 @@ fun UserModel.toUser(objectMapper: ObjectMapper) = User(
     } ?: UserPreferences(),
     createdAt = createdAt,
     updatedAt = updatedAt,
+    referralCode = referralCode,
+    referredBy = referredBy,
 )

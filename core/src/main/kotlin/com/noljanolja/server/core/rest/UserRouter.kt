@@ -25,6 +25,7 @@ class UserRouter(
                 DELETE("", userHandler::deleteUser)
                 GET("/black-list", userHandler::getBlackListOfUser)
                 PUT("/block", userHandler::userBlockUser)
+                PUT("/referral", userHandler::assignReferral)
 
                 "/contacts".nest {
                     POST("", userHandler::upsertUserContacts)

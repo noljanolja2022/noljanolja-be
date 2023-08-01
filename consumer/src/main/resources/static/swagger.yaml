@@ -196,13 +196,22 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/BaseResponse"
-  /api/v1/users/me/referral-code:
-    post:
+  /api/v1/users/me/referral:
+    put:
       tags: [ User ]
       summary: Add a referral code to get get reward
       description: Add a referral code to get reward
       security:
         - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                referredByCode:
+                  type: string
       responses:
         "200":
           description: On success
@@ -1569,6 +1578,8 @@ components:
         referralCode:
           type: string
           required: true
+        referredBy:
+          type: string
     SimpleUser:
       type: object
       required: [ id ]

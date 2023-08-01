@@ -17,6 +17,8 @@ data class User(
     val preferences: UserPreferences = UserPreferences(),
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
+    val referralCode: String = "",
+    val referredBy: String = "",
 )
 
 data class UserPreferences(

@@ -12,21 +12,27 @@ DROP TABLE IF EXISTS `users`;
 
 CREATE TABLE IF NOT EXISTS `users`
 (
-    `id`           VARCHAR(36)                      NOT NULL PRIMARY KEY,
-    `name`         VARCHAR(255)                     NOT NULL,
-    `avatar`       TEXT                             NULL,
-    `country_code` VARCHAR(7)                       NOT NULL,
-    `phone_number` VARCHAR(12)                      NOT NULL,
-    `email`        VARCHAR(255)                     NULL,
-    `dob`          DATE                             NULL,
-    `gender`       ENUM ('MALE', 'FEMALE', 'OTHER') NULL,
-    `is_active`    TINYINT(1)                       NOT NULL DEFAULT 1,
-    `is_reported`  TINYINT(1)                       NOT NULL DEFAULT 0,
-    `is_blocked`   TINYINT(1)                       NOT NULL DEFAULT 0,
-    `is_deleted`   TINYINT(1)                       NOT NULL DEFAULT 0,
-    `preferences`  TEXT                             NOT NULL,
-    `created_at`   DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`   DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `id`            VARCHAR(36)                      NOT NULL PRIMARY KEY,
+    `name`          VARCHAR(255)                     NOT NULL,
+    `avatar`        TEXT                             NULL,
+    `country_code`  VARCHAR(7)                       NOT NULL,
+    `phone_number`  VARCHAR(12)                      NOT NULL,
+    `email`         VARCHAR(255)                     NULL,
+    `dob`           DATE                             NULL,
+    `gender`        ENUM ('MALE', 'FEMALE', 'OTHER') NULL,
+    `is_active`     TINYINT(1)                       NOT NULL DEFAULT 1,
+    `is_reported`   TINYINT(1)                       NOT NULL DEFAULT 0,
+    `is_blocked`    TINYINT(1)                       NOT NULL DEFAULT 0,
+    `is_deleted`    TINYINT(1)                       NOT NULL DEFAULT 0,
+    `preferences`   TEXT                             NOT NULL,
+    `referral_code` VARCHAR(8)                       NOT NULL,
+    `referred_by`   VARCHAR(255)                     NOT NULL,
+    `created_at`    DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (referred_by) REFERENCES users (id) ON DELETE CASCADE,
+
+    FULLTEXT idx_referral_code (`referral_code`)
 ) ENGINE = InnoDB;
 
 CREATE UNIQUE INDEX `idx_country_code_phone_number` ON `users` (`country_code`, `phone_number`);
@@ -733,4 +739,16 @@ CREATE TABLE IF NOT EXISTS `user_checkin_records`
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+-- changeset tranhieu956230@gmail.com:16
+
+DROP TABLE IF EXISTS `referral_reward_configs`;
+
+CREATE TABLE IF NOT EXISTS `referral_reward_configs`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `reward_points`     BIGINT          NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
