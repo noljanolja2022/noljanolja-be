@@ -12,6 +12,7 @@ data class UpsertBannerRequest(
     val isActive: Boolean,
     val priority: Banner.BannerPriority,
     val action: Banner.BannerAction,
+    val actionUrl: String?,
     val startTime: Instant,
     val endTime: Instant,
 )

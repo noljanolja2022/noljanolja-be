@@ -11,6 +11,7 @@ data class Banner(
     val isActive: Boolean,
     val priority: BannerPriority,
     val action: BannerAction,
+    val actionUrl: String?,
     val startTime: Instant,
     val endTime: Instant,
 ) {
@@ -38,6 +39,7 @@ data class CoreBanner(
     val isActive: Boolean,
     val priority: BannerPriority,
     val action: BannerAction,
+    val actionUrl: String?,
     val startTime: Instant,
     val endTime: Instant,
 ) {
@@ -62,9 +64,10 @@ fun CoreBanner.toBanner() = Banner(
     description = description,
     content = content,
     image = image,
-    isActive = isActive && Instant.now() in startTime..endTime,
+    isActive = isActive,
     priority = Banner.BannerPriority.valueOf(priority.name),
     action = Banner.BannerAction.valueOf(action.name),
+    actionUrl = actionUrl,
     startTime = startTime,
     endTime = endTime,
 )
@@ -78,6 +81,7 @@ data class UpsertBannerRequest(
     val isActive: Boolean,
     val priority: Banner.BannerPriority,
     val action: Banner.BannerAction,
+    val actionUrl: String?,
     val startTime: Instant,
     val endTime: Instant,
 )

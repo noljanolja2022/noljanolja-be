@@ -35,6 +35,9 @@ data class BannerModel(
     @Column("action")
     var action: Banner.BannerAction = Banner.BannerAction.NONE,
 
+    @Column("action_url")
+    var actionUrl: String? = null,
+
     @Column("start_time")
     var startTime: Instant = Instant.now(),
 
@@ -59,6 +62,7 @@ fun BannerModel.toBanner() = Banner(
     isActive = isActive,
     priority = priority,
     action = action,
+    actionUrl = actionUrl,
     startTime = startTime,
     endTime = endTime,
 )

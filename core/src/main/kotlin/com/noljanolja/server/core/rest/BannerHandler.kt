@@ -38,7 +38,7 @@ class BannerHandler(
         val name = request.queryParamOrNull("name")
         val isActive = request.queryParamOrNull("isActive")?.toBooleanStrictOrNull()
 
-        val (banners, count) = bannerService.getBanners(
+        val res = bannerService.getBanners(
             page = page,
             pageSize = pageSize,
             name = name,
@@ -47,11 +47,11 @@ class BannerHandler(
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
-                    data = banners,
+                    data = res.first,
                     pagination = Pagination(
                         page = page,
                         pageSize = pageSize,
-                        total = count,
+                        total = res.second,
                     )
                 ),
             )

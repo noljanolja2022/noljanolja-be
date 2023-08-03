@@ -524,11 +524,6 @@ CREATE TABLE IF NOT EXISTS `chat_reward_records`
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
 
-ALTER TABLE `videos`
-    ADD `view_count` BIGINT NOT NULL DEFAULT 0,
-    ADD `like_count` BIGINT NOT NULL DEFAULT 0,
-    ADD `comment_count` BIGINT NOT NULL DEFAULT 0;
-
 -- changeset tranhieu956230@gmail.com:11
 
 -- -----------------------------------------------------
@@ -663,6 +658,7 @@ CREATE TABLE IF NOT EXISTS `banners`
     `is_active`         TINYINT         NOT NULL DEFAULT 1,
     `priority`          ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT')     NOT NULL DEFAULT 'LOW',
     `action`            ENUM('NONE', 'LINK', 'SHARE', 'CHECKIN')    NOT NULL DEFAULT 'NONE',
+    `action_url`        TEXT            NULL,
     `start_time`        DATETIME        NOT NULL,
     `end_time`          DATETIME        NOT NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,

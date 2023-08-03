@@ -12,6 +12,7 @@ data class CoreBanner(
     val isActive: Boolean,
     val priority: BannerPriority,
     val action: BannerAction,
+    val actionUrl: String?,
     val startTime: Instant,
     val endTime: Instant,
 ) {
@@ -39,6 +40,7 @@ fun CoreBanner.toBanner() = Banner(
     isActive = isActive && Instant.now() in startTime..endTime,
     priority = Banner.BannerPriority.valueOf(priority.name),
     action = Banner.BannerAction.valueOf(action.name),
+    actionUrl = actionUrl,
     startTime = startTime,
     endTime = endTime,
 )

@@ -11,6 +11,7 @@ data class Banner(
     val isActive: Boolean,
     val priority: BannerPriority,
     val action: BannerAction,
+    val actionUrl: String?,
     val startTime: Instant,
     val endTime: Instant,
 ) {

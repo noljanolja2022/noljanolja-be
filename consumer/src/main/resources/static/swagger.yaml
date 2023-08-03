@@ -2066,6 +2066,8 @@ components:
         action:
           type: string
           enum: [ NONE, LINK, SHARE, CHECKIN ]
+        actionUrl:
+          type: string
         startTime:
           type: string
           format: datetime
