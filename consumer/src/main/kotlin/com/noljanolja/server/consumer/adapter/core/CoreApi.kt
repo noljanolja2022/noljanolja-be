@@ -1047,5 +1047,5 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<Nothing>>()
+        .awaitBody<Response<Long>>().data!!
 }

@@ -207,13 +207,15 @@ class UserHandler(
     suspend fun assignReferral(request: ServerRequest): ServerResponse {
         val payload = request.awaitBodyOrNull<AssignReferralRequest>() ?: throw RequestBodyRequired
         val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
-        userService.assignReferral(
+        val rewardPoints = userService.assignReferral(
             userId = userId,
             referredByCode = payload.referredByCode,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = Response<Nothing>()
+                body = Response(
+                    data = rewardPoints,
+                )
             )
     }
 }

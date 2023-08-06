@@ -348,7 +348,7 @@ class UserService(
     suspend fun assignReferral(
         userId: String,
         referredByCode: String,
-    ) = coroutineScope {
+    ): Long = coroutineScope {
         val user = userRepo.findById(userId) ?: throw UserNotFound
         if (user.referredBy.isNotBlank()) throw Error.ReferralExisted
         if (user.referralCode == referredByCode) throw Error.InvalidReferralCode
@@ -363,6 +363,7 @@ class UserService(
                     reason = "Referral reward",
                 )
             }
+            referralRewardConfig.rewardPoints
         } ?: throw Error.ReferralRewardConfigNotFound
     }
 }

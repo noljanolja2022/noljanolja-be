@@ -230,6 +230,14 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          rewardPoints:
+                            type: number
+                            format: int64
   /api/v1/users/me/checkin-progresses:
     get:
       tags: [ User ]

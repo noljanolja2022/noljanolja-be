@@ -6,6 +6,7 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.User
 import com.noljanolja.server.consumer.rest.request.*
+import com.noljanolja.server.consumer.rest.response.AssignReferralResponse
 import com.noljanolja.server.consumer.service.GoogleStorageService
 import com.noljanolja.server.consumer.service.UserService
 import kotlinx.coroutines.flow.map
@@ -213,13 +214,15 @@ class UserHandler(
 
     suspend fun assignReferral(request: ServerRequest): ServerResponse {
         val payload = request.awaitBodyOrNull<AssignReferralRequest>() ?: throw RequestBodyRequired
-        userService.assignReferral(
+        val rewardPoints = userService.assignReferral(
             userId = AuthUserHolder.awaitUser().id,
             referredByCode = payload.referredByCode,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = Response<Nothing>()
+                body = Response(
+                    data = AssignReferralResponse(rewardPoints)
+                )
             )
     }
 }
