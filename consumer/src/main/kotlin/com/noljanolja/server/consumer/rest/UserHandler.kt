@@ -3,6 +3,7 @@ package com.noljanolja.server.consumer.rest
 import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
+import com.noljanolja.server.consumer.config.language.Translator
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.User
 import com.noljanolja.server.consumer.rest.request.*
@@ -23,6 +24,7 @@ import java.time.LocalDate
 class UserHandler(
     private val googleStorageService: GoogleStorageService,
     private val userService: UserService,
+    private val translator: Translator,
 ) {
     companion object {
         const val PART_NAME_FIELD = "field"
@@ -189,6 +191,7 @@ class UserHandler(
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
+                    message = translator.localize("NEXT_CHECKIN_REWARD_POINTS", arrayOf(nextRewardConfig.rewardPoints)),
                     data = nextRewardConfig,
                 )
             )

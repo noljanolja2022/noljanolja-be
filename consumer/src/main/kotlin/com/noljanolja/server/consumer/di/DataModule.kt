@@ -6,6 +6,7 @@ import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.support.ResourceBundleMessageSource
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.messaging.rsocket.RSocketRequester
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
@@ -17,6 +18,7 @@ import reactor.netty.resources.ConnectionProvider
 import reactor.util.retry.Retry
 import java.net.URI
 import java.time.Duration
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 @Configuration
@@ -115,5 +117,14 @@ class DataModule {
             )
             .filters { it.addAll(filters) }
             .build()
+    }
+
+    @Bean
+    fun messageSource(): ResourceBundleMessageSource {
+        val messageSource = ResourceBundleMessageSource()
+        messageSource.setBasename("lang/messages")
+        messageSource.setDefaultLocale(Locale("ko"))
+        messageSource.setDefaultEncoding("UTF-8")
+        return messageSource
     }
 }

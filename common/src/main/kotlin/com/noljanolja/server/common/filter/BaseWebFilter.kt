@@ -9,15 +9,13 @@ import reactor.core.publisher.Mono
 
 abstract class BaseWebFilter : WebFilter {
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
-        return if (exchange.request.path.toString().startsWith("/api", ignoreCase = true)) {
+        if (exchange.request.path.toString().startsWith("/api")) {
             val userAgentHeader = exchange.request.headers.getFirst(HttpHeaders.USER_AGENT).orEmpty()
-            ClientInfo.parseString(userAgentHeader)?.let { clientInfo ->
-                filterApi(exchange, chain).contextWrite(ClientInfoHolder.withClientInfo(clientInfo))
-            } ?: filterApi(exchange, chain)
-
-        } else {
-            chain.filter(exchange)
+            return filterApi(exchange, chain)
+                .contextWrite(ClientInfoHolder.withClientInfo(ClientInfo.parseString(userAgentHeader)))
+                .contextWrite(RequestHolder.withHeaders(exchange.request.headers))
         }
+        return chain.filter(exchange)
     }
 
     abstract fun filterApi(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void>

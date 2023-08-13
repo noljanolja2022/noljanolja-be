@@ -964,7 +964,7 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<CoreRewardConfig>>().data
+        .awaitBody<Response<CoreRewardConfig>>().data!!
 
     suspend fun getMyCheckinProgresses(
         userId: String,

@@ -11,6 +11,7 @@ import com.noljanolja.server.core.repo.user.UserDeviceModel.Companion.toUserDevi
 import com.noljanolja.server.core.repo.user.UserModel.Companion.toUserModel
 import com.noljanolja.server.core.utils.parsePhoneNumber
 import com.noljanolja.server.loyalty.service.LoyaltyService
+import com.noljanolja.server.loyalty.service.REASON_REFERRAL_REWARD
 import com.noljanolja.server.reward.repo.ReferralRewardConfigRepo
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
@@ -360,7 +361,7 @@ class UserService(
                 loyaltyService.addTransaction(
                     memberId = it,
                     points = referralRewardConfig.rewardPoints,
-                    reason = "Referral reward",
+                    reason = REASON_REFERRAL_REWARD,
                 )
             }
             referralRewardConfig.rewardPoints

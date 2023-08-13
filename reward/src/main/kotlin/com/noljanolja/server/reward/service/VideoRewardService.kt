@@ -1,6 +1,9 @@
 package com.noljanolja.server.reward.service
 
 import com.noljanolja.server.loyalty.service.LoyaltyService
+import com.noljanolja.server.loyalty.service.REASON_COMMENT_VIDEO
+import com.noljanolja.server.loyalty.service.REASON_LIKE_VIDEO
+import com.noljanolja.server.loyalty.service.REASON_WATCH_VIDEO
 import com.noljanolja.server.reward.exception.Error
 import com.noljanolja.server.reward.model.UserVideoRewardRecord
 import com.noljanolja.server.reward.model.VideoRewardConfig
@@ -69,7 +72,7 @@ class VideoRewardService(
             loyaltyService.addTransaction(
                 memberId = userId,
                 points = totalReceivedPoints,
-                reason = "Watch video",
+                reason = REASON_WATCH_VIDEO,
             )
         }
     }
@@ -96,7 +99,7 @@ class VideoRewardService(
                 loyaltyService.addTransaction(
                     memberId = userId,
                     points = config.commentRewardPoints,
-                    reason = "Comment video",
+                    reason = REASON_COMMENT_VIDEO,
                 )
             }
         }
@@ -126,7 +129,7 @@ class VideoRewardService(
                     loyaltyService.addTransaction(
                         memberId = userId,
                         points = config.likeRewardPoints,
-                        reason = "Like video",
+                        reason = REASON_LIKE_VIDEO,
                     )
                 }
             }
@@ -208,7 +211,7 @@ class VideoRewardService(
     ) =
         videoRewardConfigRepo.findById(configId)?.apply {
             rewardProgresses = videoRewardProgressConfigRepo.findAllByConfigId(this.id).toList()
-        }?.toVideoRewardConfig() ?: throw Error.ConfigNotFound
+        }?.toVideoRewardConfig() ?: throw Error.VideoConfigNotFound
 
     suspend fun getVideoRewardConfig(
         videoId: String,

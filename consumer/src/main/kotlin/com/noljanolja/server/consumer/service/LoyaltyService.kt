@@ -3,12 +3,14 @@ package com.noljanolja.server.consumer.service
 import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.adapter.core.toConsumerLoyaltyPoint
 import com.noljanolja.server.consumer.adapter.core.toConsumerMemberInfo
+import com.noljanolja.server.consumer.config.language.Translator
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
 class LoyaltyService(
     private val coreApi: CoreApi,
+    private val translator: Translator,
 ) {
     suspend fun getMemberInfo(
         userId: String,
@@ -26,5 +28,5 @@ class LoyaltyService(
         type = type,
         month = month,
         year = year,
-    ).map { it.toConsumerLoyaltyPoint() }
+    ).map { it.toConsumerLoyaltyPoint(translator) }
 }

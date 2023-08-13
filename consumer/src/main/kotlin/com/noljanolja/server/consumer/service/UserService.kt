@@ -137,7 +137,7 @@ class UserService(
 
     suspend fun checkin(
         userId: String,
-    ) = coreApi.checkin(userId)?.toRewardConfig()
+    ) = coreApi.checkin(userId).toRewardConfig()
 
     suspend fun getMyCheckinProgresses(
         userId: String,

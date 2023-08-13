@@ -1,6 +1,8 @@
 package com.noljanolja.server.reward.service
 
 import com.noljanolja.server.loyalty.service.LoyaltyService
+import com.noljanolja.server.loyalty.service.REASON_DAILY_CHECKIN
+import com.noljanolja.server.reward.exception.Error
 import com.noljanolja.server.reward.model.CheckinRewardConfig
 import com.noljanolja.server.reward.model.UserCheckinProgress
 import com.noljanolja.server.reward.repo.*
@@ -22,8 +24,8 @@ class CheckinRewardService(
 ) {
     suspend fun userCheckin(
         userId: String,
-    ): CheckinRewardConfig? {
-        val configs = checkinRewardConfigRepo.findAll().toList().ifEmpty { return null }
+    ): CheckinRewardConfig {
+        val configs = checkinRewardConfigRepo.findAll().toList().ifEmpty { throw Error.CheckinConfigNotFound }
         val totalDays = configs.size
         val userLastCheckinRecord = userCheckinRecordRepo.findFirstByUserIdOrderByCreatedAtDesc(userId)
         val checkinRecord = userLastCheckinRecord?.let {
@@ -31,7 +33,7 @@ class CheckinRewardService(
                 ChronoUnit.DAYS.between(LocalDate.now(), it.createdAt.atZone(ZoneOffset.UTC).toLocalDate()).toInt()
             )
             when {
-                diffDays == 0 -> return null
+                diffDays == 0 -> it
                 diffDays == 1 && it.day < totalDays -> UserCheckinRecordModel(
                     day = it.day + 1,
                     userId = userId,
@@ -44,12 +46,12 @@ class CheckinRewardService(
                 day = 1,
                 userId = userId,
             )
-        val activeConfig = configs.find { it.day == checkinRecord.day } ?: return null
+        val activeConfig = configs.find { it.day == checkinRecord.day } ?: throw Error.CheckinConfigNotFound
         userCheckinRecordRepo.save(checkinRecord)
         loyaltyService.addTransaction(
             memberId = userId,
             points = activeConfig.rewardPoints,
-            reason = "Daily checkin",
+            reason = REASON_DAILY_CHECKIN,
         )
         // next reward config
         return ((configs.find { it.day == activeConfig.day + 1 } ?: configs.minBy { it.day })).toCheckinRewardConfig()

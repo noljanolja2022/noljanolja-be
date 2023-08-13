@@ -9,12 +9,20 @@ sealed class Error(
 ) : BaseException(code, message, cause) {
     companion object {
         const val CONFIG_NOT_FOUND = 404_009
+        const val CHECKIN_CONFIG_NOT_FOUND = 404_016
         const val INVALID_VIDEO_CONFIG = 400_200
+
     }
 
-    object ConfigNotFound : BaseException(
+    object VideoConfigNotFound : BaseException(
         CONFIG_NOT_FOUND,
-        "Config not found",
+        "Video config not found",
+        null,
+    )
+
+    object CheckinConfigNotFound : BaseException(
+        CHECKIN_CONFIG_NOT_FOUND,
+        "Checkin config not found",
         null,
     )
 

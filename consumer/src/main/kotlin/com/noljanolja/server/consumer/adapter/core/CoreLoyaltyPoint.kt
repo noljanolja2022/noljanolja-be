@@ -1,5 +1,6 @@
 package com.noljanolja.server.consumer.adapter.core
 
+import com.noljanolja.server.consumer.config.language.Translator
 import com.noljanolja.server.consumer.model.LoyaltyPoint
 import java.time.Instant
 
@@ -15,9 +16,11 @@ data class CoreLoyaltyPoint(
     }
 }
 
-fun CoreLoyaltyPoint.toConsumerLoyaltyPoint() = LoyaltyPoint(
+suspend fun CoreLoyaltyPoint.toConsumerLoyaltyPoint(
+    translator: Translator,
+) = LoyaltyPoint(
     id = id,
-    reason = reason,
+    reason = translator.localize(reason),
     amount = amount,
     createdAt = createdAt,
     status = LoyaltyPoint.Status.valueOf(status.name),

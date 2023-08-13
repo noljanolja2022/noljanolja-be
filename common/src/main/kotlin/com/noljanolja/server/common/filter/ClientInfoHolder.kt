@@ -8,7 +8,7 @@ import reactor.util.context.Context
 object ClientInfoHolder {
     private val CLIENT_INFO: String = ClientInfoHolder::class.java.name + ".CLIENT_INFO"
 
-    fun withClientInfo(clientInfo: ClientInfo) = Context.of(CLIENT_INFO, Mono.just(clientInfo))
+    fun withClientInfo(clientInfo: ClientInfo?) = Context.of(CLIENT_INFO, Mono.justOrEmpty(clientInfo))
 
     suspend fun awaitClientInfo(): ClientInfo? = getClientInfo().awaitFirstOrNull()
 

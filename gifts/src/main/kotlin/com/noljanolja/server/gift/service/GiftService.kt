@@ -4,6 +4,7 @@ import com.noljanolja.server.gift.exception.Error
 import com.noljanolja.server.gift.model.Gift
 import com.noljanolja.server.gift.repo.*
 import com.noljanolja.server.loyalty.service.LoyaltyService
+import com.noljanolja.server.loyalty.service.REASON_PURCHASE_GIFT
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
@@ -34,7 +35,7 @@ class GiftService(
         loyaltyService.addTransaction(
             memberId = userId,
             points = -gift.price,
-            reason = "Buy gift"
+            reason = REASON_PURCHASE_GIFT
         )
         val savedGift = giftRepo.save(
             gift.apply {
