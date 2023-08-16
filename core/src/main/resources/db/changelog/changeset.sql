@@ -745,6 +745,7 @@ CREATE TABLE IF NOT EXISTS `referral_reward_configs`
 (
     `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `reward_points`     BIGINT          NOT NULL,
+    `referee_points`    BIGINT          NOT NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;

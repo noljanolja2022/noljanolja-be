@@ -16,7 +16,6 @@ import com.noljanolja.server.reward.repo.ReferralRewardConfigRepo
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -357,14 +356,17 @@ class UserService(
         user.referredBy = referredByUser.id
         referralRewardConfigRepo.findAll().toList().firstOrNull()?.let { referralRewardConfig ->
             userRepo.save(user)
-            listOf(user.id, referredByUser.id).forEach {
-                loyaltyService.addTransaction(
-                    memberId = it,
-                    points = referralRewardConfig.rewardPoints,
-                    reason = REASON_REFERRAL_REWARD,
-                )
-            }
-            referralRewardConfig.rewardPoints
+            loyaltyService.addTransaction(
+                memberId = user.id,
+                points = referralRewardConfig.refereePoints,
+                reason = REASON_REFERRAL_REWARD,
+            )
+            loyaltyService.addTransaction(
+                memberId = referredByUser.id,
+                points = referralRewardConfig.rewardPoints,
+                reason = REASON_REFERRAL_REWARD,
+            )
+            referralRewardConfig.refereePoints
         } ?: throw Error.ReferralRewardConfigNotFound
     }
 }

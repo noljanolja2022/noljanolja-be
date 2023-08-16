@@ -35,6 +35,10 @@ class RewardRouter(
                 GET("", rewardHandler::getCheckinConfigs)
                 POST("", rewardHandler::upsertCheckinConfigs)
             }
+            "/referral/configs".nest {
+                GET("", rewardHandler::getReferralConfig)
+                PUT("", rewardHandler::upsertReferralConfig)
+            }
         }
         GET("/api/v2/reward/videos/configs/{videoId}", rewardHandler::getVideoRewardConfigV2)
     }

@@ -1,5 +1,6 @@
 package com.noljanolja.server.reward.repo
 
+import com.noljanolja.server.reward.model.ReferralConfig
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
@@ -14,7 +15,10 @@ data class ReferralRewardConfigModel(
     val id: Long = 0,
 
     @Column("reward_points")
-    val rewardPoints: Long = 0,
+    var rewardPoints: Long = 0,
+
+    @Column("referee_points")
+    var refereePoints: Long = 0,
 
     @Column("created_at")
     @CreatedDate
@@ -22,5 +26,11 @@ data class ReferralRewardConfigModel(
 
     @Column("updated_at")
     @LastModifiedDate
-    val updatedAt: Instant = Instant.now(),
-)
+    var updatedAt: Instant = Instant.now(),
+) {
+    fun toReferralConfig() : ReferralConfig {
+        return ReferralConfig(
+            refereePoints, rewardPoints, updatedAt
+        )
+    }
+}

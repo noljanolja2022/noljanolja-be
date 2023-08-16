@@ -7,9 +7,11 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.reward.repo.RoomType
 import com.noljanolja.server.reward.rest.request.UpsertChatConfigRequest
 import com.noljanolja.server.reward.rest.request.UpsertCheckinConfigsRequest
+import com.noljanolja.server.reward.rest.request.UpsertReferralConfigReq
 import com.noljanolja.server.reward.rest.request.UpsertVideoConfigRequest
 import com.noljanolja.server.reward.service.ChatRewardService
 import com.noljanolja.server.reward.service.CheckinRewardService
+import com.noljanolja.server.reward.service.ReferralService
 import com.noljanolja.server.reward.service.VideoRewardService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -20,6 +22,7 @@ class RewardHandler(
     private val videoRewardService: VideoRewardService,
     private val chatRewardService: ChatRewardService,
     private val checkinRewardService: CheckinRewardService,
+    private val referralService: ReferralService
 ) {
     companion object {
         const val DEFAULT_PAGE = 1
@@ -189,6 +192,27 @@ class RewardHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = nextConfig,
+                )
+            )
+    }
+
+    suspend fun getReferralConfig(request: ServerRequest): ServerResponse {
+        val res = referralService.getConfig()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res,
+                )
+            )
+    }
+
+    suspend fun upsertReferralConfig(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<UpsertReferralConfigReq>() ?: throw RequestBodyRequired
+        val res = referralService.updateConfig(payload)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res,
                 )
             )
     }

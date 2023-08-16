@@ -7,9 +7,7 @@ import com.noljanolja.server.admin.adapter.core.request.CoreUpsertVideoConfigReq
 import com.noljanolja.server.admin.adapter.core.toChatRewardConfig
 import com.noljanolja.server.admin.adapter.core.toVideoRewardConfig
 import com.noljanolja.server.admin.exception.Error
-import com.noljanolja.server.admin.model.CheckinConfig
-import com.noljanolja.server.admin.model.RoomType
-import com.noljanolja.server.admin.model.VideoRewardConfig
+import com.noljanolja.server.admin.model.*
 import com.noljanolja.server.admin.rest.request.UpsertChatConfigRequest
 import com.noljanolja.server.admin.rest.request.UpsertCheckinConfigRequest
 import com.noljanolja.server.admin.rest.request.UpsertVideoConfigRequest
@@ -94,5 +92,13 @@ class RewardService(
 
     suspend fun updateCheckinConfig(payload: UpsertCheckinConfigRequest): List<CheckinConfig> {
         return coreApi.updateCheckinConfig(payload).map { it.toCheckinConfig() }
+    }
+
+    suspend fun getReferralConfig(): ReferralConfig {
+        return coreApi.getReferralConfig().data ?: ReferralConfig()
+    }
+
+    suspend fun upsertReferralConfig(payload: UpsertReferralConfigReq): ReferralConfig {
+        return coreApi.updateReferralConfig(payload)
     }
 }

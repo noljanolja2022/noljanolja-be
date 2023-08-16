@@ -77,7 +77,7 @@ class CoreApi(
     suspend fun updateUser(
         userId: String,
         data: CoreUserUpdateReq
-    )   = webClient.patch()
+    ) = webClient.patch()
         .uri { builder ->
             builder.path("$USERS_ENDPOINT/$userId").build()
         }
@@ -331,7 +331,7 @@ class CoreApi(
 
     suspend fun getCheckinConfig(
 
-    )= webClient.get()
+    ) = webClient.get()
         .uri { builder ->
             builder.path("$REWARD_ENDPOINT/checkin/configs")
                 .build()
@@ -349,7 +349,7 @@ class CoreApi(
 
     suspend fun updateCheckinConfig(
         payload: UpsertCheckinConfigRequest
-    )= webClient.post()
+    ) = webClient.post()
         .uri { builder ->
             builder.path("$REWARD_ENDPOINT/checkin/configs")
                 .build()
@@ -620,4 +620,35 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Nothing>>()
+
+    suspend fun getReferralConfig() = webClient.get()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/referral/configs").build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<ReferralConfig>>()
+
+    suspend fun updateReferralConfig(payload: UpsertReferralConfigReq) = webClient.put()
+        .uri { builder ->
+            builder.path("$REWARD_ENDPOINT/referral/configs").build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<ReferralConfig>>().data!!
 }

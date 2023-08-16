@@ -5,6 +5,7 @@ import com.google.firebase.messaging.FirebaseMessagingException
 import com.google.firebase.messaging.Message
 import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.model.Conversation
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
@@ -12,6 +13,7 @@ class NotificationService(
     private val coreApi: CoreApi,
     private val fcm: FirebaseMessaging,
 ) {
+    private val logger = LoggerFactory.getLogger(NotificationService::class.java)
     suspend fun upsertPushToken(
         userId: String,
         deviceToken: String,
@@ -47,7 +49,9 @@ class NotificationService(
             try {
                 fcm.send(fcmMessage)
             } catch (error: FirebaseMessagingException) {
-                // TODO log
+                logger.error("Firebase Msg Error: code ${error.errorCode}, ${error.message}")
+            } catch (error: Exception) {
+                logger.error("Notification Exception: ${error.message}")
             }
         }
     }

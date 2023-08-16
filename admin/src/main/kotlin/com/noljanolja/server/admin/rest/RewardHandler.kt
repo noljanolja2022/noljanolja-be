@@ -1,6 +1,7 @@
 package com.noljanolja.server.admin.rest
 
 import com.noljanolja.server.admin.model.RoomType
+import com.noljanolja.server.admin.model.UpsertReferralConfigReq
 import com.noljanolja.server.admin.rest.request.UpsertChatConfigRequest
 import com.noljanolja.server.admin.rest.request.UpsertCheckinConfigRequest
 import com.noljanolja.server.admin.rest.request.UpsertVideoConfigRequest
@@ -132,6 +133,27 @@ class RewardHandler(
     suspend fun updateCheckinConfig(request: ServerRequest): ServerResponse {
         val payload = request.awaitBodyOrNull<UpsertCheckinConfigRequest>() ?: throw RequestBodyRequired
         val res = rewardService.updateCheckinConfig(payload)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res,
+                )
+            )
+    }
+
+    suspend fun getReferralConfig(request: ServerRequest): ServerResponse {
+        val res = rewardService.getReferralConfig()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res,
+                )
+            )
+    }
+
+    suspend fun upsertReferralConfig(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<UpsertReferralConfigReq>() ?: throw RequestBodyRequired
+        val res = rewardService.upsertReferralConfig(payload)
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
