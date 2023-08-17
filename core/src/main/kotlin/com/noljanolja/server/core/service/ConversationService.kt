@@ -356,19 +356,9 @@ class ConversationService(
     }
 
     suspend fun getAttachmentById(
-        userId: String,
-        conversationId: Long,
         attachmentId: Long,
     ): Attachment {
-        conversationParticipantRepo.findAllByParticipantIdAndConversationId(userId, conversationId).toList().ifEmpty {
-            throw Error.UserNotParticipateInConversation
-        }
-        if (attachmentRepo.countByConversationIdAndAttachmentId(
-                attachmentId = attachmentId,
-                conversationId = conversationId,
-            ) == 0
-        ) throw Error.AttachmentNotFound
-        return attachmentRepo.findById(attachmentId)!!.toAttachment()
+        return attachmentRepo.findById(attachmentId)?.toAttachment() ?: throw Error.AttachmentNotFound
     }
 
     suspend fun addConversationParticipants(

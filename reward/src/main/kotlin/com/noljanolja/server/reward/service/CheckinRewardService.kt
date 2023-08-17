@@ -47,12 +47,14 @@ class CheckinRewardService(
                 userId = userId,
             )
         val activeConfig = configs.find { it.day == checkinRecord.day } ?: throw Error.CheckinConfigNotFound
-        userCheckinRecordRepo.save(checkinRecord)
-        loyaltyService.addTransaction(
-            memberId = userId,
-            points = activeConfig.rewardPoints,
-            reason = REASON_DAILY_CHECKIN,
-        )
+        if (checkinRecord.id == 0L) {
+            userCheckinRecordRepo.save(checkinRecord)
+            loyaltyService.addTransaction(
+                memberId = userId,
+                points = activeConfig.rewardPoints,
+                reason = REASON_DAILY_CHECKIN,
+            )
+        }
         // next reward config
         return ((configs.find { it.day == activeConfig.day + 1 } ?: configs.minBy { it.day })).toCheckinRewardConfig()
     }

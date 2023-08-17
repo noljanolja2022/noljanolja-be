@@ -353,14 +353,11 @@ class CoreApi(
         .awaitBody<Response<CoreMessage>>().data!!
 
     suspend fun getAttachmentById(
-        userId: String,
-        conversationId: Long,
         attachmentId: Long,
     ) = webClient.get()
         .uri { builder ->
-            builder.path("$GET_CONVERSATION_DETAIL_ENDPOINT/attachments/{attachmentId}")
-                .queryParam("userId", userId)
-                .build(conversationId, attachmentId)
+            builder.path("${CONVERSATION_ENDPOINT}/attachments/{attachmentId}")
+                .build(attachmentId)
         }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {

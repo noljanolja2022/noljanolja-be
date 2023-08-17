@@ -206,15 +206,9 @@ class ConversationHandler(
     }
 
     suspend fun getAttachmentById(request: ServerRequest): ServerResponse {
-        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
-            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
         val attachmentId = request.pathVariable("attachmentId").toLongOrNull()
             ?: throw InvalidParamsException("attachmentId")
-        val userId = request.queryParamOrNull(QUERY_PARAM_USER_ID)?.takeIf { it.isNotBlank() }
-            ?: throw InvalidParamsException(QUERY_PARAM_USER_ID)
         val attachment = conversationService.getAttachmentById(
-            userId = userId,
-            conversationId = conversationId,
             attachmentId = attachmentId,
         )
         return ServerResponse.ok()

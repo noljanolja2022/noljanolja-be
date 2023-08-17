@@ -31,9 +31,9 @@ data class CoreMessage(
     enum class Type {
         PLAINTEXT,
         STICKER,
-        GIF,
+        VOICE,
+        FILE,
         PHOTO,
-        DOCUMENT,
         EVENT_UPDATED,
         EVENT_LEFT,
         EVENT_JOINED

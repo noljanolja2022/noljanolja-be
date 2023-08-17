@@ -22,6 +22,10 @@ class ConversationRouter(
             GET("/details", conversationHandler::getConversationDetails)
             POST("/messages", conversationHandler::createMessageInMultipleConversations)
 
+            "/attachments".nest {
+                GET("{attachmentId}", conversationHandler::getAttachmentById)
+            }
+
             "/{conversationId}".nest {
                 GET("", conversationHandler::getConversationDetail)
                 PUT("", conversationHandler::updateConversation)
@@ -38,16 +42,12 @@ class ConversationRouter(
                     }
                 }
 
-                "/attachments".nest {
-                    GET("{attachmentId}", conversationHandler::getAttachmentById)
-                }
-
                 "/participants".nest {
                     PUT("", conversationHandler::addMemberToConversation)
                     DELETE("", conversationHandler::removeMemberFromConversation)
                 }
 
-                PUT("/admin").nest {
+                "/admin".nest {
                     PUT("", conversationHandler::assignConversationAdmin)
                 }
             }

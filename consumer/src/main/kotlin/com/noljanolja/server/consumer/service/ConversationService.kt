@@ -2,24 +2,21 @@ package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.consumer.adapter.core.*
 import com.noljanolja.server.consumer.adapter.core.request.*
+import com.noljanolja.server.consumer.adapter.core.request.CreateConversationRequest
 import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
-import com.noljanolja.server.consumer.rest.request.Attachments
-import com.noljanolja.server.consumer.rest.request.ConversationUpdateType
-import com.noljanolja.server.consumer.rest.request.CoreUpdateAdminOfConversationReq
-import com.noljanolja.server.consumer.rest.request.CoreUpdateMemberOfConversationReq
+import com.noljanolja.server.consumer.model.UploadInfo
+import com.noljanolja.server.consumer.rest.request.*
 import com.noljanolja.server.consumer.rsocket.SocketRequester
 import com.noljanolja.server.consumer.rsocket.UserSendChatMessage
-import com.noljanolja.server.consumer.utils.getAttachmentPath
+import com.noljanolja.server.consumer.utils.toFileAttachment
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.reactive.asFlow
 import org.apache.tika.Tika
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
-import java.time.Instant
 import java.util.*
 import com.noljanolja.server.consumer.adapter.core.CoreConversation.Type as CoreConversationType
 
@@ -33,11 +30,25 @@ class ConversationService(
 ) {
     companion object {
         const val IMAGE_CONTENT_TYPE_PREFIX = "image/"
-        const val VIDEO_CONTENT_TYPE_PREFIX = "video/"
+        const val AUDIO_CONTENT_TYPE_PREFIX = "audio/"
         const val MAX_IMAGE_SIZE = 10L * 1024 * 1024
+        const val MAX_FILE_SIZE = 10L * 1024 * 1024
     }
 
     private fun getTopic(userId: String) = "conversations-$userId"
+
+    private suspend fun processFileAndUploadToGCS(
+        file: FileAttachment,
+    ): UploadInfo {
+        val fileName = "${UUID.randomUUID()}_${file.filename}"
+        return storageService.uploadFile(
+            path = "conversations/${fileName}",
+            contentType = Tika().detect(file.data.first().asInputStream()),
+            content = file.data.map { it.asByteBuffer() },
+            isPublicAccessible = true,
+            fileName = fileName,
+        )
+    }
 
     suspend fun createConversation(
         userId: String,
@@ -46,15 +57,7 @@ class ConversationService(
         type: Conversation.Type,
         image: FilePart?,
     ): Conversation {
-        image?.headers()?.let {
-            when {
-                it.contentLength > MAX_IMAGE_SIZE -> throw Error.FileExceedMaxSize
-                it.contentType?.toString()?.startsWith(IMAGE_CONTENT_TYPE_PREFIX) != true ->
-                    throw Error.InvalidContentType
-
-                else -> null
-            }
-        }
+        image?.let { validateAttachments(Message.Type.PHOTO, listOf(it.toFileAttachment())) }
         var conversation = coreApi.createConversation(
             CreateConversationRequest(
                 title = title,
@@ -64,14 +67,8 @@ class ConversationService(
             )
         )
         image?.let {
-            val fileName = "${Instant.now().epochSecond}_${userId}_${it.filename()}"
-            val imageDataBuffer = it.content().asFlow()
-            val uploadInfo = storageService.uploadFile(
-                path = "conversations/${conversation.id}/${fileName}",
-                contentType = Tika().detect(imageDataBuffer.first().asInputStream()),
-                content = imageDataBuffer.map { it.toByteBuffer() },
-                isPublicAccessible = true,
-                limitSize = MAX_IMAGE_SIZE
+            val uploadInfo = processFileAndUploadToGCS(
+                file = it.toFileAttachment(),
             )
             conversation = coreApi.updateConversation(
                 payload = UpdateConversationRequest(
@@ -99,30 +96,16 @@ class ConversationService(
                 || (conversation.type == Conversation.Type.GROUP && it.isEmpty())
             ) throw Error.CannotUpdateConversation
         }
-        image?.headers()?.let {
-            when {
-                it.contentLength > MAX_IMAGE_SIZE -> throw Error.FileExceedMaxSize
-                it.contentType?.toString()?.startsWith(IMAGE_CONTENT_TYPE_PREFIX) != true ->
-                    throw Error.InvalidContentType
-
-                else -> null
-            }
-        }
-        val newPath = image?.let {
-            val fileName = "${Instant.now().epochSecond}_${userId}_${it.filename()}"
-            val imageDataBuffer = it.content().asFlow()
-            storageService.uploadFile(
-                path = "conversations/${conversationId}/${fileName}",
-                contentType = Tika().detect(imageDataBuffer.first().asInputStream()),
-                content = imageDataBuffer.map { it.toByteBuffer() },
-                isPublicAccessible = true,
-                limitSize = MAX_IMAGE_SIZE
-            ).path
+        image?.let { validateAttachments(Message.Type.PHOTO, listOf(it.toFileAttachment())) }
+        val uploadInfo = image?.let {
+            processFileAndUploadToGCS(
+                file = it.toFileAttachment(),
+            )
         }
         val res = coreApi.updateConversation(
             payload = UpdateConversationRequest(
                 title = title,
-                imageUrl = newPath,
+                imageUrl = uploadInfo?.path,
                 participantIds = participantIds
             ),
             conversationId = conversationId,
@@ -160,7 +143,7 @@ class ConversationService(
         type: Message.Type,
         conversationId: Long,
         localId: String,
-        attachments: Attachments,
+        attachments: List<FileAttachment>,
         replyToMessageId: Long?,
         shareMessageId: Long?,
     ): Message = coroutineScope {
@@ -208,7 +191,7 @@ class ConversationService(
         message: String,
         type: Message.Type,
         conversationIds: List<Long>,
-        attachments: Attachments,
+        attachments: List<FileAttachment>,
         replyToMessageId: Long? = null,
         shareMessageId: Long?,
         shareVideoId: String? = null,
@@ -227,23 +210,15 @@ class ConversationService(
         )
         savedMessages.map { savedMessage ->
             async {
-                val uploadedAttachments = attachments.files.map {
+                val uploadedAttachments = attachments.map {
                     async {
-                        val fileName = "${Instant.now().epochSecond}_${userId}_${it.filename}"
-                        val contentType = Tika().detect(it.data.first().asInputStream())
-                        val uploadInfo = storageService.uploadFile(
-                            path = getAttachmentPath(savedMessage.conversationId, fileName),
-                            contentType = contentType,
-                            content = it.data.map { it.asByteBuffer() },
-                            limitSize = getLimitSize(
-                                messageType = type,
-                                contentType = contentType
-                            )
+                        val uploadInfo = processFileAndUploadToGCS(
+                            file = it,
                         )
                         Message.Attachment(
-                            name = fileName,
+                            name = uploadInfo.fileName,
                             originalName = it.filename,
-                            type = contentType,
+                            type = uploadInfo.contentType,
                             size = uploadInfo.size,
                             md5 = uploadInfo.md5,
                         )
@@ -279,7 +254,7 @@ class ConversationService(
         type: Message.Type,
         conversationIds: List<Long>,
         localId: String,
-        attachments: Attachments,
+        attachments: List<FileAttachment>,
         shareMessageId: Long?,
         shareVideoId: String?,
     ): List<Message> {
@@ -347,18 +322,6 @@ class ConversationService(
         notifyParticipants(conversation)
     }
 
-    fun getLimitSize(
-        messageType: Message.Type,
-        contentType: String?,
-    ): Long {
-        return when {
-            messageType == Message.Type.PHOTO && contentType?.startsWith(IMAGE_CONTENT_TYPE_PREFIX) ?: false
-            -> MAX_IMAGE_SIZE
-
-            else -> 0
-        }
-    }
-
     suspend fun getUserConversations(userId: String): List<Conversation> {
         return coreApi.getUserConversations(
             userId = userId,
@@ -414,13 +377,9 @@ class ConversationService(
     }
 
     suspend fun getAttachmentById(
-        userId: String,
-        conversationId: Long,
         attachmentId: Long,
     ): Message.Attachment {
         return coreApi.getAttachmentById(
-            userId = userId,
-            conversationId = conversationId,
             attachmentId = attachmentId,
         ).toConsumerAttachment()
     }
@@ -586,34 +545,35 @@ class ConversationService(
 
     private fun validateAttachments(
         messageType: Message.Type,
-        attachments: Attachments,
+        attachments: List<FileAttachment>,
     ) {
-        when {
-            !isValidContentType(
-                messageType = messageType,
-                attachments = attachments,
-            ) -> throw Error.InvalidContentType
+        if (attachments.isNotEmpty()) {
+            when (messageType) {
+                Message.Type.PHOTO -> attachments.all {
+                    when {
+                        it.contentType?.startsWith(IMAGE_CONTENT_TYPE_PREFIX) != true -> throw Error.InvalidContentType
+                        it.contentLength > MAX_IMAGE_SIZE -> throw Error.FileExceedMaxSize
+                        else -> true
+                    }
+                }
 
-            attachments.files.any {
-                it.contentLength > getLimitSize(
-                    messageType = messageType,
-                    contentType = it.contentType
-                )
+                Message.Type.VOICE -> attachments.all {
+                    when {
+                        it.contentType?.startsWith(AUDIO_CONTENT_TYPE_PREFIX) != true -> throw Error.InvalidContentType
+                        it.contentLength > MAX_FILE_SIZE -> throw Error.FileExceedMaxSize
+                        else -> true
+                    }
+                }
+
+                Message.Type.FILE -> attachments.all {
+                    when {
+                        it.contentLength > MAX_FILE_SIZE -> throw Error.FileExceedMaxSize
+                        else -> true
+                    }
+                }
+
+                else -> throw Error.InvalidContentType
             }
-            -> throw Error.FileExceedMaxSize
-        }
-    }
-
-    private fun isValidContentType(
-        messageType: Message.Type,
-        attachments: Attachments,
-    ): Boolean {
-        return when (messageType) {
-            Message.Type.PHOTO -> attachments.files.all {
-                (it.contentType?.startsWith(IMAGE_CONTENT_TYPE_PREFIX) ?: false)
-            }
-
-            else -> true
         }
     }
 }

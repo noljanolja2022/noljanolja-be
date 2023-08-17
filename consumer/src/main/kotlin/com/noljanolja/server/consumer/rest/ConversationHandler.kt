@@ -7,17 +7,14 @@ import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
-import com.noljanolja.server.consumer.rest.request.Attachments
-import com.noljanolja.server.consumer.rest.request.FileAttachment
 import com.noljanolja.server.consumer.rest.request.UpdateAdminOfConversationReq
 import com.noljanolja.server.consumer.rest.request.UpdateMemberOfConversationRequest
 import com.noljanolja.server.consumer.service.ConversationService
 import com.noljanolja.server.consumer.service.GoogleStorageService
-import com.noljanolja.server.consumer.utils.getAttachmentPath
+import com.noljanolja.server.consumer.utils.toFileAttachment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
@@ -168,16 +165,7 @@ class ConversationHandler(
             type = type,
             conversationId = conversationId,
             localId = localId,
-            attachments = Attachments(
-                files = attachments.map {
-                    FileAttachment(
-                        filename = it.filename(),
-                        contentType = it.headers().contentType?.toString(),
-                        data = it.content().asFlow(),
-                        contentLength = it.headers().contentLength
-                    )
-                }
-            ),
+            attachments = attachments.map { it.toFileAttachment() },
             shareMessageId = shareMessageId,
             replyToMessageId = replyToMessageId,
         )
@@ -219,16 +207,7 @@ class ConversationHandler(
             type = type,
             conversationIds = conversationIds.toList(),
             localId = localId,
-            attachments = Attachments(
-                files = attachments.map {
-                    FileAttachment(
-                        filename = it.filename(),
-                        contentType = it.headers().contentType?.toString(),
-                        data = it.content().asFlow(),
-                        contentLength = it.headers().contentLength
-                    )
-                }
-            ),
+            attachments = attachments.map { it.toFileAttachment() },
             shareMessageId = shareMessageId,
             shareVideoId = shareVideoId,
         )
@@ -261,21 +240,13 @@ class ConversationHandler(
     }
 
     suspend fun downloadConversationAttachment(request: ServerRequest): ServerResponse {
-        val conversationId = request.pathVariable(QUERY_PARAM_CONVERSATION_ID).toLongOrNull()
-            ?: throw InvalidParamsException(QUERY_PARAM_CONVERSATION_ID)
         val attachmentId = request.pathVariable("attachmentId").toLongOrNull()
             ?: throw InvalidParamsException("attachmentId")
-        val userId = AuthUserHolder.awaitUser().id
         val attachment = conversationService.getAttachmentById(
-            userId = userId,
-            conversationId = conversationId,
             attachmentId = attachmentId
         )
         val resourceInfo = googleStorageService.getResource(
-            getAttachmentPath(
-                conversationId = conversationId,
-                attachmentName = attachment.name,
-            )
+            "conversations/${attachment.name}"
         )
         return ServerResponse.ok()
             .header(HttpHeaders.CONTENT_TYPE, resourceInfo.contentType)

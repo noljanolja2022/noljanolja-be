@@ -28,9 +28,7 @@ CREATE TABLE IF NOT EXISTS `users`
     `referral_code` VARCHAR(8)                       NOT NULL,
     `referred_by`   VARCHAR(255)                     NOT NULL,
     `created_at`    DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`    DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (referred_by) REFERENCES users (id) ON DELETE CASCADE,
+    `updated_at`    DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP
 
     FULLTEXT idx_referral_code (`referral_code`)
 ) ENGINE = InnoDB;
@@ -142,7 +140,7 @@ CREATE TABLE IF NOT EXISTS `messages`
     `message`               TEXT                    NOT NULL,
     `sender_id`             VARCHAR(36)             NOT NULL,
     `conversation_id`       BIGINT                  NOT NULL,
-    `type`                  ENUM('PLAINTEXT', 'STICKER', 'GIF', 'PHOTO', 'DOCUMENT', 'EVENT_UPDATED', 'EVENT_LEFT', 'EVENT_JOINED') NOT NULL,
+    `type`                  ENUM('PLAINTEXT', 'STICKER', 'VOICE', 'PHOTO', 'FILE', 'EVENT_UPDATED', 'EVENT_LEFT', 'EVENT_JOINED') NOT NULL,
     `created_at`            DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`            DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `is_deleted`            TINYINT                 NOT NULL,

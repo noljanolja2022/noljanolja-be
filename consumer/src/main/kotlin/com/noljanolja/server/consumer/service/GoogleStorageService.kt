@@ -17,24 +17,23 @@ class GoogleStorageService(
     @Qualifier("cloudStorage") private val storage: Storage,
 ) {
     companion object {
-        private const val FILE_SIZE_LIMIT: Long = 1024 * 1024
+        private const val FILE_SIZE_LIMIT: Long = 10 * 1024 * 1024
     }
 
     @Value("\${gcloud.storage.bucket}")
     private val bucketName: String = "noljanolja2023.appspot.com"
     suspend fun uploadFile(
         path: String,
-        contentType: String?,
+        contentType: String,
         content: Flow<ByteBuffer>,
         isPublicAccessible: Boolean = false,
         limitSize: Long = FILE_SIZE_LIMIT,
+        fileName: String = "",
     ): UploadInfo {
         var currentUploadSize = 0L
         val blobId = BlobId.of(bucketName, path)
         val blobInfo = BlobInfo.newBuilder(blobId).apply {
-            contentType?.let {
-                setContentType(it)
-            }
+            setContentType(contentType)
         }.build()
         try {
             storage.writer(blobInfo).use { writer ->
@@ -54,7 +53,9 @@ class GoogleStorageService(
             return UploadInfo(
                 path = "${uploadedFile.storage.options.host}/${uploadedFile.blobId.bucket}/${uploadedFile.blobId.name}",
                 size = uploadedFile.size,
-                md5 = uploadedFile.md5ToHexString
+                md5 = uploadedFile.md5ToHexString,
+                fileName = fileName,
+                contentType = contentType,
             )
         } catch (ex: Throwable) {
             storage.delete(blobId)

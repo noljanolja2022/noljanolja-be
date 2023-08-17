@@ -1,9 +1,15 @@
 package com.noljanolja.server.consumer.utils
 
-fun getAttachmentPath(
-    conversationId: Long,
-    attachmentName: String,
-) = "conversations/${conversationId}/attachments/$attachmentName"
+import com.noljanolja.server.consumer.rest.request.FileAttachment
+import kotlinx.coroutines.reactive.asFlow
+import org.springframework.http.codec.multipart.FilePart
+
+fun FilePart.toFileAttachment() = FileAttachment(
+    filename = filename(),
+    contentType = headers().contentType?.toString(),
+    data = content().asFlow(),
+    contentLength = headers().contentLength
+)
 
 fun getStickerPath(
     packId: Long, stickerName: String

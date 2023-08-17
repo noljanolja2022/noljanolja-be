@@ -1716,7 +1716,7 @@ components:
 
     MessageType:
       type: string
-      enum: [ PLAINTEXT, STICKER, GIF, PHOTO, DOCUMENT, EVENT_UPDATED, EVENT_LEFT, EVENT_JOIN ]
+      enum: [ PLAINTEXT, STICKER, VOICE, PHOTO, FILE, EVENT_UPDATED, EVENT_LEFT, EVENT_JOIN ]
       description: |
         EVENT_ type are special messageType, that will be returned to client via socket
         Everything else are for client to send.
