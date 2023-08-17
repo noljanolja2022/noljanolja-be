@@ -63,7 +63,7 @@ class ConversationHandler(
             title = title,
             participantIds = participantIds,
             type = type,
-            image = image,
+            image = image?.toFileAttachment(),
         )
         return ServerResponse
             .ok()
@@ -89,7 +89,7 @@ class ConversationHandler(
             userId = AuthUserHolder.awaitUser().id,
             title = title,
             participantIds = participantIds,
-            image = image,
+            image = image?.toFileAttachment(),
             conversationId = conversationId,
         )
         return ServerResponse

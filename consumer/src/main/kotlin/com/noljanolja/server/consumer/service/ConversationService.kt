@@ -39,13 +39,14 @@ class ConversationService(
 
     private suspend fun processFileAndUploadToGCS(
         file: FileAttachment,
+        isPublicAccessible: Boolean = false,
     ): UploadInfo {
         val fileName = "${UUID.randomUUID()}_${file.filename}"
         return storageService.uploadFile(
             path = "conversations/${fileName}",
             contentType = Tika().detect(file.data.first().asInputStream()),
             content = file.data.map { it.asByteBuffer() },
-            isPublicAccessible = true,
+            isPublicAccessible = isPublicAccessible,
             fileName = fileName,
         )
     }
@@ -55,9 +56,9 @@ class ConversationService(
         title: String,
         participantIds: Set<String>,
         type: Conversation.Type,
-        image: FilePart?,
+        image: FileAttachment?,
     ): Conversation {
-        image?.let { validateAttachments(Message.Type.PHOTO, listOf(it.toFileAttachment())) }
+        image?.let { validateAttachments(Message.Type.PHOTO, listOf(it)) }
         var conversation = coreApi.createConversation(
             CreateConversationRequest(
                 title = title,
@@ -68,7 +69,8 @@ class ConversationService(
         )
         image?.let {
             val uploadInfo = processFileAndUploadToGCS(
-                file = it.toFileAttachment(),
+                file = it,
+                isPublicAccessible = true,
             )
             conversation = coreApi.updateConversation(
                 payload = UpdateConversationRequest(
@@ -84,7 +86,7 @@ class ConversationService(
         userId: String,
         conversationId: Long,
         title: String?,
-        image: FilePart?,
+        image: FileAttachment?,
         participantIds: Set<String>?,
     ): Conversation {
         val conversation = coreApi.getConversationDetail(
@@ -96,10 +98,11 @@ class ConversationService(
                 || (conversation.type == Conversation.Type.GROUP && it.isEmpty())
             ) throw Error.CannotUpdateConversation
         }
-        image?.let { validateAttachments(Message.Type.PHOTO, listOf(it.toFileAttachment())) }
         val uploadInfo = image?.let {
+            validateAttachments(Message.Type.PHOTO, listOf(it))
             processFileAndUploadToGCS(
-                file = it.toFileAttachment(),
+                file = it,
+                isPublicAccessible = true,
             )
         }
         val res = coreApi.updateConversation(
