@@ -595,7 +595,7 @@ class CoreApi(
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
+                CoreServiceError.GeneralApiError(response.code, response.message)
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {

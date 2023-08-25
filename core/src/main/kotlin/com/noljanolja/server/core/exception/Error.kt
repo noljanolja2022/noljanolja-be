@@ -32,6 +32,7 @@ sealed class Error(
         const val BLOCKED_FROM_CONVERSATION = 400_019
         const val INVALID_REFERRAL_CODE = 400_020
         const val REFERRAL_EXISTED = 400_021
+        const val BANNER_EXCEED_AMOUNT = 400_022
     }
 
     object ConversationNotFound : Error(
@@ -127,6 +128,12 @@ sealed class Error(
     object BannerNotFound : Error(
         BANNER_NOT_FOUND,
         "Banner not found",
+        null,
+    )
+
+    object BannerExceed : Error(
+        BANNER_EXCEED_AMOUNT,
+        "Banner amount exceeded quota",
         null,
     )
 

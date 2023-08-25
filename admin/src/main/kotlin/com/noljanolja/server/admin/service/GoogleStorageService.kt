@@ -27,7 +27,7 @@ class GoogleStorageService(
         internal const val STICKER_BUCKET = "stickers"
         internal const val BRAND_BUCKET = "brands"
         internal const val GIFT_BUCKET = "gifts"
-        internal const val USER_AVATAR_BUCKET = "users"
+        internal const val BANNER_BUCKET = "banners"
     }
 
     @Value("\${gcloud.storage.bucket}")

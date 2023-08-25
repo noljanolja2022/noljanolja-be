@@ -16,6 +16,12 @@ class BannerService(
 ) {
     suspend fun upsertBanner(payload: UpsertBannerRequest): Banner {
         val banner = payload.id?.let { bannerRepo.findById(it) ?: throw Error.BannerNotFound } ?: BannerModel()
+        if (payload.id == null) {
+            val total = bannerRepo.count()
+            if (total >= 3) {
+                throw Error.BannerExceed
+            }
+        }
         val res = bannerRepo.save(
             banner.apply {
                 title = payload.title

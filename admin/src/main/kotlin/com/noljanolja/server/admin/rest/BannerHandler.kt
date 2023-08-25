@@ -65,7 +65,7 @@ class BannerHandler(
         val thumbnailFile = reqData.getFieldPartFile("image")
         val payload = reqData.toObject<UpsertBannerRequest>(objectMapper)
         if (thumbnailFile != null) {
-            val newImage = googleStorageService.uploadFilePart(thumbnailFile, GoogleStorageService.GIFT_BUCKET)
+            val newImage = googleStorageService.uploadFilePart(thumbnailFile, GoogleStorageService.BANNER_BUCKET)
             payload.image = newImage.path
         }
         val banner = bannerService.upsertBanner(

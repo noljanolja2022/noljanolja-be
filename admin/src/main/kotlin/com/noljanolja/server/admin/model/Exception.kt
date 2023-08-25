@@ -13,6 +13,11 @@ sealed class CoreServiceError(
         const val INTERNAL_ERROR = 500_002
     }
 
+    class GeneralApiError(
+        code: Int,
+        message: String,
+    ) : CoreServiceError(code, message, null)
+
     class CoreServiceBadRequest(message: String? = null) : CoreServiceError(
         BAD_REQUEST,
         "[Core] " + (message ?: "Bad request"),
