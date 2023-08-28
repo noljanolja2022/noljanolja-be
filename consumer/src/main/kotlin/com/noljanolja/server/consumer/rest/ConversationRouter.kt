@@ -22,9 +22,12 @@ class ConversationRouter(
                 POST("/messages", conversationHandler::shareMessage)
             }
             GET("/react-icons", conversationHandler::getAllReactionIcons)
+            GET("/attachments/{attachmentName}", conversationHandler::downloadConversationAttachment)
 
             "/{conversationId}".nest {
                 GET("", conversationHandler::getConversationDetails)
+                GET("/attachments", conversationHandler::getConversationAttachments)
+
                 (accept(MediaType.MULTIPART_FORM_DATA)).nest {
                     PUT("", conversationHandler::updateConversation)
                 }
@@ -43,7 +46,7 @@ class ConversationRouter(
                 }
 
                 "/attachments".nest {
-                    GET("{attachmentId}", conversationHandler::downloadConversationAttachment)
+                    GET("{attachmentId}", conversationHandler::downloadConversationAttachmentByID)
                 }
 
                 "/participants".nest {

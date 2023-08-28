@@ -11,18 +11,30 @@ interface AttachmentRepo : CoroutineCrudRepository<AttachmentModel, Long> {
         messageIds: List<Long>,
     ): Flow<AttachmentModel>
 
-    suspend fun findByName(name: String): AttachmentModel?
-
     @Query(
         """
-            SELECT COUNT(*) FROM 
-            attachments INNER JOIN messages ON attachments.message_id = messages.id
-            AND messages.conversation_id = :conversationId
-            AND attachments.id = :attachmentId
-        """
+        (SELECT attachments.*, messages.id as message_id_in_conversation FROM attachments INNER JOIN messages ON attachments.message_id = messages.id WHERE messages.conversation_id = :conversationId AND attachment_type IN (:attachmentTypes)
+        UNION
+        SELECT attachments.*, messages.id as message_id_in_conversation FROM attachments INNER JOIN messages ON attachments.message_id = messages.share_message_id WHERE messages.conversation_id = :conversationId AND attachment_type IN (:attachmentTypes))
+        ORDER BY message_id_in_conversation DESC
+        LIMIT :limit OFFSET :offset
+    """
     )
-    suspend fun countByConversationIdAndAttachmentId(
+    fun findAllByConversationIdAndAttachmentTypeIn(
         conversationId: Long,
-        attachmentId: Long,
-    ): Int
+        attachmentTypes: List<AttachmentType>,
+        limit: Int,
+        offset: Int,
+    ): Flow<AttachmentModel>
+
+    @Query("""
+        SELECT COUNT(*) FROM
+        (SELECT attachments.*, messages.id as message_id_in_conversation FROM attachments INNER JOIN messages ON attachments.message_id = messages.id WHERE messages.conversation_id = :conversationId AND attachment_type IN (:attachmentTypes)
+        UNION
+        SELECT attachments.*, messages.id as message_id_in_conversation FROM attachments INNER JOIN messages ON attachments.message_id = messages.share_message_id WHERE messages.conversation_id = :conversationId AND attachment_type IN (:attachmentTypes)) x
+    """)
+    suspend fun countAllByConversationIdAndAttachmentTypeIn(
+        conversationId: Long,
+        attachmentTypes: List<AttachmentType>,
+    ): Long
 }

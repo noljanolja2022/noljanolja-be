@@ -4,6 +4,7 @@ import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.exception.CoreServiceError
+import com.noljanolja.server.consumer.model.Message
 import com.noljanolja.server.consumer.model.SimpleUser
 import com.noljanolja.server.consumer.model.StickerPack
 import com.noljanolja.server.consumer.rest.request.AddFriendRequest
@@ -1045,4 +1046,30 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Long>>().data!!
+
+    suspend fun getConversationAttachments(
+        conversationId: Long,
+        attachmentTypes: List<Message.AttachmentType>,
+        page: Int,
+        pageSize: Int,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("${CONVERSATION_ENDPOINT}/{conversationId}/attachments")
+                .queryParam("attachmentTypes", attachmentTypes.joinToString(","))
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .build(conversationId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreAttachment>>>().let {
+            Pair(it.data!!, it.pagination!!)
+        }
 }

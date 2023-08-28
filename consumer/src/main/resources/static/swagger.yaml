@@ -468,6 +468,43 @@ paths:
                     properties:
                       data:
                         $ref: "#/components/schemas/Conversation"
+  /api/v1/conversations/{conversationId}/attachments:
+    get:
+      tags: [ Conversation ]
+      summary: Get conversation attachments
+      description: Get conversation attachments
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: conversationId
+          schema:
+            type: number
+          description: the id of the conversation
+        - in: query
+          name: page
+          schema:
+            type: number
+            format: int32
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+            format: int32
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponseWithPagination"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Attachment"
   /api/v1/conversations/{conversationId}:
     get:
       tags: [ Conversation ]
@@ -1741,6 +1778,11 @@ components:
           description: Type of the file
           example: image/jpeg
         md5:
+          type: string
+        attachmentType:
+          type: string
+          enum: [ 'PHOTO','VIDEO','INTERNAL_VIDEO','LINK','FILE' ]
+        previewImage:
           type: string
     StickerPack:
       type: object

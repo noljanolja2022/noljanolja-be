@@ -10,6 +10,8 @@ data class CoreAttachment(
     val size: Long,
     val type: String,
     val md5: String,
+    val previewImage: String,
+    val attachmentType: Message.AttachmentType,
 )
 
 fun CoreAttachment.toConsumerAttachment() = Message.Attachment(
@@ -20,4 +22,6 @@ fun CoreAttachment.toConsumerAttachment() = Message.Attachment(
     size = size,
     type = type,
     md5 = md5,
+    previewImage = previewImage,
+    attachmentType = attachmentType,
 )

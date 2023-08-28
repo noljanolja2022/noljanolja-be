@@ -242,15 +242,17 @@ DROP TABLE IF EXISTS `attachments`;
 
 CREATE TABLE IF NOT EXISTS `attachments`
 (
-    `id`            BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `message_id`    BIGINT       NOT NULL,
-    `name`          VARCHAR(255) NOT NULL,
-    `original_name` VARCHAR(255) NOT NULL,
-    `size`          BIGINT       NOT NULL,
-    `md5`           VARCHAR(255) NOT NULL,
-    `type`          VARCHAR(255) NOT NULL,
-    `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `id`                BIGINT       NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `message_id`        BIGINT       NOT NULL,
+    `name`              VARCHAR(255) NOT NULL,
+    `original_name`     VARCHAR(255) NOT NULL,
+    `size`              BIGINT       NOT NULL,
+    `md5`               VARCHAR(255) NOT NULL,
+    `type`              VARCHAR(255) NOT NULL,
+    `attachment_type`   ENUM('PHOTO','VIDEO','INTERNAL_VIDEO','LINK','FILE') NOT NULL DEFAULT('PHOTO'),
+    `preview_image`     VARCHAR(255) NOT NULL,
+    `created_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;

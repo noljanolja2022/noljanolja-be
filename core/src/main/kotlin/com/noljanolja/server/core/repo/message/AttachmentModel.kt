@@ -20,6 +20,12 @@ data class AttachmentModel(
     @Column("type")
     val type: String,
 
+    @Column("attachment_type")
+    val attachmentType: AttachmentType,
+
+    @Column("preview_image")
+    val previewImage: String,
+
     @Column("original_name")
     val originalName: String,
 
@@ -32,6 +38,9 @@ data class AttachmentModel(
     @Column("md5")
     val md5: String,
 
+//    @Column("duration_ms")
+//    val durationMs: Long,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -41,6 +50,14 @@ data class AttachmentModel(
     val updatedAt: Instant = Instant.now(),
 )
 
+enum class AttachmentType {
+    LINK,
+    PHOTO,
+    VIDEO,
+    INTERNAL_VIDEO,
+    FILE,
+}
+
 fun AttachmentModel.toAttachment() = Attachment(
     id = id,
     name = name,
@@ -49,4 +66,7 @@ fun AttachmentModel.toAttachment() = Attachment(
     type = type,
     md5 = md5,
     messageId = messageId,
+    attachmentType = attachmentType,
+    previewImage = previewImage,
+//    durationMs = durationMs,
 )

@@ -36,7 +36,18 @@ data class Message(
         val size: Long,
         val type: String,
         val md5: String,
+        val previewImage: String,
+        val attachmentType: AttachmentType,
+        val durationMs: Long = 0,
     )
+
+    enum class AttachmentType {
+        PHOTO,
+        LINK,
+        VIDEO,
+        INTERNAL_VIDEO,
+        FILE,
+    }
 
     enum class Type {
         PLAINTEXT,

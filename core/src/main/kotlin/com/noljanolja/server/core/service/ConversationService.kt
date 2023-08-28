@@ -348,6 +348,9 @@ class ConversationService(
                 type = it.type,
                 md5 = it.md5,
                 size = it.size,
+                attachmentType = it.attachmentType,
+                previewImage = it.previewImage,
+//                durationMs = it.durationMs,
             )
         }
         attachmentRepo.saveAll(createdAttachments).toList()
@@ -575,5 +578,24 @@ class ConversationService(
                 }
             )
         }
+    }
+
+    suspend fun getConversationAttachments(
+        conversationId: Long,
+        page: Int,
+        pageSize: Int,
+        attachmentTypes: List<AttachmentType>,
+    ): Pair<List<Attachment>, Long> {
+        val attachments = attachmentRepo.findAllByConversationIdAndAttachmentTypeIn(
+            conversationId = conversationId,
+            attachmentTypes = attachmentTypes,
+            offset = (page - 1) * pageSize,
+            limit = pageSize,
+        ).toList()
+        val total = attachmentRepo.countAllByConversationIdAndAttachmentTypeIn(
+            conversationId = conversationId,
+            attachmentTypes = attachmentTypes,
+        )
+        return Pair(attachments.map { it.toAttachment() }, total)
     }
 }

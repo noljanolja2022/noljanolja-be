@@ -3,6 +3,7 @@ package com.noljanolja.server.consumer.service
 import com.noljanolja.server.consumer.adapter.core.*
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.adapter.core.request.CreateConversationRequest
+import com.noljanolja.server.consumer.config.AppConfig
 import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
@@ -10,12 +11,11 @@ import com.noljanolja.server.consumer.model.UploadInfo
 import com.noljanolja.server.consumer.rest.request.*
 import com.noljanolja.server.consumer.rsocket.SocketRequester
 import com.noljanolja.server.consumer.rsocket.UserSendChatMessage
-import com.noljanolja.server.consumer.utils.toFileAttachment
+import com.noljanolja.server.consumer.utils.extractLinks
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.apache.tika.Tika
-import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
 import java.util.*
 import com.noljanolja.server.consumer.adapter.core.CoreConversation.Type as CoreConversationType
@@ -27,10 +27,12 @@ class ConversationService(
     private val notificationService: NotificationService,
     private val storageService: GoogleStorageService,
     private val socketRequester: SocketRequester,
+    private val appConfig: AppConfig,
 ) {
     companion object {
         const val IMAGE_CONTENT_TYPE_PREFIX = "image/"
         const val AUDIO_CONTENT_TYPE_PREFIX = "audio/"
+        const val VIDEO_CONTENT_TYPE_PREFIX = "video/"
         const val MAX_IMAGE_SIZE = 10L * 1024 * 1024
         const val MAX_FILE_SIZE = 10L * 1024 * 1024
     }
@@ -211,22 +213,59 @@ class ConversationService(
                 conversationIds = conversationIds,
             ),
         )
+        val uploadedAttachments = attachments.map {
+            async {
+                val uploadInfo = processFileAndUploadToGCS(it)
+                Message.Attachment(
+                    name = uploadInfo.fileName,
+                    originalName = it.filename,
+                    type = uploadInfo.contentType,
+                    size = uploadInfo.size,
+                    md5 = uploadInfo.md5,
+                    previewImage = when {
+                        uploadInfo.contentType.startsWith(IMAGE_CONTENT_TYPE_PREFIX) -> "${appConfig.baseUrl}/api/v1/conversations/attachments/${uploadInfo.fileName}"
+                        uploadInfo.contentType.startsWith(VIDEO_CONTENT_TYPE_PREFIX) -> ""
+                        else -> ""
+                    },
+                    attachmentType = when {
+                        uploadInfo.contentType.startsWith(IMAGE_CONTENT_TYPE_PREFIX) -> Message.AttachmentType.PHOTO
+                        uploadInfo.contentType.startsWith(VIDEO_CONTENT_TYPE_PREFIX) -> Message.AttachmentType.VIDEO
+                        else -> Message.AttachmentType.FILE
+                    },
+                    durationMs = if (uploadInfo.contentType.startsWith(VIDEO_CONTENT_TYPE_PREFIX)) 0 else 0
+                )
+            }
+        }.awaitAll().toMutableList()
+        shareVideoId?.let {
+            val video = coreApi.getVideoDetails(it).toConsumerVideo()
+            uploadedAttachments.add(
+                Message.Attachment(
+                    name = video.id,
+                    originalName = video.title,
+                    type = "",
+                    size = 0,
+                    md5 = "",
+                    previewImage = video.thumbnail,
+                    attachmentType = Message.AttachmentType.INTERNAL_VIDEO,
+                    durationMs = video.durationMs,
+                )
+            )
+        }
+        message.extractLinks().forEach {
+            uploadedAttachments.add(
+                Message.Attachment(
+                    name = it,
+                    originalName = it,
+                    type = "",
+                    size = 0,
+                    md5 = "",
+                    previewImage = "",
+                    attachmentType = Message.AttachmentType.LINK,
+                )
+            )
+        }
         savedMessages.map { savedMessage ->
             async {
-                val uploadedAttachments = attachments.map {
-                    async {
-                        val uploadInfo = processFileAndUploadToGCS(
-                            file = it,
-                        )
-                        Message.Attachment(
-                            name = uploadInfo.fileName,
-                            originalName = it.filename,
-                            type = uploadInfo.contentType,
-                            size = uploadInfo.size,
-                            md5 = uploadInfo.md5,
-                        )
-                    }
-                }.awaitAll()
                 if (uploadedAttachments.isNotEmpty()) {
                     coreApi.saveAttachments(
                         payload = SaveAttachmentsRequest(
@@ -237,6 +276,9 @@ class ConversationService(
                                     originalName = it.originalName,
                                     size = it.size,
                                     md5 = it.md5,
+                                    previewImage = it.previewImage,
+                                    attachmentType = it.attachmentType,
+                                    durationMs = it.durationMs,
                                 )
                             },
                         ),
@@ -511,6 +553,20 @@ class ConversationService(
                 notifyParticipants(conversation)
             }
         }
+    }
+
+    suspend fun getConversationAttachments(
+        conversationId: Long,
+        attachmentTypes: List<Message.AttachmentType>,
+        page: Int,
+        pageSize: Int,
+    ) = coreApi.getConversationAttachments(
+        conversationId = conversationId,
+        attachmentTypes = attachmentTypes,
+        page = page,
+        pageSize = pageSize,
+    ).let {
+        Pair(it.first.map { it.toConsumerAttachment() }, it.second.total)
     }
 
     private suspend fun notifyParticipants(

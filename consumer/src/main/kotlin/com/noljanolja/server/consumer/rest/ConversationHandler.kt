@@ -2,6 +2,7 @@ package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
+import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.filter.AuthUserHolder
@@ -239,7 +240,7 @@ class ConversationHandler(
             )
     }
 
-    suspend fun downloadConversationAttachment(request: ServerRequest): ServerResponse {
+    suspend fun downloadConversationAttachmentByID(request: ServerRequest): ServerResponse {
         val attachmentId = request.pathVariable("attachmentId").toLongOrNull()
             ?: throw InvalidParamsException("attachmentId")
         val attachment = conversationService.getAttachmentById(
@@ -252,6 +253,21 @@ class ConversationHandler(
             .header(HttpHeaders.CONTENT_TYPE, resourceInfo.contentType)
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=${attachment.name}")
             .header(DOWNLOAD_FILE_HEADER, attachment.name)
+            .bodyValueAndAwait(
+                InputStreamResource(resourceInfo.data)
+            )
+    }
+
+    suspend fun downloadConversationAttachment(request: ServerRequest): ServerResponse {
+        val attachmentName = request.pathVariable("attachmentName")
+            .ifBlank { throw InvalidParamsException("attachmentName") }
+        val resourceInfo = googleStorageService.getResource(
+            "conversations/${attachmentName}"
+        )
+        return ServerResponse.ok()
+            .header(HttpHeaders.CONTENT_TYPE, resourceInfo.contentType)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=${attachmentName}")
+            .header(DOWNLOAD_FILE_HEADER, attachmentName)
             .bodyValueAndAwait(
                 InputStreamResource(resourceInfo.data)
             )
@@ -349,6 +365,38 @@ class ConversationHandler(
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response<Nothing>(),
+            )
+    }
+
+    suspend fun getConversationAttachments(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable("conversationId").toLongOrNull()
+            ?: throw InvalidParamsException("conversationId")
+        val attachmentTypes = request.queryParamOrNull("attachmentTypes").orEmpty().split(",")
+            .mapNotNull {
+                try {
+                    Message.AttachmentType.valueOf(it.uppercase())
+                } catch (err: Throwable) {
+                    null
+                }
+            }
+        val page = request.queryParamOrNull("page")?.toIntOrNull() ?: 1
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: 20
+        val (attachments, total) = conversationService.getConversationAttachments(
+            conversationId = conversationId,
+            attachmentTypes = attachmentTypes,
+            page = page,
+            pageSize = pageSize,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = attachments,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = total,
+                    )
+                )
             )
     }
 }

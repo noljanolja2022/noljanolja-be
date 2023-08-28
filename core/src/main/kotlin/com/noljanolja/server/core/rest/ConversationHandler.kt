@@ -2,9 +2,11 @@ package com.noljanolja.server.core.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
+import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.Conversation
+import com.noljanolja.server.core.repo.message.AttachmentType
 import com.noljanolja.server.core.rest.request.*
 import com.noljanolja.server.core.service.ConversationService
 import org.springframework.stereotype.Component
@@ -311,8 +313,8 @@ class ConversationHandler(
             ?: throw InvalidParamsException("messageId")
         val userId = request.queryParamOrNull("userId")?.takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("userId")
-        val conversationId =
-            request.pathVariable("conversationId").toLongOrNull() ?: throw InvalidParamsException("conversationId")
+        val conversationId = request.pathVariable("conversationId").toLongOrNull()
+            ?: throw InvalidParamsException("conversationId")
         val removeForSelfOnly = request.queryParamOrNull("removeForSelfOnly")?.toBooleanStrictOrNull()
             ?: throw InvalidParamsException("removeForSelfOnly")
         conversationService.removeMessage(
@@ -324,6 +326,38 @@ class ConversationHandler(
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response<Nothing>(),
+            )
+    }
+
+    suspend fun getConversationAttachments(request: ServerRequest): ServerResponse {
+        val conversationId = request.pathVariable("conversationId").toLongOrNull()
+            ?: throw InvalidParamsException("conversationId")
+        val attachmentTypes = request.queryParamOrNull("attachmentTypes").orEmpty().split(",")
+            .mapNotNull {
+                try {
+                    AttachmentType.valueOf(it.uppercase())
+                } catch (err: Throwable) {
+                    null
+                }
+            }.ifEmpty { AttachmentType.values().toList() }
+        val page = request.queryParamOrNull("page")?.toIntOrNull() ?: 1
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: 20
+        val (attachments, total) = conversationService.getConversationAttachments(
+            conversationId = conversationId,
+            attachmentTypes = attachmentTypes,
+            page = page,
+            pageSize = pageSize,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = attachments,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = total,
+                    )
+                )
             )
     }
 }
