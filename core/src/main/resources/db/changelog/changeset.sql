@@ -251,6 +251,7 @@ CREATE TABLE IF NOT EXISTS `attachments`
     `type`              VARCHAR(255) NOT NULL,
     `attachment_type`   ENUM('PHOTO','VIDEO','INTERNAL_VIDEO','LINK','FILE') NOT NULL DEFAULT('PHOTO'),
     `preview_image`     VARCHAR(255) NOT NULL,
+    `duration_ms`       BIGINT       NOT NULL,
     `created_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

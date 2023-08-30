@@ -215,7 +215,7 @@ class ConversationService(
         )
         val uploadedAttachments = attachments.map {
             async {
-                val uploadInfo = processFileAndUploadToGCS(it)
+                val uploadInfo = processFileAndUploadToGCS(it, true)
                 Message.Attachment(
                     name = uploadInfo.fileName,
                     originalName = it.filename,
@@ -223,7 +223,7 @@ class ConversationService(
                     size = uploadInfo.size,
                     md5 = uploadInfo.md5,
                     previewImage = when {
-                        uploadInfo.contentType.startsWith(IMAGE_CONTENT_TYPE_PREFIX) -> "${appConfig.baseUrl}/api/v1/conversations/attachments/${uploadInfo.fileName}"
+                        uploadInfo.contentType.startsWith(IMAGE_CONTENT_TYPE_PREFIX) -> uploadInfo.path
                         uploadInfo.contentType.startsWith(VIDEO_CONTENT_TYPE_PREFIX) -> ""
                         else -> ""
                     },

@@ -3,6 +3,7 @@ package com.noljanolja.server.consumer.service
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingException
 import com.google.firebase.messaging.Message
+import com.google.firebase.messaging.Notification
 import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.model.Conversation
 import org.slf4j.LoggerFactory
@@ -43,13 +44,19 @@ class NotificationService(
                 "messageTime" to message.createdAt.epochSecond.toString()
             )
             val fcmMessage = Message.builder()
-                .putAllData(pushData)
+                .setNotification(
+                    Notification.builder()
+                        .setTitle("New message from ${message.sender.name}")
+                        .setBody(message.message)
+                        .build()
+                )
                 .setToken(pushToken)
                 .build()
             try {
                 fcm.send(fcmMessage)
             } catch (error: FirebaseMessagingException) {
-                logger.error("Firebase Msg Error: code ${error.errorCode}, ${error.message}")
+
+                logger.error("Failed to push noti to user $userId with token $pushToken. Firebase Msg Error: ${error.message}")
             } catch (error: Exception) {
                 logger.error("Notification Exception: ${error.message}")
             }

@@ -491,6 +491,12 @@ paths:
           schema:
             type: number
             format: int32
+        - in: query
+          name: attachmentTypes
+          schema:
+            type: string
+            enum: [ 'PHOTO','VIDEO','INTERNAL_VIDEO','LINK','FILE' ]
+            example: PHOTO,LINK,FILE
       responses:
         "200":
           description: On success
@@ -1784,6 +1790,9 @@ components:
           enum: [ 'PHOTO','VIDEO','INTERNAL_VIDEO','LINK','FILE' ]
         previewImage:
           type: string
+        createdAt:
+          type: string
+          format: datetime
     StickerPack:
       type: object
       properties:

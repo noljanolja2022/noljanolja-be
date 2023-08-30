@@ -38,8 +38,8 @@ data class AttachmentModel(
     @Column("md5")
     val md5: String,
 
-//    @Column("duration_ms")
-//    val durationMs: Long,
+    @Column("duration_ms")
+    val durationMs: Long,
 
     @Column("created_at")
     @CreatedDate
@@ -68,5 +68,6 @@ fun AttachmentModel.toAttachment() = Attachment(
     messageId = messageId,
     attachmentType = attachmentType,
     previewImage = previewImage,
-//    durationMs = durationMs,
+    createdAt = createdAt,
+    durationMs = durationMs,
 )

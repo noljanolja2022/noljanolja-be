@@ -38,6 +38,7 @@ data class Message(
         val md5: String,
         val previewImage: String,
         val attachmentType: AttachmentType,
+        val createdAt: Instant = Instant.now(),
         val durationMs: Long = 0,
     )
 

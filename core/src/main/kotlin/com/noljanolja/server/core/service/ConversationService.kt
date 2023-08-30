@@ -350,7 +350,7 @@ class ConversationService(
                 size = it.size,
                 attachmentType = it.attachmentType,
                 previewImage = it.previewImage,
-//                durationMs = it.durationMs,
+                durationMs = it.durationMs,
             )
         }
         attachmentRepo.saveAll(createdAttachments).toList()

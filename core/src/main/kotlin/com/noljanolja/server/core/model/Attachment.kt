@@ -1,6 +1,7 @@
 package com.noljanolja.server.core.model
 
 import com.noljanolja.server.core.repo.message.AttachmentType
+import java.time.Instant
 
 data class Attachment(
     val id: Long = 0,
@@ -12,5 +13,6 @@ data class Attachment(
     val md5: String,
     val attachmentType: AttachmentType,
     val previewImage: String,
-//    val durationMs: Long,
+    val createdAt: Instant,
+    val durationMs: Long,
 )
