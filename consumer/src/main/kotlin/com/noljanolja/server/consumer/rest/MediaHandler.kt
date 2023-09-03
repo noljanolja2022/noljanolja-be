@@ -256,4 +256,14 @@ class MediaHandler(
                 body = Response<Nothing>()
             )
     }
+
+    suspend fun getPromotedVideos(serverRequest: ServerRequest): ServerResponse {
+        val videos = mediaService.getPromotedVideos(page = 1, pageSize = 10)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = videos,
+                )
+            )
+    }
 }

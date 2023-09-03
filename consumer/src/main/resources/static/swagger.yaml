@@ -1088,6 +1088,36 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/Video"
+  /api/v1/media/videos/promoted:
+    get:
+      tags: [ Video ]
+      summary: Get promoted videos
+      description: Get promoted videos
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            $ref: '#/components/schemas/page'
+        - name: pageSize
+          in: query
+          schema:
+            $ref: '#/components/schemas/pageSize'
+      responses:
+        "200":
+          description: Return a list of videos matching the query params
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Video"
   /api/v1/media/videos/watching:
     get:
       tags: [ Video ]

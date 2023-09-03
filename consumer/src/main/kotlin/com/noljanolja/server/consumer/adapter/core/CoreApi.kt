@@ -1072,4 +1072,25 @@ class CoreApi(
         .awaitBody<Response<List<CoreAttachment>>>().let {
             Pair(it.data!!, it.pagination!!)
         }
+
+    suspend fun getPromotedVideos(
+        page: Int,
+        pageSize: Int,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/videos/promoted")
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreVideo>>>().data!!
 }

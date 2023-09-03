@@ -7,6 +7,7 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
 import com.noljanolja.server.core.rest.request.LikeVideoRequest
 import com.noljanolja.server.core.rest.request.PostCommentRequest
+import com.noljanolja.server.core.rest.request.PromoteVideoRequest
 import com.noljanolja.server.core.service.VideoService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -73,9 +74,11 @@ class VideoHandler(
         val videoIds = request.queryParamOrNull("videoIds") ?: ""
         val data = videoService.getVideosByIds(videoIds.split(","))
         return ServerResponse.ok()
-            .bodyValueAndAwait(Response(
-                data = data
-            ))
+            .bodyValueAndAwait(
+                Response(
+                    data = data
+                )
+            )
     }
 
     suspend fun getVideoDetails(request: ServerRequest): ServerResponse {
@@ -164,6 +167,40 @@ class VideoHandler(
                 body = Response(
                     data = comments,
                 )
+            )
+    }
+
+    suspend fun getPromotedVideos(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_QUERY_PARAM_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_QUERY_PARAM_PAGE_SIZE
+        val (videos, total) = videoService.getPromotedVideos(
+            page = page,
+            pageSize = pageSize,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = videos,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = total,
+                    )
+                )
+            )
+    }
+
+    suspend fun promoteVideo(request: ServerRequest): ServerResponse {
+        val videoId = request.pathVariable("videoId").ifBlank { throw InvalidParamsException("videoId") }
+        val payload = request.awaitBodyOrNull<PromoteVideoRequest>() ?: throw RequestBodyRequired
+        videoService.promoteVideo(
+            videoId = videoId,
+            startDate = payload.startDate,
+            endDate = payload.endDate,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
             )
     }
 }

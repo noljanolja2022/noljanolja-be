@@ -750,3 +750,19 @@ CREATE TABLE IF NOT EXISTS `referral_reward_configs`
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
+
+-- changeset tranhieu956230@gmail.com::17
+
+DROP TABLE IF EXISTS `promoted_videos`;
+
+CREATE TABLE IF NOT EXISTS `promoted_videos`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `video_id`          VARCHAR(255)    NOT NULL,
+    `start_date`        DATE            NOT NULL DEFAULT (CURRENT_DATE),
+    `end_date`          DATE            NOT NULL DEFAULT (CURRENT_DATE),
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE
+) ENGINE = InnoDB;

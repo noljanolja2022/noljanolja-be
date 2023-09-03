@@ -159,4 +159,9 @@ class MediaService(
     ) {
         videoPubSubService.saveProgress(userId, videoProgress)
     }
+
+    suspend fun getPromotedVideos(
+        page: Int,
+        pageSize: Int,
+    ): List<Video> = coreApi.getPromotedVideos(page, pageSize).map { it.toConsumerVideo() }
 }

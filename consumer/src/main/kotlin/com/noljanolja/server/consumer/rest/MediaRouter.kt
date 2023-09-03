@@ -26,6 +26,7 @@ class MediaRouter(
                 GET("watching", mediaHandler::getWatchingVideos)
                 GET("trending", mediaHandler::getTrendingVideos)
                 POST("watch", mediaHandler::watchVideo)
+                GET("promoted", mediaHandler::getPromotedVideos)
 
                 "{videoId}".nest {
                     GET("", mediaHandler::getVideoDetails)

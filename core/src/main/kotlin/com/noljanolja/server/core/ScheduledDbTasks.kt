@@ -1,5 +1,6 @@
 package com.noljanolja.server.core
 
+import com.noljanolja.server.core.repo.media.PromotedVideoRepo
 import com.noljanolja.server.core.repo.media.VideoRepo
 import com.noljanolja.server.core.service.YoutubeApi
 import kotlinx.coroutines.flow.toList
@@ -15,9 +16,19 @@ import java.time.Instant
 @EnableScheduling
 class ScheduledDbTasks(
     private val videoRepo: VideoRepo,
-    private val youtubeApi: YoutubeApi
+    private val youtubeApi: YoutubeApi,
+    private val promotedVideoRepo: PromotedVideoRepo,
 ) {
     private val logger = LoggerFactory.getLogger(ScheduledDbTasks::class.java)
+
+    @Scheduled(cron = "0 0 11 * * ?")
+    fun removeOutdatedPromotedVideos() {
+        runBlocking {
+            promotedVideoRepo.findAllOutdatedVideos().toList().takeIf { it.isNotEmpty() }?.let {
+                promotedVideoRepo.deleteAllById(it)
+            }
+        }
+    }
 
     //TODO: only run jobs on video with last watch less than 30 days
     @Scheduled(cron = "0 0 10 ? * ?")

@@ -20,6 +20,7 @@ class VideoRouter(
             GET("", videoHandler::getVideos)
             GET("watching", videoHandler::getWatchingVideos)
             GET("trending", videoHandler::getTrendingVideos)
+            GET("promoted", videoHandler::getPromotedVideos)
 
             "{videoId}".nest {
                 DELETE("", videoHandler::deleteVideo)
@@ -28,6 +29,7 @@ class VideoRouter(
                 POST("likes", videoHandler::likeVideo)
                 GET("comments", videoHandler::getVideoComments)
                 POST("comments", videoHandler::postComment)
+                POST("promote", videoHandler::promoteVideo)
             }
         }
     }

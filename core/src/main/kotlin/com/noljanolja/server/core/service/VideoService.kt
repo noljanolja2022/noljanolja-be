@@ -9,10 +9,12 @@ import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
 import com.noljanolja.server.reward.service.VideoRewardService
 import kotlinx.coroutines.flow.toList
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
+import java.util.Date
 
 @Component
 @Transactional
@@ -24,7 +26,7 @@ class VideoService(
     private val videoChannelRepo: VideoChannelRepo,
     private val videoCategoryRepo: VideoCategoryRepo,
     private val userRepo: UserRepo,
-    private val videoRewardService: VideoRewardService,
+    private val promotedVideoRepo: PromotedVideoRepo,
 ) {
     suspend fun getVideoDetails(
         videoId: String,
@@ -235,5 +237,38 @@ class VideoService(
             comments.forEach { comment -> comment.commenter = commenters.first { it.id == comment.commenterId } }
         }
         return comments.map { it.toVideoComment() }
+    }
+
+    suspend fun getPromotedVideos(
+        page: Int,
+        pageSize: Int,
+    ): Pair<List<Video>, Long> {
+        return Pair(
+            promotedVideoRepo.findAllBy(
+                offset = (page - 1) * pageSize,
+                limit = pageSize
+            ).toList().map {
+                it.channel = videoChannelRepo.findById(it.channelId)!!
+                it.category = videoCategoryRepo.findById(it.categoryId)!!
+                it.toVideo()
+            },
+            promotedVideoRepo.count()
+        )
+    }
+
+    suspend fun promoteVideo(
+        videoId: String,
+        startDate: LocalDate,
+        endDate: LocalDate,
+    ) {
+        // Currently we only allow 1 video to be promoted
+        promotedVideoRepo.deleteAll()
+        promotedVideoRepo.save(
+            PromotedVideoModel(
+                videoId = videoId,
+                startDate = startDate,
+                endDate = endDate,
+            )
+        )
     }
 }
