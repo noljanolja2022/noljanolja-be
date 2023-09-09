@@ -30,10 +30,20 @@ class MediaService(
         return coreApi.getStickerPack(stickerPackId)!!
     }
 
+    suspend fun subscribeToChannel(channelId: String,youtubeBearer: String? = null) {
+        if (youtubeBearer != null) {
+//            youtubeApi.likeVideo(videoId, youtubeBearer)
+        }
+    }
+
     suspend fun likeVideo(
         videoId: String,
         userId: String,
+        youtubeBearer: String? = null
     ) {
+        if (youtubeBearer != null) {
+            youtubeApi.ratingVideo(videoId, youtubeBearer, "like")
+        }
         coreApi.likeVideo(
             videoId = videoId,
             payload = LikeVideoRequest(userId)
@@ -53,8 +63,7 @@ class MediaService(
         youtubeBearer: String? = null,
     ): VideoComment {
         if (youtubeBearer != null) {
-            val youtubeRes = youtubeApi.addToplevelComment(videoId, youtubeBearer, comment)
-            println("Posted comment success with id ${youtubeRes.id}")
+            youtubeApi.addToplevelComment(videoId, youtubeBearer, comment)
         }
         val videoComment = coreApi.postComment(
             videoId = videoId,

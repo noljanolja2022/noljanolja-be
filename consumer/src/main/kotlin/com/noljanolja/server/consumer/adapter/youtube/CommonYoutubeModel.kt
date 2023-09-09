@@ -1,5 +1,8 @@
 package com.noljanolja.server.consumer.adapter.youtube
 
+interface YoutubeBearerPayload {
+    val youtubeToken: String?
+}
 
 data class YoutubeSearchResponse<T>(
     val kind: String,

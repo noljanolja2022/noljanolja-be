@@ -35,6 +35,9 @@ class MediaRouter(
                     GET("comments", mediaHandler::getVideoComments)
                 }
             }
+            "channels".nest {
+                POST("{channelId}/subscribe", mediaHandler::subscribeToChannel)
+            }
         }
     }
 }

@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 7/12/2023:
-      - Allow search for video using query
-  version: 1.0.5
+    Changelog - 9/9/2023:
+      - Update param when like video to actually like it on youtube
+  version: 1.0.6
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -1263,6 +1263,17 @@ paths:
           schema:
             type: string
           required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                youtubeToken:
+                  type: string
+                  required: false
+                  description: the exchange token with sufficient scope to like youtube video
       responses:
         "200":
           description: Return the created comment

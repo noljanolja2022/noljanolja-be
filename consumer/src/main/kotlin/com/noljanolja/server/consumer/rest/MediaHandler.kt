@@ -7,6 +7,7 @@ import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.common.utils.addFileToZipStream
+import com.noljanolja.server.consumer.adapter.youtube.YoutubeBearerPayload
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.model.ResourceInfo
 import com.noljanolja.server.consumer.model.Video
@@ -103,13 +104,26 @@ class MediaHandler(
             .bodyValueAndAwait(res)
     }
 
+    suspend fun subscribeToChannel(serverRequest: ServerRequest): ServerResponse {
+        val channelId = serverRequest.pathVariable("channelId").takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("channelId")
+        val payload = serverRequest.awaitBodyOrNull<YoutubeBearerPayload>() ?: throw RequestBodyRequired
+        mediaService.subscribeToChannel(channelId, payload.youtubeToken)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
     suspend fun likeVideo(serverRequest: ServerRequest): ServerResponse {
         val videoId = serverRequest.pathVariable("videoId").takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("videoId")
+        val payload = serverRequest.awaitBodyOrNull<YoutubeBearerPayload>() ?: throw RequestBodyRequired
         val userId = AuthUserHolder.awaitUser().id
         mediaService.likeVideo(
             videoId = videoId,
             userId = userId,
+            youtubeBearer = payload.youtubeToken
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

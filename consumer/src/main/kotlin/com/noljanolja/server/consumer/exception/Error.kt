@@ -44,7 +44,7 @@ sealed class Error(
         const val EXCEED_MAX_ATTACHMENTS_SIZE = 400_011
         const val INVALID_CONTENT_TYPE = 400_012
         const val CANNOT_UPDATE_CONVERSATION = 400_013
-        const val CANNOT_COMMENT_YOUTUBE = 400_014
+        const val CANNOT_TAKE_ACTION_ON_YOUTUBE = 400_014
     }
 
     object FileExceedMaxSize : BaseException(
@@ -83,9 +83,9 @@ sealed class Error(
         null,
     )
 
-    object NoYoutubeAccountToComment: BaseException(
-        CANNOT_COMMENT_YOUTUBE,
-        "User has no youtube account setup to make comment. Please setup first and try again",
+    object NoYoutubeAccountForAction: BaseException(
+        CANNOT_TAKE_ACTION_ON_YOUTUBE,
+        "User has no youtube account setup. Please setup first and try again",
         null
     )
 }

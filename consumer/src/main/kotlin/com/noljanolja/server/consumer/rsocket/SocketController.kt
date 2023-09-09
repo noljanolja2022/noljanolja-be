@@ -48,9 +48,4 @@ class SocketController(
         println("Received track video request from userId: $userId with event ${request.event}")
         videoPubSubService.saveProgress(userId, request)
     }
-
-    @MessageMapping("")
-    suspend fun test(request: VideoProgress) {
-        println("Received track video request for videoId: ${request.videoId}")
-    }
 }
