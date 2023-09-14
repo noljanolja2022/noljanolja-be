@@ -1,5 +1,6 @@
 package com.noljanolja.server.consumer.model
 
+import com.noljanolja.server.consumer.adapter.youtube.YoutubeBearerPayload
 import java.time.Instant
 
 data class Video(
@@ -52,4 +53,12 @@ data class VideoProgress(
 
 enum class VideoProgressEvent {
     PLAY, PAUSE, FINISH
+}
+
+interface RateVideoRequest: YoutubeBearerPayload {
+    val action: RateVideoAction
+}
+
+enum class RateVideoAction {
+    like, dislike, none
 }

@@ -7,14 +7,12 @@ import com.noljanolja.server.core.model.VideoComment
 import com.noljanolja.server.core.repo.media.*
 import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
-import com.noljanolja.server.reward.service.VideoRewardService
+import com.noljanolja.server.core.rest.request.RateVideoAction
 import kotlinx.coroutines.flow.toList
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
-import java.util.Date
 
 @Component
 @Transactional
@@ -158,7 +156,7 @@ class VideoService(
             )
         viewCountModel.viewCount++
         videoViewCountRepo.save(viewCountModel)
-        videoRepo.addLike(videoId)
+        videoRepo.addViewCount(videoId)
     }
 
     suspend fun getTrendingVideos(
@@ -187,19 +185,23 @@ class VideoService(
     suspend fun likeVideo(
         videoId: String,
         userId: String,
+        action: RateVideoAction
     ) {
         if (!videoRepo.existsById(videoId)) throw Error.VideoNotFound
+        val isLike = action == RateVideoAction.like
         videoUserRepo.save(
             videoUserRepo.findByVideoIdAndUserId(
                 videoId = videoId,
                 userId = userId,
-            )?.apply { isLiked = !isLiked }
+            )?.apply { isLiked = isLike }
                 ?: VideoUserModel(
                     videoId = videoId,
                     userId = userId,
-                    isLiked = true,
+                    isLiked = isLike,
                 )
         )
+        if (isLike) videoRepo.addLikeCount(videoId)
+        else videoRepo.deductLikeCount(videoId)
     }
 
     suspend fun postComment(

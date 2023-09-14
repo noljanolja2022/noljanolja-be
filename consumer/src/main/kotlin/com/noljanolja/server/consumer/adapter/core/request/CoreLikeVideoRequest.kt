@@ -1,9 +1,8 @@
-package com.noljanolja.server.consumer.rsocket
+package com.noljanolja.server.consumer.adapter.core.request
 
 import com.noljanolja.server.consumer.model.RateVideoAction
 
-data class UserVideoLike(
+data class CoreLikeVideoRequest(
     val action: RateVideoAction,
     val userId: String,
-    val videoId: String,
 )

@@ -1253,8 +1253,8 @@ paths:
   /api/v1/media/videos/{videoId}/likes:
     post:
       tags: [ Video ]
-      summary: Like a video
-      description: Like a video
+      summary: Like or unlike a video
+      description: Set a like status to a video based on action provided
       security:
         - bearerAuth: [ ]
       parameters:
@@ -1274,6 +1274,10 @@ paths:
                   type: string
                   required: false
                   description: the exchange token with sufficient scope to like youtube video
+                action:
+                  type: string
+                  required: true
+                  enum: [ like, dislike, none ]
       responses:
         "200":
           description: Return the created comment

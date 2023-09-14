@@ -466,7 +466,7 @@ class CoreApi(
 
     suspend fun likeVideo(
         videoId: String,
-        payload: LikeVideoRequest,
+        payload: CoreLikeVideoRequest,
     ) = webClient.post()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/videos/{videoId}/likes").build(videoId)

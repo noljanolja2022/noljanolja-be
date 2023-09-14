@@ -9,6 +9,7 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.common.utils.addFileToZipStream
 import com.noljanolja.server.consumer.adapter.youtube.YoutubeBearerPayload
 import com.noljanolja.server.consumer.filter.AuthUserHolder
+import com.noljanolja.server.consumer.model.RateVideoRequest
 import com.noljanolja.server.consumer.model.ResourceInfo
 import com.noljanolja.server.consumer.model.Video
 import com.noljanolja.server.consumer.model.VideoProgress
@@ -118,11 +119,12 @@ class MediaHandler(
     suspend fun likeVideo(serverRequest: ServerRequest): ServerResponse {
         val videoId = serverRequest.pathVariable("videoId").takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("videoId")
-        val payload = serverRequest.awaitBodyOrNull<YoutubeBearerPayload>() ?: throw RequestBodyRequired
+        val payload = serverRequest.awaitBodyOrNull<RateVideoRequest>() ?: throw RequestBodyRequired
         val userId = AuthUserHolder.awaitUser().id
         mediaService.likeVideo(
             videoId = videoId,
             userId = userId,
+            action = payload.action,
             youtubeBearer = payload.youtubeToken
         )
         return ServerResponse.ok()

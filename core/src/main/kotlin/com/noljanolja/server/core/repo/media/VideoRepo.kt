@@ -67,5 +67,25 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             WHERE id = :videoId;
         """
     )
-    suspend fun addLike(videoId: String)
+    suspend fun addViewCount(videoId: String)
+
+    @Modifying
+    @Query(
+        """
+            UPDATE `videos`
+            SET `likeCount`    = `likeCount` + 1
+            WHERE id = :videoId;
+        """
+    )
+    suspend fun addLikeCount(videoId: String)
+
+    @Modifying
+    @Query(
+        """
+            UPDATE `videos`
+            SET `likeCount`    = `likeCount` - 1
+            WHERE id = :videoId;
+        """
+    )
+    suspend fun deductLikeCount(videoId: String)
 }

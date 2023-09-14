@@ -122,11 +122,14 @@ class VideoHandler(
     suspend fun likeVideo(request: ServerRequest): ServerResponse {
         val videoId = request.pathVariable("videoId").takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("videoId")
-        val userId = request.awaitBodyOrNull<LikeVideoRequest>()?.userId?.takeIf { it.isNotBlank() }
+        val req = request.awaitBodyOrNull<LikeVideoRequest>()
+        val userId = req?.userId?.takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("userId")
+        val action = req.action
         videoService.likeVideo(
             videoId = videoId,
             userId = userId,
+            action = action
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

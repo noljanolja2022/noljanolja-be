@@ -1,15 +1,12 @@
 package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.consumer.adapter.core.CoreApi
-import com.noljanolja.server.consumer.adapter.core.request.LikeVideoRequest
+import com.noljanolja.server.consumer.adapter.core.request.CoreLikeVideoRequest
 import com.noljanolja.server.consumer.adapter.core.request.PostCommentRequest
 import com.noljanolja.server.consumer.adapter.core.toConsumerVideo
 import com.noljanolja.server.consumer.adapter.core.toConsumerVideoComment
 import com.noljanolja.server.consumer.adapter.youtube.YoutubeApi
-import com.noljanolja.server.consumer.model.StickerPack
-import com.noljanolja.server.consumer.model.Video
-import com.noljanolja.server.consumer.model.VideoComment
-import com.noljanolja.server.consumer.model.VideoProgress
+import com.noljanolja.server.consumer.model.*
 import com.noljanolja.server.consumer.rsocket.SocketRequester
 import com.noljanolja.server.consumer.rsocket.UserVideoComment
 import com.noljanolja.server.consumer.rsocket.UserVideoLike
@@ -30,7 +27,7 @@ class MediaService(
         return coreApi.getStickerPack(stickerPackId)!!
     }
 
-    suspend fun subscribeToChannel(channelId: String,youtubeBearer: String? = null) {
+    suspend fun subscribeToChannel(channelId: String, youtubeBearer: String? = null) {
         if (youtubeBearer != null) {
 //            youtubeApi.likeVideo(videoId, youtubeBearer)
         }
@@ -39,17 +36,19 @@ class MediaService(
     suspend fun likeVideo(
         videoId: String,
         userId: String,
+        action: RateVideoAction,
         youtubeBearer: String? = null
     ) {
         if (youtubeBearer != null) {
-            youtubeApi.ratingVideo(videoId, youtubeBearer, "like")
+            youtubeApi.ratingVideo(videoId, youtubeBearer, action.toString())
         }
         coreApi.likeVideo(
             videoId = videoId,
-            payload = LikeVideoRequest(userId)
+            payload = CoreLikeVideoRequest(action, userId)
         )
         socketRequester.emitUserLikeVideo(
             UserVideoLike(
+                action = action,
                 userId = userId,
                 videoId = videoId,
             )
