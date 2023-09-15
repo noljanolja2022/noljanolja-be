@@ -1,6 +1,6 @@
 package com.noljanolja.server.core.repo.media
 
-import com.noljanolja.server.core.model.Video
+import com.noljanolja.server.core.model.Channel
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
@@ -38,7 +38,7 @@ data class VideoChannelModel(
     override fun isNew() = isNewRecord
 }
 
-fun VideoChannelModel.toVideoChannel() = Video.Channel(
+fun VideoChannelModel.toVideoChannel() = Channel(
     id = id,
     title = title,
     thumbnail = thumbnail,

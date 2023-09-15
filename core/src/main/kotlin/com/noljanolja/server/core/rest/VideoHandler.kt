@@ -4,10 +4,8 @@ import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
-import com.noljanolja.server.core.rest.request.CreateVideoRequest
-import com.noljanolja.server.core.rest.request.LikeVideoRequest
-import com.noljanolja.server.core.rest.request.PostCommentRequest
-import com.noljanolja.server.core.rest.request.PromoteVideoRequest
+import com.noljanolja.server.core.rest.request.*
+import com.noljanolja.server.core.service.ChannelService
 import com.noljanolja.server.core.service.VideoService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -15,6 +13,7 @@ import org.springframework.web.reactive.function.server.*
 @Component
 class VideoHandler(
     private val videoService: VideoService,
+    private val channelService: ChannelService
 ) {
     companion object {
         const val DEFAULT_QUERY_PARAM_PAGE = 1
@@ -200,6 +199,29 @@ class VideoHandler(
             videoId = videoId,
             startDate = payload.startDate,
             endDate = payload.endDate,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
+    suspend fun getChannelDetail(request: ServerRequest): ServerResponse {
+        val channelId = request.pathVariable("channelId").ifBlank { throw InvalidParamsException("channelId") }
+        val res = channelService.getChannelDetail(channelId)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res
+                )
+            )
+    }
+
+    suspend fun subscribeToChannel(request: ServerRequest): ServerResponse {
+        val channelId = request.pathVariable("channelId").ifBlank { throw InvalidParamsException("channelId") }
+        val payload = request.awaitBodyOrNull<SubscribeChannelRequest>() ?: throw RequestBodyRequired
+        channelService.subscribeUserToChannel(
+            channelId, payload.userId, payload.isSubscribing
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

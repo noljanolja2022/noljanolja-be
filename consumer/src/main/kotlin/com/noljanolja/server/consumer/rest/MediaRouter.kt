@@ -36,6 +36,7 @@ class MediaRouter(
                 }
             }
             "channels".nest {
+                GET("{channelId}", mediaHandler::getChannelDetail)
                 POST("{channelId}/subscribe", mediaHandler::subscribeToChannel)
             }
         }

@@ -1,6 +1,5 @@
 package com.noljanolja.server.consumer.model
 
-import com.noljanolja.server.consumer.adapter.youtube.YoutubeBearerPayload
 import java.time.Instant
 
 data class Video(
@@ -25,12 +24,6 @@ data class Video(
     val totalPoints: Long = 0,
     val rewardProgresses: List<RewardProgress> = listOf(),
 ) {
-    data class Channel(
-        val id: String,
-        val title: String,
-        val thumbnail: String,
-    )
-
     data class Category(
         val id: String,
         val title: String,
@@ -55,9 +48,15 @@ enum class VideoProgressEvent {
     PLAY, PAUSE, FINISH
 }
 
-interface RateVideoRequest: YoutubeBearerPayload {
+data class RateVideoRequest(
+    val youtubeToken: String?,
     val action: RateVideoAction
-}
+)
+
+data class ChannelSubscriptionRequest(
+    val youtubeToken: String?,
+    val isSubscribing: Boolean
+)
 
 enum class RateVideoAction {
     like, dislike, none

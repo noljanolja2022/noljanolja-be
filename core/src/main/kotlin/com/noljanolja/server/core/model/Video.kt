@@ -19,11 +19,6 @@ data class Video(
     val channel: Channel,
     val category: Category,
 ) {
-    data class Channel(
-        val id: String,
-        val title: String,
-        val thumbnail: String,
-    )
 
     data class Category(
         val id: String,

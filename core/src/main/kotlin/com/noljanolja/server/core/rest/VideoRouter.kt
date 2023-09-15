@@ -11,6 +11,7 @@ class VideoRouter(
 ) {
     companion object {
         const val VIDEO_ROUTE = "/api/v1/media/videos"
+        const val CHANNEL_ROUTE = "/api/v1/media/channels"
     }
 
     @Bean
@@ -30,6 +31,12 @@ class VideoRouter(
                 GET("comments", videoHandler::getVideoComments)
                 POST("comments", videoHandler::postComment)
                 POST("promote", videoHandler::promoteVideo)
+            }
+        }
+        (CHANNEL_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
+            "{channelId}".nest {
+                GET("", videoHandler::getChannelDetail)
+                POST("subscribe", videoHandler::subscribeToChannel)
             }
         }
     }

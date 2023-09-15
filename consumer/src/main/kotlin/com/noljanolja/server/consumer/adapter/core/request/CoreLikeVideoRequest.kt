@@ -6,3 +6,8 @@ data class CoreLikeVideoRequest(
     val action: RateVideoAction,
     val userId: String,
 )
+
+data class CoreSubscribeChannelRequest(
+    val isSubscribing: Boolean,
+    val userId: String,
+)

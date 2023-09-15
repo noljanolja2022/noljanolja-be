@@ -31,6 +31,10 @@ class YoutubeApi(
 
     }
 
+    suspend fun unsubscribeFromChannel(channelId: String, bearer: String) {
+
+    }
+
     suspend fun ratingVideo(
         videoId: String,
         bearer: String,

@@ -766,3 +766,17 @@ CREATE TABLE IF NOT EXISTS `promoted_videos`
 
     FOREIGN KEY (video_id) REFERENCES videos(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
+
+DROP TABLE IF EXISTS `channel_subscription_records`;
+
+CREATE TABLE IF NOT EXISTS `channel_subscription_records`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `channel_id`        VARCHAR(255)    NOT NULL,
+    `user_id`           VARCHAR(255)    NOT NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (channel_id) REFERENCES video_channels(id) ON DELETE CASCADE
+) ENGINE = InnoDB;

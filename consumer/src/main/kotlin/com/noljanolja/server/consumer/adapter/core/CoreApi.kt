@@ -464,6 +464,41 @@ class CoreApi(
         }
         .awaitBody<Response<String>>().data
 
+    suspend fun getChannelDetail(
+        channelId: String,
+    )= webClient.get()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/channels/{channelId}").build(channelId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreChannel>>()
+
+    suspend fun subscribeToChannel(
+        channelId: String, userId: String, isSubscribing: Boolean
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/channels/{channelId}/subscribe").build(channelId)
+        }
+        .bodyValue(CoreSubscribeChannelRequest(isSubscribing, userId))
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
     suspend fun likeVideo(
         videoId: String,
         payload: CoreLikeVideoRequest,

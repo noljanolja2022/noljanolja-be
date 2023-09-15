@@ -3,6 +3,7 @@ package com.noljanolja.server.consumer.service
 import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.adapter.core.request.CoreLikeVideoRequest
 import com.noljanolja.server.consumer.adapter.core.request.PostCommentRequest
+import com.noljanolja.server.consumer.adapter.core.toChannel
 import com.noljanolja.server.consumer.adapter.core.toConsumerVideo
 import com.noljanolja.server.consumer.adapter.core.toConsumerVideoComment
 import com.noljanolja.server.consumer.adapter.youtube.YoutubeApi
@@ -27,10 +28,25 @@ class MediaService(
         return coreApi.getStickerPack(stickerPackId)!!
     }
 
-    suspend fun subscribeToChannel(channelId: String, youtubeBearer: String? = null) {
-        if (youtubeBearer != null) {
-//            youtubeApi.likeVideo(videoId, youtubeBearer)
+    suspend fun getChannelDetail(channelId: String) : Channel? {
+        return coreApi.getChannelDetail(
+            channelId = channelId,
+        ).data?.toChannel()
+    }
+
+    suspend fun subscribeToChannel(channelId: String,userId: String, payload: ChannelSubscriptionRequest) {
+        if (payload.youtubeToken != null) {
+            if (payload.isSubscribing) {
+                youtubeApi.subscribeToChannel(channelId, payload.youtubeToken!!)
+            } else {
+                youtubeApi.unsubscribeFromChannel(channelId, payload.youtubeToken!!)
+            }
         }
+        coreApi.subscribeToChannel(
+            userId = userId,
+            channelId = channelId,
+            isSubscribing = payload.isSubscribing
+        )
     }
 
     suspend fun likeVideo(
