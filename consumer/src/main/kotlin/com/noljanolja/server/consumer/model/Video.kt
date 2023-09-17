@@ -54,7 +54,7 @@ data class RateVideoRequest(
 )
 
 data class ChannelSubscriptionRequest(
-    val youtubeToken: String?,
+    val youtubeToken: String,
     val isSubscribing: Boolean
 )
 

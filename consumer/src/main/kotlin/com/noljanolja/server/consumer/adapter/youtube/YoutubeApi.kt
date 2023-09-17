@@ -20,20 +20,62 @@ class YoutubeApi(
 ) {
     companion object {
         const val COMMENT_THREAD_ENDPOINT = "/v3/commentThreads"
-        const val LIKE_ENDPOINT= "/v3/videos/rate"
+        const val LIKE_ENDPOINT = "/v3/videos/rate"
+        const val SUBSCRIPTION = "/v3/subscriptions"
         const val PART_ID_SNIPPET = "snippet"
     }
 
     val apiKey = serviceConfig.configs.first { it.id == ServiceConfig.Config.ServiceID.YOUTUBE }.extra["apiKey"]
         ?: ""
 
-    suspend fun subscribeToChannel(channelId: String, bearer: String) {
+    suspend fun subscribeToChannel(channelId: String, bearer: String) = webClient.post()
+        .uri { builder ->
+            builder.path(SUBSCRIPTION)
+                .build()
+        }
+        .headers { it.setBearerAuth(bearer) }
+        .bodyValue(
+            AddSubscriptionRequest(
+                AddSubscriptionRequestSnippet(
+                    resourceId = YoutubeSnippet(
+                        channelId = channelId,
+                        kind = "youtube#channel"
+                    ),
+                )
+            )
+        )
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<YoutubeError>().mapNotNull { response ->
+                DefaultBadRequestException(Error(response.error.message))
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(DefaultInternalErrorException(null))
+        }
+        .awaitBody<YoutubeCommonResource>()
 
-    }
 
-    suspend fun unsubscribeFromChannel(channelId: String, bearer: String) {
-
-    }
+    suspend fun unsubscribeFromChannel(
+        subscriptionId: String,
+        bearer: String
+    ) = webClient.delete()
+        .uri { builder ->
+            builder.path(SUBSCRIPTION)
+                .queryParam("id", subscriptionId)
+                .build()
+        }
+        .headers { it.setBearerAuth(bearer) }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<YoutubeError>().mapNotNull { response ->
+                DefaultBadRequestException(Error(response.error.message))
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(DefaultInternalErrorException(null))
+        }
+        .awaitBody<Any>()
 
     suspend fun ratingVideo(
         videoId: String,
@@ -89,7 +131,8 @@ class YoutubeApi(
             it.bodyToMono<YoutubeError>().mapNotNull { response ->
                 println("Comment to youtube failed. VideoId: $videoId, message: ${response.error.message} with code ${response.error.code}")
                 if (response.error.code == "403" &&
-                    response.error.message =="The caller's YouTube account is not connected to Google+.") {
+                    response.error.message == "The caller's YouTube account is not connected to Google+."
+                ) {
                     com.noljanolja.server.consumer.exception.Error.NoYoutubeAccountForAction
                 } else
                     DefaultBadRequestException(Error(response.error.message))

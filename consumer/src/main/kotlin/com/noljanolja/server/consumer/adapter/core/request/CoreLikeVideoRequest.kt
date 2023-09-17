@@ -10,4 +10,5 @@ data class CoreLikeVideoRequest(
 data class CoreSubscribeChannelRequest(
     val isSubscribing: Boolean,
     val userId: String,
+    val subscriptionId: String?
 )

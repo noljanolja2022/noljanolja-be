@@ -220,12 +220,12 @@ class VideoHandler(
     suspend fun subscribeToChannel(request: ServerRequest): ServerResponse {
         val channelId = request.pathVariable("channelId").ifBlank { throw InvalidParamsException("channelId") }
         val payload = request.awaitBodyOrNull<SubscribeChannelRequest>() ?: throw RequestBodyRequired
-        channelService.subscribeUserToChannel(
-            channelId, payload.userId, payload.isSubscribing
+        val res = channelService.subscribeUserToChannel(
+            channelId, payload.userId, payload.isSubscribing, payload.subscriptionId
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = Response<Nothing>()
+                body = Response(data = res)
             )
     }
 }

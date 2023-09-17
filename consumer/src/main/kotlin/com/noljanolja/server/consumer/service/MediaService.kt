@@ -1,5 +1,6 @@
 package com.noljanolja.server.consumer.service
 
+import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.adapter.core.request.CoreLikeVideoRequest
 import com.noljanolja.server.consumer.adapter.core.request.PostCommentRequest
@@ -34,19 +35,24 @@ class MediaService(
         ).data?.toChannel()
     }
 
-    suspend fun subscribeToChannel(channelId: String,userId: String, payload: ChannelSubscriptionRequest) {
-        if (payload.youtubeToken != null) {
-            if (payload.isSubscribing) {
-                youtubeApi.subscribeToChannel(channelId, payload.youtubeToken!!)
-            } else {
-                youtubeApi.unsubscribeFromChannel(channelId, payload.youtubeToken!!)
-            }
+    suspend fun subscribeToChannel(channelId: String,userId: String, youtubeToken: String, isSubscribing: Boolean) {
+        if (isSubscribing) {
+            val res = youtubeApi.subscribeToChannel(channelId, youtubeToken)
+            coreApi.subscribeToChannel(
+                userId = userId,
+                channelId = channelId,
+                isSubscribing = true,
+                subscriptionId = res.id
+            )
+        } else {
+            val subscriptionId = coreApi.subscribeToChannel(
+                userId = userId,
+                channelId = channelId,
+                isSubscribing = false,
+                subscriptionId = null
+            ).data ?: throw DefaultBadRequestException(null)
+            youtubeApi.unsubscribeFromChannel(subscriptionId, youtubeToken)
         }
-        coreApi.subscribeToChannel(
-            userId = userId,
-            channelId = channelId,
-            isSubscribing = payload.isSubscribing
-        )
     }
 
     suspend fun likeVideo(

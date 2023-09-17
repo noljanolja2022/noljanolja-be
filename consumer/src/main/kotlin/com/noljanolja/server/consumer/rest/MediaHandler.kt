@@ -118,7 +118,7 @@ class MediaHandler(
             ?: throw InvalidParamsException("channelId")
         val payload = serverRequest.awaitBodyOrNull<ChannelSubscriptionRequest>() ?: throw RequestBodyRequired
         val userId = AuthUserHolder.awaitUser().id
-        mediaService.subscribeToChannel(channelId, userId, payload)
+        mediaService.subscribeToChannel(channelId, userId, payload.youtubeToken, payload.isSubscribing)
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response<Nothing>()

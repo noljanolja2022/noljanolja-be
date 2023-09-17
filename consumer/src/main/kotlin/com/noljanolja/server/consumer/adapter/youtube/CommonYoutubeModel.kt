@@ -22,6 +22,7 @@ data class YoutubeCommonResource(
 )
 
 data class YoutubeSnippet(
+    val kind: String? = null,
     val channelId: String? = null,
     val videoId: String? = null,
     val topLevelComment: TopLevelComment? = null

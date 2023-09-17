@@ -482,12 +482,12 @@ class CoreApi(
         .awaitBody<Response<CoreChannel>>()
 
     suspend fun subscribeToChannel(
-        channelId: String, userId: String, isSubscribing: Boolean
+        channelId: String, userId: String, isSubscribing: Boolean, subscriptionId: String?
     ) = webClient.post()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/channels/{channelId}/subscribe").build(channelId)
         }
-        .bodyValue(CoreSubscribeChannelRequest(isSubscribing, userId))
+        .bodyValue(CoreSubscribeChannelRequest(isSubscribing, userId, subscriptionId))
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
@@ -497,7 +497,7 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<Nothing>>()
+        .awaitBody<Response<String?>>()
 
     suspend fun likeVideo(
         videoId: String,

@@ -19,6 +19,9 @@ data class ChannelSubscriptionModel(
     @Column("channel_id")
     val channelId: String,
 
+    @Column("subscription_id")
+    val subscriptionId: String,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
