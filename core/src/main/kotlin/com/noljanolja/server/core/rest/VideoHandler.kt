@@ -197,8 +197,7 @@ class VideoHandler(
         val payload = request.awaitBodyOrNull<PromoteVideoRequest>() ?: throw RequestBodyRequired
         videoService.promoteVideo(
             videoId = videoId,
-            startDate = payload.startDate,
-            endDate = payload.endDate,
+            payload
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

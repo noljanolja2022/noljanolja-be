@@ -1,6 +1,7 @@
 package com.noljanolja.server.admin.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.noljanolja.server.admin.model.PromoteVideoRequest
 import com.noljanolja.server.admin.model.StickerPack
 import com.noljanolja.server.admin.model.VideoCreationReq
 import com.noljanolja.server.admin.service.GoogleStorageService
@@ -139,10 +140,37 @@ class MediaHandler(
         )
     }
 
+    suspend fun getVideoDetail(request: ServerRequest): ServerResponse {
+        val videoId = request.pathVariable(PATH_ID).takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException(PATH_ID)
+        val res = videoService.getVideoDetail(videoId)
+        return ServerResponse.ok().bodyValueAndAwait(
+            Response(
+                data = res,
+            )
+        )
+    }
+
     suspend fun deleteVideo(request: ServerRequest): ServerResponse {
         val videoId = request.pathVariable(PATH_ID).takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException(PATH_ID)
         videoService.deleteVideo(videoId)
+        return ServerResponse.ok().bodyValueAndAwait(Response<Nothing>())
+    }
+
+    suspend fun getPromotedVideos(request: ServerRequest): ServerResponse {
+        val res = videoService.getPromotedVideo()
+        return ServerResponse.ok().bodyValueAndAwait(Response(
+            data = res.data,
+            pagination = res.pagination
+        ))
+    }
+
+    suspend fun updatePromotedVideo(request: ServerRequest): ServerResponse {
+        val videoId = request.pathVariable(PATH_ID).takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException(PATH_ID)
+        val reqBody = request.awaitBodyOrNull<PromoteVideoRequest>() ?: throw RequestBodyRequired
+        videoService.updatePromotedVideo(videoId, reqBody)
         return ServerResponse.ok().bodyValueAndAwait(Response<Nothing>())
     }
 }

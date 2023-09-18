@@ -1,5 +1,7 @@
 package com.noljanolja.server.core.repo.media
 
+import com.noljanolja.server.core.model.PromotedVideoConfig
+import com.noljanolja.server.core.model.Video
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
@@ -20,6 +22,18 @@ data class PromotedVideoModel(
     @Column("start_date")
     val startDate: LocalDate,
 
+    @Column("auto_play")
+    val autoPlay: Boolean,
+
+    @Column("auto_like")
+    val autoLike: Boolean,
+
+    @Column("auto_subscribe")
+    val autoSubscribe: Boolean,
+
+    @Column("auto_comment")
+    val autoComment: Boolean,
+
     @Column("end_date")
     val endDate: LocalDate,
 
@@ -30,4 +44,18 @@ data class PromotedVideoModel(
     @Column("updated_at")
     @LastModifiedDate
     val updatedAt: Instant = Instant.now(),
+)
+
+
+fun PromotedVideoModel.toPromotedVideo(video: Video) = PromotedVideoConfig(
+    id = id,
+    startDate = startDate,
+    endDate = endDate,
+    autoSubscribe = autoSubscribe,
+    autoPlay = autoPlay,
+    autoComment = autoComment,
+    autoLike = autoLike,
+    video = video,
+    createdAt = createdAt,
+    updatedAt = updatedAt
 )

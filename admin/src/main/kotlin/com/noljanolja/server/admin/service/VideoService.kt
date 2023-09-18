@@ -3,6 +3,8 @@ package com.noljanolja.server.admin.service
 import com.noljanolja.server.admin.adapter.core.CoreApi
 import com.noljanolja.server.admin.adapter.core.CoreCreateVideoRequest
 import com.noljanolja.server.admin.adapter.youtube.YoutubeApi
+import com.noljanolja.server.admin.model.PromoteVideoRequest
+import com.noljanolja.server.admin.model.PromotedVideoConfig
 import com.noljanolja.server.admin.model.Video
 import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.common.exception.DefaultInternalErrorException
@@ -29,6 +31,11 @@ class VideoService(
         return coreApi.createVideo(req)
     }
 
+    suspend fun getVideoDetail(videoId: String): Video? {
+        val res = coreApi.getVideoDetail(videoId)
+        return res.data
+    }
+
     suspend fun getVideo(query: String? = null, page: Int, pageSize: Int): Response<List<Video>> {
         val res = coreApi.getVideo(query, page, pageSize)
         return res
@@ -36,6 +43,14 @@ class VideoService(
 
     suspend fun deleteVideo(videoId: String) {
         coreApi.deleteVideo(videoId)
+    }
+
+    suspend fun getPromotedVideo(): Response<List<PromotedVideoConfig>> {
+        return coreApi.getPromotedVideos()
+    }
+
+    suspend fun updatePromotedVideo(videoId: String, promoteVideoRequest: PromoteVideoRequest) {
+        coreApi.updatePromotedVideo(videoId, promoteVideoRequest)
     }
 
     private fun parseYoutubeUrlQuery(url: String): List<Pair<String, String>> {

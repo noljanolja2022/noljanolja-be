@@ -1,6 +1,7 @@
 package com.noljanolja.server.admin.model
 
 import java.time.Instant
+import java.time.LocalDate
 
 data class VideoCreationReq(
     val youtubeUrl: String,
@@ -46,3 +47,25 @@ data class VideoComment(
         val avatar: String,
     )
 }
+
+data class PromotedVideoConfig(
+    val id: Long = 0,
+    val startDate: LocalDate,
+    val autoPlay: Boolean,
+    val autoLike: Boolean,
+    val autoSubscribe: Boolean,
+    val autoComment: Boolean,
+    val endDate: LocalDate,
+    val createdAt: Instant = Instant.now(),
+    val updatedAt: Instant = Instant.now(),
+    val video: Video
+)
+
+data class PromoteVideoRequest (
+    val autoLike: Boolean,
+    val autoPlay: Boolean,
+    val autoSubscribe: Boolean,
+    val autoComment: Boolean,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+)

@@ -1,12 +1,9 @@
 package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.common.exception.DefaultBadRequestException
-import com.noljanolja.server.consumer.adapter.core.CoreApi
+import com.noljanolja.server.consumer.adapter.core.*
 import com.noljanolja.server.consumer.adapter.core.request.CoreLikeVideoRequest
 import com.noljanolja.server.consumer.adapter.core.request.PostCommentRequest
-import com.noljanolja.server.consumer.adapter.core.toChannel
-import com.noljanolja.server.consumer.adapter.core.toConsumerVideo
-import com.noljanolja.server.consumer.adapter.core.toConsumerVideoComment
 import com.noljanolja.server.consumer.adapter.youtube.YoutubeApi
 import com.noljanolja.server.consumer.model.*
 import com.noljanolja.server.consumer.rsocket.SocketRequester
@@ -193,5 +190,5 @@ class MediaService(
     suspend fun getPromotedVideos(
         page: Int,
         pageSize: Int,
-    ): List<Video> = coreApi.getPromotedVideos(page, pageSize).map { it.toConsumerVideo() }
+    ): List<CorePromotedVideoConfig> = coreApi.getPromotedVideos(page, pageSize)
 }

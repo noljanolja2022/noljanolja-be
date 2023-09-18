@@ -7,6 +7,8 @@ import org.springframework.data.repository.kotlin.CoroutineCrudRepository
 
 interface PromotedVideoRepo : CoroutineCrudRepository<PromotedVideoModel, Long> {
 
+    fun findAllBy(pageable: Pageable): Flow<PromotedVideoModel>
+
     @Query(
         """
         SELECT videos.* FROM promoted_videos inner join videos ON promoted_videos.video_id = videos.id LIMIT :limit OFFSET :offset

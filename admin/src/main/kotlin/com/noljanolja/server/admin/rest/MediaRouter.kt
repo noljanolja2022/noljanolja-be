@@ -25,7 +25,10 @@ class MediaRouter(
             "/videos".nest {
                 GET("", mediaHandler::getVideo)
                 POST("", mediaHandler::createVideo)
+                GET("/{id}", mediaHandler::getVideoDetail)
                 DELETE("/{id}", mediaHandler::deleteVideo)
+                GET("promoted", mediaHandler::getPromotedVideos)
+                POST("/{id}/promoted", mediaHandler::updatePromotedVideo)
             }
         }
     }

@@ -2,11 +2,13 @@ package com.noljanolja.server.core.service
 
 import com.noljanolja.server.common.exception.UserNotFound
 import com.noljanolja.server.core.exception.Error
+import com.noljanolja.server.core.model.PromotedVideoConfig
 import com.noljanolja.server.core.model.Video
 import com.noljanolja.server.core.model.VideoComment
 import com.noljanolja.server.core.repo.media.*
 import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
+import com.noljanolja.server.core.rest.request.PromoteVideoRequest
 import com.noljanolja.server.core.rest.request.RateVideoAction
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Pageable
@@ -244,32 +246,37 @@ class VideoService(
     suspend fun getPromotedVideos(
         page: Int,
         pageSize: Int,
-    ): Pair<List<Video>, Long> {
-        return Pair(
-            promotedVideoRepo.findAllBy(
-                offset = (page - 1) * pageSize,
-                limit = pageSize
-            ).toList().map {
-                it.channel = videoChannelRepo.findById(it.channelId)!!
-                it.category = videoCategoryRepo.findById(it.categoryId)!!
-                it.toVideo()
-            },
-            promotedVideoRepo.count()
-        )
+    ): Pair<List<PromotedVideoConfig>, Long> {
+        val configs = promotedVideoRepo.findAllBy(
+            pageable = Pageable.ofSize(pageSize).withPage(page-1)
+        ).toList()
+        val res = promotedVideoRepo.findAllBy(
+            offset = (page - 1) * pageSize,
+            limit = pageSize
+        ).toList().map {
+            it.channel = videoChannelRepo.findById(it.channelId)!!
+            it.category = videoCategoryRepo.findById(it.categoryId)!!
+            it.toVideo()
+        }
+        val count = promotedVideoRepo.count()
+        return Pair(configs.map { config -> config.toPromotedVideo(res.first { it.id == config.videoId }) }, count)
     }
 
     suspend fun promoteVideo(
         videoId: String,
-        startDate: LocalDate,
-        endDate: LocalDate,
+        payload: PromoteVideoRequest
     ) {
         // Currently we only allow 1 video to be promoted
         promotedVideoRepo.deleteAll()
         promotedVideoRepo.save(
             PromotedVideoModel(
                 videoId = videoId,
-                startDate = startDate,
-                endDate = endDate,
+                startDate = payload.startDate,
+                endDate = payload.endDate,
+                autoLike = payload.autoLike,
+                autoComment = payload.autoComment,
+                autoPlay = payload.autoPlay,
+                autoSubscribe = payload.autoSubscribe
             )
         )
     }

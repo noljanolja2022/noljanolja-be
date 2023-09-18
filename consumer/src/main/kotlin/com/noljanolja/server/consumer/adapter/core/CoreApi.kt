@@ -1127,5 +1127,5 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<List<CoreVideo>>>().data!!
+        .awaitBody<Response<List<CorePromotedVideoConfig>>>().data!!
 }

@@ -161,6 +161,24 @@ class CoreApi(
         }
         .awaitBody<Response<List<Video>>>()
 
+    suspend fun getVideoDetail(
+        videoId: String
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$VIDEO_ENDPOINT/$videoId")
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Video>>()
+
     suspend fun createVideo(
         request: CoreCreateVideoRequest
     ): Video? = webClient.post()
@@ -184,6 +202,42 @@ class CoreApi(
             builder.path("$VIDEO_ENDPOINT/${videoId}")
                 .build()
         }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
+    suspend fun getPromotedVideos() = webClient.get()
+        .uri { builder ->
+            builder.path("$VIDEO_ENDPOINT/promoted")
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<PromotedVideoConfig>>>()
+
+    suspend fun updatePromotedVideo(
+        videoId: String,
+        promoteVideoRequest: PromoteVideoRequest
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$VIDEO_ENDPOINT/$videoId/promote")
+                .build()
+        }
+        .bodyValue(promoteVideoRequest)
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->

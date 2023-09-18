@@ -3,6 +3,7 @@ package com.noljanolja.server.consumer.adapter.core
 import com.noljanolja.server.consumer.model.Channel
 import com.noljanolja.server.consumer.model.Video
 import java.time.Instant
+import java.time.LocalDate
 
 data class CoreVideo(
     val id: String,
@@ -32,6 +33,19 @@ data class CoreChannel(
     val id: String,
     val title: String,
     val thumbnail: String,
+)
+
+data class CorePromotedVideoConfig(
+    val id: Long = 0,
+    val startDate: LocalDate,
+    val autoPlay: Boolean,
+    val autoLike: Boolean,
+    val autoSubscribe: Boolean,
+    val autoComment: Boolean,
+    val endDate: LocalDate,
+    val createdAt: Instant = Instant.now(),
+    val updatedAt: Instant = Instant.now(),
+    val video: CoreVideo
 )
 
 fun CoreChannel.toChannel() = Channel(

@@ -1,9 +1,10 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 9/9/2023:
-      - Update param when like video to actually like it on youtube
-  version: 1.0.6
+    Changelog - 18/9/2023:
+      - Update promoted video API
+      - Add promoted video model
+  version: 1.0.7
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -1117,7 +1118,7 @@ paths:
                       data:
                         type: array
                         items:
-                          $ref: "#/components/schemas/Video"
+                          $ref: "#/components/schemas/PromotedVideoConfig"
   /api/v1/media/videos/watching:
     get:
       tags: [ Video ]
@@ -1250,7 +1251,6 @@ paths:
                     properties:
                       data:
                         $ref: "#/components/schemas/VideoComment"
-
   /api/v1/media/videos/{videoId}/likes:
     post:
       tags: [ Video ]
@@ -1862,7 +1862,6 @@ components:
           $ref: "#/components/schemas/Message"
         shareVideo:
           $ref: "#/components/schemas/Video"
-
     MessageType:
       type: string
       enum: [ PLAINTEXT, STICKER, VOICE, PHOTO, FILE, EVENT_UPDATED, EVENT_LEFT, EVENT_JOIN ]
@@ -2064,6 +2063,36 @@ components:
           format: datetime
           description: in date format
           example: 2023-03-10 04:04:43
+    PromotedVideoConfig:
+      type: object
+      properties:
+        id:
+          type: string
+        startDate:
+          type: string
+          format: datetime
+        endDate:
+          type: string
+          format: datetime
+        autoPlay:
+          type: boolean
+        autoLike:
+          type: boolean
+        autoComment:
+          type: boolean
+        autoSubscribe:
+          type: boolean
+        createdAt:
+          type: string
+          format: datetime
+        updatedAt:
+          type: string
+          format: datetime
+        video:
+          type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/Video"
     MemberInfo:
       type: object
       properties:
