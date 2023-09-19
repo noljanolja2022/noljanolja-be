@@ -1,6 +1,6 @@
 package com.noljanolja.server.consumer.adapter.youtube
 
-import com.noljanolja.server.common.exception.DefaultBadRequestException
+import com.noljanolja.server.common.exception.BaseException
 import com.noljanolja.server.common.exception.DefaultInternalErrorException
 import com.noljanolja.server.consumer.config.service.ServiceConfig
 import org.springframework.beans.factory.annotation.Qualifier
@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
+import org.springframework.web.reactive.function.client.awaitBodyOrNull
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 import java.net.URLEncoder
@@ -31,6 +32,7 @@ class YoutubeApi(
     suspend fun subscribeToChannel(channelId: String, bearer: String) = webClient.post()
         .uri { builder ->
             builder.path(SUBSCRIPTION)
+                .queryParam("part", "snippet")
                 .build()
         }
         .headers { it.setBearerAuth(bearer) }
@@ -47,7 +49,7 @@ class YoutubeApi(
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<YoutubeError>().mapNotNull { response ->
-                DefaultBadRequestException(Error(response.error.message))
+                BaseException(response.error.code.toInt(), response.error.message, null)
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
@@ -69,7 +71,7 @@ class YoutubeApi(
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<YoutubeError>().mapNotNull { response ->
-                DefaultBadRequestException(Error(response.error.message))
+                BaseException(response.error.code.toInt(), response.error.message, null)
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
@@ -92,13 +94,13 @@ class YoutubeApi(
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<YoutubeError>().mapNotNull { response ->
-                DefaultBadRequestException(Error(response.error.message))
+                BaseException(response.error.code.toInt(), response.error.message, null)
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(DefaultInternalErrorException(null))
         }
-        .awaitBody<Any>()
+        .awaitBodyOrNull<Any>()
 
     suspend fun addToplevelComment(
         videoId: String,
@@ -111,9 +113,7 @@ class YoutubeApi(
                 .queryParam("part", URLEncoder.encode(part.joinToString(","), StandardCharsets.UTF_8))
                 .build()
         }
-        .headers {
-            it.setBearerAuth(bearer)
-        }
+        .headers { it.setBearerAuth(bearer) }
         .bodyValue(
             TopLevelCommentRequest(
                 YoutubeSnippet(
@@ -129,13 +129,7 @@ class YoutubeApi(
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<YoutubeError>().mapNotNull { response ->
-                println("Comment to youtube failed. VideoId: $videoId, message: ${response.error.message} with code ${response.error.code}")
-                if (response.error.code == "403" &&
-                    response.error.message == "The caller's YouTube account is not connected to Google+."
-                ) {
-                    com.noljanolja.server.consumer.exception.Error.NoYoutubeAccountForAction
-                } else
-                    DefaultBadRequestException(Error(response.error.message))
+                BaseException(response.error.code.toInt(), response.error.message, null)
             }
         }
         .onStatus(HttpStatusCode::is5xxServerError) {

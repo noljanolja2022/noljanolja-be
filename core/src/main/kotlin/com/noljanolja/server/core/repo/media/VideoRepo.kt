@@ -73,7 +73,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
     @Query(
         """
             UPDATE `videos`
-            SET `likeCount`    = `likeCount` + 1
+            SET `like_count`    = `like_count` + 1
             WHERE id = :videoId;
         """
     )
@@ -83,7 +83,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
     @Query(
         """
             UPDATE `videos`
-            SET `likeCount`    = `likeCount` - 1
+            SET `like_count`    = `like_count` - 1
             WHERE id = :videoId;
         """
     )

@@ -57,7 +57,7 @@ abstract class BaseExceptionsHandler(
             else -> DefaultInternalErrorException(error.cause)
         }
         logger.log(Level.SEVERE, error.cause?.message ?: error.message)
-        val status = HttpStatus.valueOf(exception.code / HTTP_STATUS_FACTOR)
+        val status = HttpStatus.valueOf(exception.code / if (exception.code > 1000) HTTP_STATUS_FACTOR else 1)
 
         return ServerResponse.status(status)
             .bodyValueAndAwait(
