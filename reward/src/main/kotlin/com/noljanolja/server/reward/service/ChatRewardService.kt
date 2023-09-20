@@ -1,7 +1,7 @@
 package com.noljanolja.server.reward.service
 
 import com.noljanolja.server.loyalty.service.LoyaltyService
-import com.noljanolja.server.loyalty.service.REASON_SEND_MESSAGES
+import com.noljanolja.server.common.utils.REASON_SEND_MESSAGES
 import com.noljanolja.server.reward.model.ChatRewardConfig
 import com.noljanolja.server.reward.repo.*
 import com.noljanolja.server.reward.rest.request.UpsertChatConfigRequest

@@ -4,6 +4,7 @@ include(
     ":common",
     ":loyalty",
     ":reward",
+    ":coin_exchange",
     ":gifts",
     ":core",
     ":auth",

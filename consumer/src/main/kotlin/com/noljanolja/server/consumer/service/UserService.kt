@@ -48,7 +48,9 @@ class UserService(
                 )
             }
             coreApi.upsertUser(newUser)
-        }.toConsumerUser()
+        }.toConsumerUser().apply {
+            coinBalance = coreApi.getUserCoinBalance(user.id).balance
+        }
     }
 
     suspend fun updateCurrentUser(userId: String, request: UpdateCurrentUserRequest): User? {

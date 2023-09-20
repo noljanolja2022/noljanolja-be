@@ -101,6 +101,20 @@ serverLoyaltyTest = [
     "reactor-test",
 ]
 
+serverCoinExchange = [
+    "spring-boot-r2dbc",
+    "r2dbc-proxy",
+    "kotlinx-datetime"
+]
+
+serverCoinExchangeRuntime = [
+]
+
+serverCoinExchangeTest = [
+    "spring-boot-test",
+    "reactor-test",
+]
+
 serverCore = [
     "spring-boot-r2dbc",
     "r2dbc-proxy",

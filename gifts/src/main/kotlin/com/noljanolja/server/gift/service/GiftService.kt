@@ -1,10 +1,10 @@
 package com.noljanolja.server.gift.service
 
+import com.noljanolja.server.coin_exchange.service.CoinExchangeService
+import com.noljanolja.server.common.utils.REASON_PURCHASE_GIFT
 import com.noljanolja.server.gift.exception.Error
 import com.noljanolja.server.gift.model.Gift
 import com.noljanolja.server.gift.repo.*
-import com.noljanolja.server.loyalty.service.LoyaltyService
-import com.noljanolja.server.loyalty.service.REASON_PURCHASE_GIFT
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
@@ -18,7 +18,7 @@ class GiftService(
     private val giftCategoryRepo: GiftCategoryRepo,
     private val giftCodeRepo: GiftCodeRepo,
     private val giftRepo: GiftRepo,
-    private val loyaltyService: LoyaltyService,
+    private val coinExchangeService: CoinExchangeService,
 ) {
     suspend fun buyGift(
         userId: String,
@@ -32,9 +32,9 @@ class GiftService(
                 giftId = giftId,
             ) >= gift.maxBuyTimes
         ) throw Error.MaximumBuyTimesReached
-        loyaltyService.addTransaction(
-            memberId = userId,
-            points = -gift.price,
+        coinExchangeService.addTransaction(
+            userId = userId,
+            amount = -gift.price.toDouble(),
             reason = REASON_PURCHASE_GIFT
         )
         val savedGift = giftRepo.save(

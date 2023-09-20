@@ -18,9 +18,9 @@ sealed class Error(
         null,
     )
 
-    object InsufficientBalance : BaseException(
+    object InsufficientPointBalance : BaseException(
         INSUFFICIENT_BALANCE,
-        "Insufficient balance",
+        "Insufficient point balance",
         null
     )
 }

@@ -1,7 +1,7 @@
 package com.noljanolja.server.reward.service
 
 import com.noljanolja.server.loyalty.service.LoyaltyService
-import com.noljanolja.server.loyalty.service.REASON_DAILY_CHECKIN
+import com.noljanolja.server.common.utils.REASON_DAILY_CHECKIN
 import com.noljanolja.server.reward.exception.Error
 import com.noljanolja.server.reward.model.CheckinRewardConfig
 import com.noljanolja.server.reward.model.UserCheckinProgress

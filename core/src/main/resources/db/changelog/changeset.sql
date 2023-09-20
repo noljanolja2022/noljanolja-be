@@ -785,3 +785,41 @@ CREATE TABLE IF NOT EXISTS `channel_subscription_records`
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (channel_id) REFERENCES video_channels(id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
+
+-- changeset tranhieu956230@gmail.com::18
+
+DROP TABLE IF EXISTS `user_balances`;
+
+CREATE TABLE IF NOT EXISTS `user_balances`
+(
+    `id`            BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `user_id`       VARCHAR(255)    NOT NULL,
+    `balance`       DOUBLE          NOT NULL,
+    `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+DROP TABLE IF EXISTS `coin_transactions`;
+
+CREATE TABLE IF NOT EXISTS `coin_transactions`
+(
+    `id`            BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `balance_id`    BIGINT          NOT NULL,
+    `amount`        DOUBLE          NOT NULL,
+    `reason`        VARCHAR(255)    NOT NULL,
+    `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (balance_id) REFERENCES user_balances(id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+DROP TABLE IF EXISTS `exchange_rate`;
+
+CREATE TABLE IF NOT EXISTS `exchange_rate`
+(
+    `id`                    BIGINT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `coin_to_point_rate`    DOUBLE      NOT NULL,
+    `created_at`            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB;

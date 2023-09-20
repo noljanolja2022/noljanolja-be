@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation(project(BuildModules.SERVER_COMMON))
     implementation(project(BuildModules.SERVER_LOYALTY))
+    implementation(project(BuildModules.SERVER_COIN_EXCHANGE))
     implementation(project(BuildModules.SERVER_REWARD))
     implementation(project(BuildModules.SERVER_GIFTS))
     implementation(libs.bundles.serverCore)

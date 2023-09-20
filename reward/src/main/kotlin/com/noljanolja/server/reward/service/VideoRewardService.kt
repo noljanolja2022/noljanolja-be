@@ -1,9 +1,9 @@
 package com.noljanolja.server.reward.service
 
 import com.noljanolja.server.loyalty.service.LoyaltyService
-import com.noljanolja.server.loyalty.service.REASON_COMMENT_VIDEO
-import com.noljanolja.server.loyalty.service.REASON_LIKE_VIDEO
-import com.noljanolja.server.loyalty.service.REASON_WATCH_VIDEO
+import com.noljanolja.server.common.utils.REASON_COMMENT_VIDEO
+import com.noljanolja.server.common.utils.REASON_LIKE_VIDEO
+import com.noljanolja.server.common.utils.REASON_WATCH_VIDEO
 import com.noljanolja.server.reward.exception.Error
 import com.noljanolja.server.reward.model.UserVideoRewardRecord
 import com.noljanolja.server.reward.model.VideoRewardConfig

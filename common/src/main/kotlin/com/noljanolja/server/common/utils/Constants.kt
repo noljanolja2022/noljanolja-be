@@ -1,4 +1,4 @@
-package com.noljanolja.server.loyalty.service
+package com.noljanolja.server.common.utils
 
 const val REASON_SEND_MESSAGES = "REASON_SEND_MESSAGES"
 const val REASON_REFERRAL_REWARD = "REASON_REFERRAL_REWARD"
@@ -7,3 +7,4 @@ const val REASON_PURCHASE_GIFT = "REASON_PURCHASE_GIFT"
 const val REASON_WATCH_VIDEO = "REASON_WATCH_VIDEO"
 const val REASON_LIKE_VIDEO = "REASON_LIKE_VIDEO"
 const val REASON_COMMENT_VIDEO = "REASON_COMMENT_VIDEO"
+const val REASON_EXCHANGE_POINT = "REASON_EXCHANGE_POINT"

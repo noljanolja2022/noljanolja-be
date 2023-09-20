@@ -2,6 +2,7 @@ package com.noljanolja.server.core.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.noljanolja.server.common.exception.UserNotFound
+import com.noljanolja.server.common.utils.REASON_REFERRAL_REWARD
 import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.User
 import com.noljanolja.server.core.model.UserContact
@@ -11,7 +12,6 @@ import com.noljanolja.server.core.repo.user.UserDeviceModel.Companion.toUserDevi
 import com.noljanolja.server.core.repo.user.UserModel.Companion.toUserModel
 import com.noljanolja.server.core.utils.parsePhoneNumber
 import com.noljanolja.server.loyalty.service.LoyaltyService
-import com.noljanolja.server.loyalty.service.REASON_REFERRAL_REWARD
 import com.noljanolja.server.reward.repo.ReferralRewardConfigRepo
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map

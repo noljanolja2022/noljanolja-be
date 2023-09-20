@@ -62,7 +62,7 @@ class LoyaltyService(
         reason: String,
     ): Transaction {
         memberInfoRepo.findByMemberIdForUpdate(memberId)?.let {
-            if (it.availablePoints + points < 0) throw Error.InsufficientBalance
+            if (it.availablePoints + points < 0) throw Error.InsufficientPointBalance
             memberInfoRepo.save(
                 MemberInfoModel(
                     memberId = memberId,

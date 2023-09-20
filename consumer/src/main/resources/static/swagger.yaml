@@ -22,6 +22,8 @@ tags:
   - name: Media
     description: Stickers, emojis, etc.
   - name: Gift
+  - name: Coin Exchange
+    description: Coin exchange, coin balance, transactions
 paths:
   /api/v1/users/me:
     get:
@@ -1677,6 +1679,125 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/Banner"
+  /api/v1/coin-exchange/rate:
+    get:
+      tags: [ Coin Exchange ]
+      summary: Get coin to point exchange rate
+      description: Get coin to point exchange rate
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: Get coin to point exchange rate
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          rate:
+                            type: number
+                            format: double
+  /api/v1/coin-exchange/me/balance:
+    get:
+      tags: [ Coin Exchange ]
+      summary: Get user coin balance
+      description: Get user coin balance
+      security:
+        - bearerAuth: [ ]
+      responses:
+        "200":
+          description: Get user coin balance
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          balance:
+                            type: number
+                            format: double
+  /api/v1/coin-exchange/me/transactions:
+    get:
+      tags: [ Coin Exchange ]
+      summary: Get user coin transactions
+      description: Get user coin transaction
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: lastOffsetDate
+          schema:
+            type: string
+            format: datetime
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [ ALL, RECEIVED, SPENT ]
+        - in: query
+          name: month
+          schema:
+            type: number
+            format: int32
+            description: Value 1 (January), 2 (February),.... 12 (December)
+        - in: query
+          name: year
+          schema:
+            type: number
+            format: int32
+            description: Value 2023 or 2022 or 2021....
+      responses:
+        "200":
+          description: Get user coin transaction
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CoinTransaction"
+  /api/v1/coin-exchange/me/convert:
+    post:
+      tags: [ Coin Exchange ]
+      summary: Exchange point to coin
+      description: Exchange point to coin
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                points:
+                  type: number
+                  format: int64
+      responses:
+        "200":
+          description: Exchange point to coin
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CoinTransaction"
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -2283,3 +2404,23 @@ components:
         rewardPoints:
           type: number
           format: Long
+    CoinTransaction:
+      type: object
+      properties:
+        id:
+          type: number
+          format: int64
+        balanceId:
+          type: number
+          format: int64
+        reason:
+          type: string
+        amount:
+          type: number
+          format: double
+        status:
+          type: string
+          enum: [ COMPLETED ]
+        createdAt:
+          type: string
+          format: datetime

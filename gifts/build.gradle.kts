@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation(project(BuildModules.SERVER_COMMON))
-    implementation(project(BuildModules.SERVER_LOYALTY))
+    implementation(project(BuildModules.SERVER_COIN_EXCHANGE))
     implementation(libs.bundles.serverGifts)
     runtimeOnly(libs.bundles.serverGiftsRuntime)
     testImplementation(libs.bundles.serverGiftsTest)

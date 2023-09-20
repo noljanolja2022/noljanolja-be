@@ -39,6 +39,7 @@ class CoreApi(
         const val REWARD_ENDPOINT = "/api/v1/reward"
         const val GIFT_ENDPOINT = "/api/v1/gifts"
         const val BANNER_ENDPOINT = "/api/v1/banners"
+        const val COIN_EXCHANGE_ENDPOINT = "/api/v1/coin-exchange"
 
         val coreErrorsMapping = mapOf(
             404_001 to CoreServiceError.UserNotFound
@@ -466,7 +467,7 @@ class CoreApi(
 
     suspend fun getChannelDetail(
         channelId: String,
-    )= webClient.get()
+    ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/channels/{channelId}").build(channelId)
         }
@@ -1128,4 +1129,81 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CorePromotedVideoConfig>>>().data!!
+
+    suspend fun getCoinToPointExchangeRate() = webClient.get()
+        .uri { builder ->
+            builder.path("$COIN_EXCHANGE_ENDPOINT/rate").build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Double>>().data!!
+
+    suspend fun exchangePointToCoin(
+        points: Long,
+        userId: String,
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$COIN_EXCHANGE_ENDPOINT/users/{userId}/convert").build(userId)
+        }
+        .bodyValue(CoreExchangePointRequest(points))
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreCoinTransaction>>().data!!
+
+    suspend fun getUserCoinBalance(
+        userId: String,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$COIN_EXCHANGE_ENDPOINT/users/{userId}/balance").build(userId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreCoinBalance>>().data!!
+
+    suspend fun getUserCoinTransactions(
+        userId: String,
+        lastOffsetDate: Instant? = null,
+        type: String? = null,
+        month: Int? = null,
+        year: Int? = null,
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$COIN_EXCHANGE_ENDPOINT/users/{userId}/transactions")
+                .queryParamIfPresent("lastOffsetDate", Optional.ofNullable(lastOffsetDate?.toString()))
+                .queryParamIfPresent("type", Optional.ofNullable(type))
+                .queryParamIfPresent("month", Optional.ofNullable(month))
+                .queryParamIfPresent("year", Optional.ofNullable(year))
+                .build(userId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreCoinTransaction>>>().data!!
 }
