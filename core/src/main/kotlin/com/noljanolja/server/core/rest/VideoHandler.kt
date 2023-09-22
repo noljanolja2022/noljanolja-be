@@ -1,5 +1,7 @@
 package com.noljanolja.server.core.rest
 
+import com.noljanolja.server.common.exception.BaseException
+import com.noljanolja.server.common.exception.DefaultInternalErrorException
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.model.Pagination
@@ -7,13 +9,19 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.rest.request.*
 import com.noljanolja.server.core.service.ChannelService
 import com.noljanolja.server.core.service.VideoService
+import com.noljanolja.server.youtube.service.*
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
 @Component
 class VideoHandler(
     private val videoService: VideoService,
-    private val channelService: ChannelService
+    private val channelService: ChannelService,
+    private val youtubeRatingService: YoutubeRatingService,
+    private val youtubeVideoService: YoutubeVideoService,
+    private val youtubeChannelService: YoutubeChannelService,
+    private val youtubeCategoryService: YoutubeCategoryService,
+    private val youtubeCommentService: YoutubeCommentService
 ) {
     companion object {
         const val DEFAULT_QUERY_PARAM_PAGE = 1
@@ -22,12 +30,23 @@ class VideoHandler(
 
     suspend fun upsertVideo(request: ServerRequest): ServerResponse {
         val payload = request.awaitBodyOrNull<CreateVideoRequest>() ?: throw RequestBodyRequired
-        val video = videoService.upsertVideo(
-            videoInfo = payload,
+        val youtubeVideo = youtubeVideoService.fetchVideoDetail(listOf(payload.id)).items.firstOrNull()
+            ?: throw DefaultInternalErrorException(Exception("Unable to retrieve youtube video"))
+        val youtubeCategory = youtubeCategoryService.fetchCategory(youtubeVideo.snippet.categoryId).items.firstOrNull()
+            ?: throw DefaultInternalErrorException(Exception("Unable to retrieve category of the video"))
+        val youtubeChannel =
+            youtubeChannelService.fetchChannelDetail(youtubeVideo.snippet.channelId).items.firstOrNull()
+                ?: throw DefaultInternalErrorException(Exception("Unable to retrieve channel of the video"))
+        val res = videoService.upsertVideo(
+            payload.youtubeUrl,
+            payload.isHighlighted,
+            youtubeVideo,
+            youtubeChannel,
+            youtubeCategory
         )
         return ServerResponse.ok().bodyValueAndAwait(
             body = Response(
-                data = video,
+                data = res,
             ),
         )
     }
@@ -125,6 +144,9 @@ class VideoHandler(
         val userId = req?.userId?.takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("userId")
         val action = req.action
+        if (req.youtubeToken != null) {
+            youtubeRatingService.rateVideo(req.youtubeToken, videoId, req.action.toString())
+        }
         videoService.likeVideo(
             videoId = videoId,
             userId = userId,
@@ -140,6 +162,7 @@ class VideoHandler(
         val videoId = request.pathVariable("videoId").takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("videoId")
         val payload = request.awaitBodyOrNull<PostCommentRequest>() ?: throw RequestBodyRequired
+        youtubeCommentService.postComment(payload.youtubeToken, videoId, payload.comment)
         val comment = videoService.postComment(
             comment = payload.comment,
             commenterId = payload.commenterId,
@@ -219,12 +242,23 @@ class VideoHandler(
     suspend fun subscribeToChannel(request: ServerRequest): ServerResponse {
         val channelId = request.pathVariable("channelId").ifBlank { throw InvalidParamsException("channelId") }
         val payload = request.awaitBodyOrNull<SubscribeChannelRequest>() ?: throw RequestBodyRequired
-        val res = channelService.subscribeUserToChannel(
-            channelId, payload.userId, payload.isSubscribing, payload.subscriptionId
-        )
+        if (payload.isSubscribing) {
+            val res = youtubeChannelService.subscribeToChannel(channelId, payload.youtubeToken)
+            channelService.addSubscription(
+                channelId, payload.userId, res.id
+            )
+        } else {
+            val res = channelService.getSubscriptionInfo(channelId, payload.userId)
+            if (res?.subscriptionId == null) throw BaseException(400, "No subscriptionId to be removed", null)
+            youtubeChannelService.unsubscribeFromChannel(res.channelId, payload.youtubeToken)
+            channelService.removeSubscription(
+                channelId, payload.userId,
+            )
+        }
+
         return ServerResponse.ok()
             .bodyValueAndAwait(
-                body = Response(data = res)
+                body = Response<Nothing>()
             )
     }
 }

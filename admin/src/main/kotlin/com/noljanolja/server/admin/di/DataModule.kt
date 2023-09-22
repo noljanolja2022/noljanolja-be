@@ -10,7 +10,6 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.util.DefaultUriBuilderFactory
 import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
 import java.time.Duration
@@ -43,15 +42,6 @@ class DataModule {
         return buildWebClient(webClientBuilder, config)
     }
 
-    @Bean
-    fun youtubeWebClient(
-        webClientBuilder: WebClient.Builder,
-        serviceConfig: ServiceConfig,
-    ): WebClient {
-        val config = serviceConfig.configs.first { it.id == ServiceConfig.Config.ServiceID.YOUTUBE }
-        return buildWebClient(webClientBuilder, config)
-    }
-
     private fun buildWebClient(
         webClientBuilder: WebClient.Builder,
         config: ServiceConfig.Config,
@@ -73,21 +63,6 @@ class DataModule {
                     WriteTimeoutHandler(config.timeoutMillis, TimeUnit.MILLISECONDS)
                 )
             }
-        if (config.id == ServiceConfig.Config.ServiceID.YOUTUBE) {
-            val factory = DefaultUriBuilderFactory(config.baseUrl)
-            factory.encodingMode = DefaultUriBuilderFactory.EncodingMode.NONE
-            return webClientBuilder
-                .uriBuilderFactory(factory)
-                .clientConnector(ReactorClientHttpConnector(httpClient))
-                .exchangeStrategies(
-                    ExchangeStrategies
-                        .builder()
-                        .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE) }
-                        .build()
-                )
-                .filters { it.addAll(filters) }
-                .build()
-        }
         return webClientBuilder
             .baseUrl(config.baseUrl)
             .clientConnector(ReactorClientHttpConnector(httpClient))

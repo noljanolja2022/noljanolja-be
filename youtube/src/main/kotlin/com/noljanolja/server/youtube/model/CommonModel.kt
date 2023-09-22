@@ -1,4 +1,4 @@
-package com.noljanolja.server.admin.model
+package com.noljanolja.server.youtube.model
 
 import java.time.Instant
 
@@ -22,7 +22,7 @@ data class YoutubeVideo(
     val id: String,
     val snippet: Snippet,
     val contentDetails: ContentDetail?,
-    val statistics: Statistic?
+    val statistics: Statistic
 ) {
     data class Statistic(
         val viewCount: String = "0",
@@ -56,37 +56,6 @@ data class YoutubeVideo(
     )
 }
 
-data class YoutubeChannel(
-    val kind: String,
-    val etag: String = "",
-    val id: String,
-    val snippet: Snippet,
-) {
-    data class Snippet(
-        val title: String = "",
-        val description: String = "",
-        val customUrl: String = "",
-        val publishedAt: Instant,
-        val thumbnails: YoutubeThumbnail,
-        val defaultLanguage: String?,
-        val localized: YoutubeLocalizedData?,
-        val country: String?
-    )
-}
-
-data class YoutubeVideoCategory(
-    val kind: String,
-    val etag: String,
-    val id: String,
-    val snippet: Snippet,
-) {
-    data class Snippet(
-        val channelId: String,
-        val title: String,
-        val assignable: Boolean = false
-    )
-}
-
 data class YoutubeThumbnail(
     val default: ThumbnailDetail,
     val medium: ThumbnailDetail?,
@@ -108,4 +77,71 @@ data class YoutubeThumbnail(
 data class YoutubeLocalizedData(
     val title: String,
     val description: String?
+)
+
+data class TopLevelComment(
+    val snippet: TopLevelCommentSnippet,
+    val kind : String? = null,
+    val etag: String ? = null,
+    val id: String ? = null,
+) {
+    data class TopLevelCommentSnippet(
+        val textOriginal: String,
+        val textDisplay: String? = null,
+        val channelId: String? = null,
+        val videoId: String? = null,
+        val authorDisplayName: String? = null,
+        val authorProfileImageUrl: String? = null,
+        val authorChannelUrl: String? = null,
+//        val authorChannelId: String,
+        val canRate: Boolean = false,
+        val viewerRating: String? = null,
+        val likeCount: Int = 0,
+        val publishedAt: Instant = Instant.now(),
+        val updatedAt: Instant = Instant.now()
+    )
+}
+
+data class YoutubeCommonResource(
+    val kind: String,
+    val etag: String,
+    val id: String,
+    val snippet: YoutubeSnippet,
+)
+
+data class YoutubeSnippet(
+    val kind: String? = null,
+    val channelId: String? = null,
+    val videoId: String? = null,
+    val topLevelComment: TopLevelComment? = null
+)
+
+data class YoutubeError(
+    val error: YoutubeErrorDetail
+) {
+    data class YoutubeErrorDetail(
+        val code: String,
+        val message: String = "",
+        val errors: List<YoutubeErrorCause> = emptyList()
+    )
+
+    data class YoutubeErrorCause(
+        val message: String = "",
+        val domain: String = "",
+        val reason: String = "",
+        val location: String = "",
+        val locationType: String = ""
+    )
+}
+
+data class AddSubscriptionRequest(
+    val snippet:AddSubscriptionRequestSnippet
+)
+
+data class AddSubscriptionRequestSnippet(
+    val resourceId: YoutubeSnippet
+)
+
+data class TopLevelCommentRequest(
+    val snippet: YoutubeSnippet
 )

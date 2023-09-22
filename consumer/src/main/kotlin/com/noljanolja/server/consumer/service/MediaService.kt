@@ -4,7 +4,6 @@ import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.consumer.adapter.core.*
 import com.noljanolja.server.consumer.adapter.core.request.CoreLikeVideoRequest
 import com.noljanolja.server.consumer.adapter.core.request.PostCommentRequest
-import com.noljanolja.server.consumer.adapter.youtube.YoutubeApi
 import com.noljanolja.server.consumer.model.*
 import com.noljanolja.server.consumer.rsocket.SocketRequester
 import com.noljanolja.server.consumer.rsocket.UserVideoComment
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component
 @Component
 class MediaService(
     private val coreApi: CoreApi,
-    private val youtubeApi: YoutubeApi,
     private val videoPubSubService: VideoPubSubService,
     private val socketRequester: SocketRequester,
 ) {
@@ -33,37 +31,23 @@ class MediaService(
     }
 
     suspend fun subscribeToChannel(channelId: String,userId: String, youtubeToken: String, isSubscribing: Boolean) {
-        if (isSubscribing) {
-            val res = youtubeApi.subscribeToChannel(channelId, youtubeToken)
-            coreApi.subscribeToChannel(
-                userId = userId,
-                channelId = channelId,
-                isSubscribing = true,
-                subscriptionId = res.id
-            )
-        } else {
-            val subscriptionId = coreApi.subscribeToChannel(
-                userId = userId,
-                channelId = channelId,
-                isSubscribing = false,
-                subscriptionId = null
-            ).data ?: throw DefaultBadRequestException(null)
-            youtubeApi.unsubscribeFromChannel(subscriptionId, youtubeToken)
-        }
+        coreApi.subscribeToChannel(
+            youtubeToken,
+            userId = userId,
+            channelId = channelId,
+            isSubscribing = isSubscribing
+        )
     }
 
     suspend fun likeVideo(
         videoId: String,
         userId: String,
         action: RateVideoAction,
-        youtubeBearer: String? = null
+        youtubeToken: String? = null
     ) {
-        if (youtubeBearer != null) {
-            youtubeApi.ratingVideo(videoId, youtubeBearer, action.toString())
-        }
         coreApi.likeVideo(
             videoId = videoId,
-            payload = CoreLikeVideoRequest(action, userId)
+            payload = CoreLikeVideoRequest(action, userId, youtubeToken)
         )
         socketRequester.emitUserLikeVideo(
             UserVideoLike(
@@ -78,16 +62,14 @@ class MediaService(
         comment: String,
         userId: String,
         videoId: String,
-        youtubeBearer: String? = null,
+        youtubeToken: String,
     ): VideoComment {
-        if (youtubeBearer != null) {
-            youtubeApi.addToplevelComment(videoId, youtubeBearer, comment)
-        }
         val videoComment = coreApi.postComment(
             videoId = videoId,
             payload = PostCommentRequest(
                 commenterId = userId,
                 comment = comment,
+                youtubeToken = youtubeToken
             )
         ).toConsumerVideoComment()
         socketRequester.emitUserCommentVideo(

@@ -8,8 +8,12 @@ import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.common.utils.addFileToZipStream
 import com.noljanolja.server.consumer.filter.AuthUserHolder
-import com.noljanolja.server.consumer.model.*
+import com.noljanolja.server.consumer.model.ResourceInfo
+import com.noljanolja.server.consumer.model.Video
+import com.noljanolja.server.consumer.model.VideoProgress
+import com.noljanolja.server.consumer.rest.request.ChannelSubscriptionRequest
 import com.noljanolja.server.consumer.rest.request.PostCommentRequest
+import com.noljanolja.server.consumer.rest.request.RateVideoRequest
 import com.noljanolja.server.consumer.service.GoogleStorageService
 import com.noljanolja.server.consumer.service.MediaService
 import com.noljanolja.server.consumer.service.VideoPubSubService
@@ -134,7 +138,7 @@ class MediaHandler(
             videoId = videoId,
             userId = userId,
             action = payload.action,
-            youtubeBearer = payload.youtubeToken
+            youtubeToken = payload.youtubeToken
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -151,7 +155,7 @@ class MediaHandler(
             comment = payload.comment,
             userId = userId,
             videoId = videoId,
-            youtubeBearer = payload.youtubeToken
+            youtubeToken = payload.youtubeToken
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

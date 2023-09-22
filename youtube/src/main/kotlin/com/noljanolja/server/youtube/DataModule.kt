@@ -1,6 +1,5 @@
-package com.noljanolja.server.core.di
+package com.noljanolja.server.youtube
 
-import com.noljanolja.server.core.config.ServiceConfig
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler
@@ -24,6 +23,7 @@ class DataModule {
         private const val MAX_CONNECTION_LIFE_TIME_SECONDS = 300L
         private const val MAX_CONNECTION_IDLE_TIME_SECONDS = 15L
     }
+
     @Bean
     fun youtubeWebClient(
         webClientBuilder: WebClient.Builder,
@@ -54,23 +54,10 @@ class DataModule {
                     WriteTimeoutHandler(config.timeoutMillis, TimeUnit.MILLISECONDS)
                 )
             }
-        if (config.id == ServiceConfig.Config.ServiceID.YOUTUBE) {
-            val factory = DefaultUriBuilderFactory(config.baseUrl)
-            factory.encodingMode = DefaultUriBuilderFactory.EncodingMode.NONE
-            return webClientBuilder
-                .uriBuilderFactory(factory)
-                .clientConnector(ReactorClientHttpConnector(httpClient))
-                .exchangeStrategies(
-                    ExchangeStrategies
-                        .builder()
-                        .codecs { it.defaultCodecs().maxInMemorySize(MAX_IN_MEMORY_SIZE) }
-                        .build()
-                )
-                .filters { it.addAll(filters) }
-                .build()
-        }
+        val factory = DefaultUriBuilderFactory(config.baseUrl)
+        factory.encodingMode = DefaultUriBuilderFactory.EncodingMode.NONE
         return webClientBuilder
-            .baseUrl(config.baseUrl)
+            .uriBuilderFactory(factory)
             .clientConnector(ReactorClientHttpConnector(httpClient))
             .exchangeStrategies(
                 ExchangeStrategies

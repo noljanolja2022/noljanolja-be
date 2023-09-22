@@ -16,17 +16,20 @@ class ChannelService(
         return videoChannelRepo.findById(channelId)?.toVideoChannel()
     }
 
-    suspend fun subscribeUserToChannel(channelId: String, userId: String, isSubscribing: Boolean, subscriptionId: String? = null): String? {
-        val existingRecord = channelSubscriptionRepo.findByChannelIdAndUserId(channelId, userId)
-        if (isSubscribing && subscriptionId != null) {
-            if (existingRecord == null) {
-                channelSubscriptionRepo.save(ChannelSubscriptionModel(
-                    userId = userId, channelId = channelId, subscriptionId = subscriptionId
-                ))
-            }
-        } else if (!isSubscribing && existingRecord != null) {
-            channelSubscriptionRepo.unsubscribeUserFromChannel(channelId, userId)
+    suspend fun getSubscriptionInfo(channelId: String, userId: String): ChannelSubscriptionModel? {
+        return channelSubscriptionRepo.findByChannelIdAndUserId(channelId, userId)
+    }
+
+    suspend fun addSubscription(channelId: String, userId: String, subscriptionId: String) {
+        val existingRecord = getSubscriptionInfo(channelId, userId)
+        if (existingRecord == null) {
+            channelSubscriptionRepo.save(ChannelSubscriptionModel(
+                userId = userId, channelId = channelId, subscriptionId = subscriptionId
+            ))
         }
-        return existingRecord?.subscriptionId ?: subscriptionId
+    }
+
+    suspend fun removeSubscription(channelId: String, userId: String) {
+        channelSubscriptionRepo.unsubscribeUserFromChannel(channelId, userId)
     }
 }

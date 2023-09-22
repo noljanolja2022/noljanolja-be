@@ -1,4 +1,4 @@
-package com.noljanolja.server.core.config
+package com.noljanolja.server.youtube
 
 import com.noljanolja.server.common.config.YmlPropertySourceFactory
 import org.springframework.boot.context.properties.ConfigurationProperties

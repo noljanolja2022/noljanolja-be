@@ -8,6 +8,7 @@ dependencies {
     implementation(project(BuildModules.SERVER_COIN_EXCHANGE))
     implementation(project(BuildModules.SERVER_REWARD))
     implementation(project(BuildModules.SERVER_GIFTS))
+    implementation(project(BuildModules.SERVER_YOUTUBE))
     implementation(libs.bundles.serverCore)
     runtimeOnly(libs.bundles.serverCoreRuntime)
     testImplementation(libs.bundles.serverCoreTest)

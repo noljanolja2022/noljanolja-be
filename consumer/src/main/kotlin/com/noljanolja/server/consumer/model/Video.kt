@@ -48,15 +48,6 @@ enum class VideoProgressEvent {
     PLAY, PAUSE, FINISH
 }
 
-data class RateVideoRequest(
-    val youtubeToken: String?,
-    val action: RateVideoAction
-)
-
-data class ChannelSubscriptionRequest(
-    val youtubeToken: String,
-    val isSubscribing: Boolean
-)
 
 enum class RateVideoAction {
     like, dislike, none

@@ -179,11 +179,9 @@ class CoreApi(
         }
         .awaitBody<Response<Video>>()
 
-    suspend fun createVideo(
-        request: CoreCreateVideoRequest
-    ): Video? = webClient.post()
+    suspend fun importVideo(videoId: String, youtubeUrl: String, isHighlighted: Boolean) = webClient.post()
         .uri { builder -> builder.path(VIDEO_ENDPOINT).build() }
-        .bodyValue(request)
+        .bodyValue(CoreCreateVideoRequest(videoId, youtubeUrl, isHighlighted))
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->

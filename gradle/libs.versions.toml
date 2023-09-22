@@ -229,3 +229,15 @@ serverGiftsTest = [
     "spring-boot-test",
     "reactor-test",
 ]
+
+serverYoutube = [
+
+]
+
+serverYoutubeRuntime = [
+
+]
+
+serverYoutubeProcessor = [
+    "spring-boot-configuration-processor"
+]

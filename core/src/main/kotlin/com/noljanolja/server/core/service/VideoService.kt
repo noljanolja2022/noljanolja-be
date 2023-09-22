@@ -10,10 +10,14 @@ import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.core.rest.request.CreateVideoRequest
 import com.noljanolja.server.core.rest.request.PromoteVideoRequest
 import com.noljanolja.server.core.rest.request.RateVideoAction
+import com.noljanolja.server.youtube.model.YoutubeChannel
+import com.noljanolja.server.youtube.model.YoutubeVideo
+import com.noljanolja.server.youtube.model.YoutubeVideoCategory
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 import java.time.LocalDate
 
 @Component
@@ -94,47 +98,50 @@ class VideoService(
     }
 
     suspend fun upsertVideo(
-        videoInfo: CreateVideoRequest,
+        youtubeUrl: String, isHighlight: Boolean,
+        youtubeVideo: YoutubeVideo, youtubeChannel: YoutubeChannel, youtubeCategory: YoutubeVideoCategory
     ): Video {
         val channel = videoChannelRepo.save(
-            (videoChannelRepo.findById(videoInfo.channel.id)
-                ?: VideoChannelModel(videoInfo.channel.id).apply { this.isNewRecord = true })
+            (videoChannelRepo.findById(youtubeChannel.id)
+                ?: VideoChannelModel(youtubeChannel.id).apply { this.isNewRecord = true })
                 .apply {
-                    title = videoInfo.channel.title
-                    thumbnail = videoInfo.channel.thumbnail
+                    title = youtubeChannel.snippet.title
+                    thumbnail = youtubeChannel.snippet.thumbnails.standard?.url ?: ""
                 }
         )
         val category = videoCategoryRepo.save(
-            (videoCategoryRepo.findById(videoInfo.category.id)
-                ?: VideoCategoryModel(videoInfo.category.id).apply { this.isNewRecord = true })
+            (videoCategoryRepo.findById(youtubeCategory.id)
+                ?: VideoCategoryModel(youtubeCategory.id).apply { this.isNewRecord = true })
                 .apply {
-                    title = videoInfo.category.title
+                    title = youtubeCategory.snippet.title
                 }
         )
         var isNewModel = false
         return videoRepo.save(
-            ((videoRepo.findById(videoInfo.id) ?: VideoModel(
-                _id = videoInfo.id,
+            ((videoRepo.findById(youtubeVideo.id) ?: VideoModel(
+                _id = youtubeVideo.id,
             ).apply { isNewRecord = true; isNewModel = true }).apply {
-                title = videoInfo.title
-                url = videoInfo.url
-                publishedAt = videoInfo.publishedAt
-                thumbnail = videoInfo.thumbnail
-                favoriteCount = videoInfo.favoriteCount
-                likeCount = videoInfo.likeCount
-                commentCount = videoInfo.commentCount
-                channelId = videoInfo.channel.id
-                categoryId = videoInfo.category.id
-                duration = videoInfo.duration
-                durationMs = videoInfo.durationMs
-                isHighlighted = videoInfo.isHighlighted
+                val parsedDuration = Duration.parse(youtubeVideo.contentDetails?.duration)
+                title = youtubeVideo.snippet.title
+                url = youtubeUrl
+                publishedAt = youtubeVideo.snippet.publishedAt
+                thumbnail = youtubeVideo.snippet.thumbnails.standard?.url ?: ""
+                favoriteCount = youtubeVideo.statistics.favoriteCount.toLong()
+                likeCount = youtubeVideo.statistics.likeCount.toLong()
+                commentCount = youtubeVideo.statistics.commentCount.toLong()
+                viewCount = youtubeVideo.statistics.viewCount.toLong()
+                channelId = youtubeChannel.id
+                categoryId = youtubeCategory.id
+                duration = parsedDuration.toString()
+                durationMs = parsedDuration.toMillis()
+                isHighlighted = isHighlight
             })
         )
             .also {
                 if (isNewModel) {
                     videoViewCountRepo.save(
                         VideoViewCountModel(
-                            videoId = videoInfo.id,
+                            videoId = youtubeVideo.id,
                             viewCount = 0,
                         )
                     )
@@ -248,7 +255,7 @@ class VideoService(
         pageSize: Int,
     ): Pair<List<PromotedVideoConfig>, Long> {
         val configs = promotedVideoRepo.findAllBy(
-            pageable = Pageable.ofSize(pageSize).withPage(page-1)
+            pageable = Pageable.ofSize(pageSize).withPage(page - 1)
         ).toList()
         val res = promotedVideoRepo.findAllBy(
             offset = (page - 1) * pageSize,
