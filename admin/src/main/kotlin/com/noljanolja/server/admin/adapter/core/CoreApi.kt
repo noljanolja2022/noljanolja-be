@@ -177,7 +177,7 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<Video>>()
+        .awaitBody<Response<Video>>().data!!
 
     suspend fun importVideo(videoId: String, youtubeUrl: String, isHighlighted: Boolean) = webClient.post()
         .uri { builder -> builder.path(VIDEO_ENDPOINT).build() }

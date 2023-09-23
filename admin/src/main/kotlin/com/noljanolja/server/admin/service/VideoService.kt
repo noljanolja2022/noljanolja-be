@@ -6,13 +6,22 @@ import com.noljanolja.server.admin.model.PromotedVideoConfig
 import com.noljanolja.server.admin.model.Video
 import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.common.rest.Response
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.springframework.stereotype.Component
 import java.net.URL
 
 @Component
 class VideoService(
     private val coreApi: CoreApi,
+    private val notificationService: NotificationService,
 ) {
+    companion object {
+        const val TOPIC_PROMOTE_VIDEO = "/topics/promote-video"
+    }
+
     suspend fun createVideo(youtubeUrl: String, isHighlighted: Boolean): Video? {
         val queries = parseYoutubeUrlQuery(youtubeUrl)
         val videoId = queries.firstOrNull { it.first == "v" }?.second
@@ -21,8 +30,7 @@ class VideoService(
     }
 
     suspend fun getVideoDetail(videoId: String): Video? {
-        val res = coreApi.getVideoDetail(videoId)
-        return res.data
+        return coreApi.getVideoDetail(videoId)
     }
 
     suspend fun getVideo(query: String? = null, page: Int, pageSize: Int): Response<List<Video>> {
@@ -38,8 +46,23 @@ class VideoService(
         return coreApi.getPromotedVideos()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     suspend fun updatePromotedVideo(videoId: String, promoteVideoRequest: PromoteVideoRequest) {
         coreApi.updatePromotedVideo(videoId, promoteVideoRequest)
+        GlobalScope.launch {
+            coreApi.getVideoDetail(videoId).apply {
+                notificationService.pushToTopic(
+                    TOPIC_PROMOTE_VIDEO,
+                    mapOf(
+                        "id" to id,
+                        "url" to url,
+                        "title" to title,
+                        "thumbnail" to thumbnail,
+                        "duration" to duration,
+                    )
+                )
+            }
+        }
     }
 
     private fun parseYoutubeUrlQuery(url: String): List<Pair<String, String>> {

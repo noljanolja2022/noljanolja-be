@@ -5,7 +5,7 @@ spring:
   application:
     name: noljanolja-admin
   profiles:
-    include: management, storage
+    include: management, storage, firebase
 springdoc:
   swagger-ui:
     url: /swagger.yaml

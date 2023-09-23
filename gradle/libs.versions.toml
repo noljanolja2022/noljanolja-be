@@ -143,6 +143,7 @@ serverAdmin = [
     "springdoc-openapi-starter-webflux-ui",
     "spring-boot-security",
     "spring-cloud-gcp",
+    "firebase-admin",
 ]
 
 serverAdminProcessor = [
