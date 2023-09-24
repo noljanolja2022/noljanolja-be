@@ -27,12 +27,12 @@ class MediaRouter(
                 GET("trending", mediaHandler::getTrendingVideos)
                 POST("watch", mediaHandler::watchVideo)
                 GET("promoted", mediaHandler::getPromotedVideos)
-
                 "{videoId}".nest {
                     GET("", mediaHandler::getVideoDetails)
                     POST("likes", mediaHandler::likeVideo)
                     POST("comments", mediaHandler::postComment)
                     GET("comments", mediaHandler::getVideoComments)
+                    POST("react-promote", mediaHandler::reactToPromotedVideo)
                 }
             }
             "channels".nest {

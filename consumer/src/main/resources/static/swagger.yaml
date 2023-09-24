@@ -1091,6 +1091,31 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/Video"
+  /api/v1/media/videos/{videoId}:
+    get:
+      tags: [ Video ]
+      summary: Get video details
+      description: Get video details
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: videoId
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Return details of the video
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Video"
   /api/v1/media/videos/promoted:
     get:
       tags: [ Video ]
@@ -1238,9 +1263,7 @@ paths:
                   type: string
                   required: true
                 youtubeToken:
-                  type: string
-                  required: false
-                  description: the exchange token with sufficient scope to post a comment on youtube video
+                  $ref: "#/components/schemas/youtubeToken"
       responses:
         "200":
           description: Return the created comment
@@ -1274,9 +1297,7 @@ paths:
               type: object
               properties:
                 youtubeToken:
-                  type: string
-                  required: false
-                  description: the exchange token with sufficient scope to like youtube video
+                  $ref: "#/components/schemas/youtubeToken"
                 action:
                   type: string
                   required: true
@@ -1288,31 +1309,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BaseResponse"
-  /api/v1/media/videos/{videoId}:
-    get:
+
+  /api/v1/media/videos/{videoId}/react-promote:
+    post:
       tags: [ Video ]
-      summary: Get video details
-      description: Get video details
+      summary: React to a promoted video
+      description: This will let user like/comment/subscribe to a video based on current config
       security:
         - bearerAuth: [ ]
-      parameters:
-        - name: videoId
-          in: path
-          schema:
-            type: string
-          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                youtubeToken:
+                  $ref: "#/components/schemas/youtubeToken"
       responses:
         "200":
-          description: Return details of the video
+          description: Nothing
           content:
             application/json:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/BaseResponse"
                   - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/Video"
   /api/v1/media/channels/{channelId}:
     get:
       tags: [ Media ]
@@ -1362,9 +1384,7 @@ paths:
                   type: boolean
                   required: true
                 youtubeToken:
-                  type: string
-                  required: false
-                  description: the exchange token with sufficient scope to post a comment on youtube video
+                  $ref: "#/components/schemas/youtubeToken"
       responses:
         "200":
           description: Return details of the channel
@@ -2063,6 +2083,10 @@ components:
       type: integer
       description: the size of each batch. Use in conjunction with pageSize
       example: 100
+    youtubeToken:
+      type: string
+      required: false
+      description: the exchange token with sufficient scope to like youtube video
     Video:
       type: object
       properties:

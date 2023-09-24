@@ -22,6 +22,9 @@ data class PromotedVideoModel(
     @Column("start_date")
     val startDate: LocalDate,
 
+    @Column("end_date")
+    val endDate: LocalDate,
+
     @Column("auto_play")
     val autoPlay: Boolean,
 
@@ -34,8 +37,8 @@ data class PromotedVideoModel(
     @Column("auto_comment")
     val autoComment: Boolean,
 
-    @Column("end_date")
-    val endDate: LocalDate,
+//    @Column("reaction_delay")
+//    val reactionDelay: Int,
 
     @Column("created_at")
     @CreatedDate

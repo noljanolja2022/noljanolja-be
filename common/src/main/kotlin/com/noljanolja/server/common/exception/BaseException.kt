@@ -22,6 +22,15 @@ class DefaultBadRequestException(
     cause = cause,
 )
 
+class CustomBadRequestException(
+    message: String? = null,
+    cause: Throwable? = null,
+) : BaseException(
+    code = 400_000,
+    message = message ?: "Bad Request",
+    cause = cause,
+)
+
 /**
  * Exception when request param is invalid
  */

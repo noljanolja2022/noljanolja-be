@@ -1,5 +1,6 @@
 package com.noljanolja.server.core.service
 
+import com.noljanolja.server.common.exception.CustomBadRequestException
 import com.noljanolja.server.common.exception.UserNotFound
 import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.PromotedVideoConfig
@@ -7,12 +8,12 @@ import com.noljanolja.server.core.model.Video
 import com.noljanolja.server.core.model.VideoComment
 import com.noljanolja.server.core.repo.media.*
 import com.noljanolja.server.core.repo.user.UserRepo
-import com.noljanolja.server.core.rest.request.CreateVideoRequest
 import com.noljanolja.server.core.rest.request.PromoteVideoRequest
 import com.noljanolja.server.core.rest.request.RateVideoAction
 import com.noljanolja.server.youtube.model.YoutubeChannel
 import com.noljanolja.server.youtube.model.YoutubeVideo
 import com.noljanolja.server.youtube.model.YoutubeVideoCategory
+import com.noljanolja.server.youtube.service.YoutubeApi
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -31,6 +32,8 @@ class VideoService(
     private val videoCategoryRepo: VideoCategoryRepo,
     private val userRepo: UserRepo,
     private val promotedVideoRepo: PromotedVideoRepo,
+    private val youtubeApi: YoutubeApi,
+    private val promotedVideoUserLogRepo: PromotedVideoUserLogRepo
 ) {
     suspend fun getVideoDetails(
         videoId: String,
@@ -194,32 +197,41 @@ class VideoService(
     suspend fun likeVideo(
         videoId: String,
         userId: String,
-        action: RateVideoAction
+        action: RateVideoAction,
+        youtubeToken: String
     ) {
         if (!videoRepo.existsById(videoId)) throw Error.VideoNotFound
+
         val isLike = action == RateVideoAction.like
-        videoUserRepo.save(
-            videoUserRepo.findByVideoIdAndUserId(
+        val cachedRecord = videoUserRepo.findByVideoIdAndUserId(
+            videoId = videoId,
+            userId = userId,
+        )
+        if (cachedRecord?.isLiked == true && isLike || cachedRecord?.isLiked == false && !isLike) {
+            return
+        }
+
+        youtubeApi.rateVideo(videoId, youtubeToken, action.toString())
+        videoUserRepo.save(cachedRecord?.apply { isLiked = isLike }
+            ?: VideoUserModel(
                 videoId = videoId,
                 userId = userId,
-            )?.apply { isLiked = isLike }
-                ?: VideoUserModel(
-                    videoId = videoId,
-                    userId = userId,
-                    isLiked = isLike,
-                )
+                isLiked = isLike,
+            )
         )
         if (isLike) videoRepo.addLikeCount(videoId)
         else videoRepo.deductLikeCount(videoId)
     }
 
     suspend fun postComment(
+        token: String,
         comment: String,
         commenterId: String,
         videoId: String,
     ): VideoComment {
         if (!videoRepo.existsById(videoId)) throw Error.VideoNotFound
         val commenter = userRepo.findById(commenterId) ?: throw UserNotFound
+        youtubeApi.addToplevelComment(videoId, token, comment)
         return videoCommentRepo.save(
             VideoCommentModel(
                 comment = comment,
@@ -284,6 +296,35 @@ class VideoService(
                 autoComment = payload.autoComment,
                 autoPlay = payload.autoPlay,
                 autoSubscribe = payload.autoSubscribe
+            )
+        )
+    }
+
+    suspend fun reactToPromotedVideo(
+        videoId: String, youtubeToken: String, userId: String
+    ) {
+        val configs = promotedVideoRepo.findAllBy(
+            pageable = Pageable.ofSize(10).withPage(0)
+        ).toList()
+        if (configs.isEmpty()) throw CustomBadRequestException("Invalid promoted videoId")
+        val config = configs[0];
+        if (config.videoId != videoId) throw CustomBadRequestException("Invalid promoted videoId")
+        val record = promotedVideoUserLogRepo.findByVideoIdAndUserId(videoId, config.videoId)
+        if (record != null && record.liked && record.commented && record.subscribed) return
+        if (config.autoLike)
+            youtubeApi.rateVideo(videoId, youtubeToken, RateVideoAction.like.toString())
+        //TODO: update the comment
+        if (config.autoComment)
+            youtubeApi.addToplevelComment(videoId, youtubeToken, "Nice video")
+        val videoDetail = videoRepo.findById(videoId)!!
+        if (config.autoSubscribe) {
+            youtubeApi.subscribeToChannel(videoDetail.channelId, youtubeToken)
+        }
+        promotedVideoUserLogRepo.save(
+            PromotedVideoUserLogModel(
+                userId = userId, videoId = videoId,
+                channelId = videoDetail.channelId,
+                liked = config.autoLike, commented = config.autoComment, subscribed = config.autoSubscribe
             )
         )
     }

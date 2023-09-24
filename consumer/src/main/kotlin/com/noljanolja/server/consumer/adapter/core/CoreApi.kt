@@ -1131,6 +1131,28 @@ class CoreApi(
         }
         .awaitBody<Response<List<CorePromotedVideoConfig>>>().data!!
 
+    suspend fun reactToPromotedVideo(
+        videoId: String,
+        youtubeToken: String,
+        userId: String
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$MEDIA_ENDPOINT/videos/{videoId}/react-promote").build(videoId)
+        }
+        .bodyValue(CoreReactToPromotedVideoReq(
+            youtubeToken = youtubeToken, userId = userId
+        ))
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
     suspend fun getCoinToPointExchangeRate() = webClient.get()
         .uri { builder ->
             builder.path("$COIN_EXCHANGE_ENDPOINT/rate").build()

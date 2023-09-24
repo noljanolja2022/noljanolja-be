@@ -6,3 +6,7 @@ data class RateVideoRequest(
     val youtubeToken: String?,
     val action: RateVideoAction
 )
+
+data class ReactToPromotedVideoReq(
+    val youtubeToken: String,
+)

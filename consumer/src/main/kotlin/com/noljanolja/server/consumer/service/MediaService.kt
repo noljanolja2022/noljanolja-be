@@ -1,6 +1,5 @@
 package com.noljanolja.server.consumer.service
 
-import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.consumer.adapter.core.*
 import com.noljanolja.server.consumer.adapter.core.request.CoreLikeVideoRequest
 import com.noljanolja.server.consumer.adapter.core.request.PostCommentRequest
@@ -173,4 +172,8 @@ class MediaService(
         page: Int,
         pageSize: Int,
     ): List<CorePromotedVideoConfig> = coreApi.getPromotedVideos(page, pageSize)
+
+    suspend fun reactToPromotedVideo(videoId: String, youtubeToken: String, userId: String) {
+        coreApi.reactToPromotedVideo(videoId, youtubeToken, userId)
+    }
 }

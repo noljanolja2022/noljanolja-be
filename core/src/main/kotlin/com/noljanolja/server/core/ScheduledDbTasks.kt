@@ -2,7 +2,7 @@ package com.noljanolja.server.core
 
 import com.noljanolja.server.core.repo.media.PromotedVideoRepo
 import com.noljanolja.server.core.repo.media.VideoRepo
-import com.noljanolja.server.youtube.service.YoutubeVideoService
+import com.noljanolja.server.youtube.service.YoutubeApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
@@ -17,7 +17,8 @@ import java.time.Instant
 class ScheduledDbTasks(
     private val videoRepo: VideoRepo,
     private val promotedVideoRepo: PromotedVideoRepo,
-    private val youtubeVideoService: YoutubeVideoService
+    private val youtubeApi: YoutubeApi,
+
 ) {
     private val logger = LoggerFactory.getLogger(ScheduledDbTasks::class.java)
 
@@ -56,7 +57,7 @@ class ScheduledDbTasks(
 
     @Transactional
     suspend fun updateStatistics(videoIds: List<String>) {
-        val res = youtubeVideoService.fetchVideoDetail(videoIds)
+        val res = youtubeApi.fetchVideoDetail(videoIds)
         res.items.forEach {
             videoRepo.updateCommonStatistics(
                 it.id,

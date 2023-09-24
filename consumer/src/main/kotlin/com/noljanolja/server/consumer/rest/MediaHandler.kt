@@ -14,6 +14,7 @@ import com.noljanolja.server.consumer.model.VideoProgress
 import com.noljanolja.server.consumer.rest.request.ChannelSubscriptionRequest
 import com.noljanolja.server.consumer.rest.request.PostCommentRequest
 import com.noljanolja.server.consumer.rest.request.RateVideoRequest
+import com.noljanolja.server.consumer.rest.request.ReactToPromotedVideoReq
 import com.noljanolja.server.consumer.service.GoogleStorageService
 import com.noljanolja.server.consumer.service.MediaService
 import com.noljanolja.server.consumer.service.VideoPubSubService
@@ -293,6 +294,18 @@ class MediaHandler(
                 body = Response(
                     data = videos,
                 )
+            )
+    }
+
+    suspend fun reactToPromotedVideo(serverRequest: ServerRequest): ServerResponse {
+        val videoId = serverRequest.pathVariable("videoId").takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("videoId")
+        val payload = serverRequest.awaitBodyOrNull<ReactToPromotedVideoReq>() ?: throw RequestBodyRequired
+        val userId = AuthUserHolder.awaitUser().id
+        mediaService.reactToPromotedVideo(videoId, payload.youtubeToken, userId)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                Response<Nothing>()
             )
     }
 }

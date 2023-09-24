@@ -2,7 +2,6 @@ package com.noljanolja.server.youtube.service
 
 import com.noljanolja.server.common.exception.BaseException
 import com.noljanolja.server.common.exception.DefaultInternalErrorException
-import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.youtube.ServiceConfig
 import com.noljanolja.server.youtube.model.*
 import org.springframework.beans.factory.annotation.Qualifier
@@ -137,7 +136,7 @@ class YoutubeApi(
         }
         .awaitBody<Any>()
 
-    suspend fun ratingVideo(
+    suspend fun rateVideo(
         videoId: String,
         bearer: String,
         rating: String,

@@ -10,3 +10,8 @@ data class PromoteVideoRequest (
     val startDate: LocalDate,
     val endDate: LocalDate,
 )
+
+data class ReactToPromotedVideoReq(
+    val youtubeToken: String,
+    val userId: String,
+)
