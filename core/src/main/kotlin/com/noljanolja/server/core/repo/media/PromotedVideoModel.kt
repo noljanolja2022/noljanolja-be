@@ -37,8 +37,8 @@ data class PromotedVideoModel(
     @Column("auto_comment")
     val autoComment: Boolean,
 
-//    @Column("reaction_delay")
-//    val reactionDelay: Int,
+    @Column("interaction_delay")
+    val interactionDelay: Int,
 
     @Column("created_at")
     @CreatedDate
@@ -58,7 +58,8 @@ fun PromotedVideoModel.toPromotedVideo(video: Video) = PromotedVideoConfig(
     autoPlay = autoPlay,
     autoComment = autoComment,
     autoLike = autoLike,
+    interactionDelay = interactionDelay,
     video = video,
     createdAt = createdAt,
-    updatedAt = updatedAt
+    updatedAt = updatedAt,
 )

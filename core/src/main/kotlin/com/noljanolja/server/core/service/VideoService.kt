@@ -295,7 +295,8 @@ class VideoService(
                 autoLike = payload.autoLike,
                 autoComment = payload.autoComment,
                 autoPlay = payload.autoPlay,
-                autoSubscribe = payload.autoSubscribe
+                autoSubscribe = payload.autoSubscribe,
+                interactionDelay = payload.interactionDelay
             )
         )
     }
@@ -315,7 +316,7 @@ class VideoService(
             youtubeApi.rateVideo(videoId, youtubeToken, RateVideoAction.like.toString())
         //TODO: update the comment
         if (config.autoComment)
-            youtubeApi.addToplevelComment(videoId, youtubeToken, "Nice video")
+            youtubeApi.addToplevelComment(videoId, youtubeToken, "영상 재미있게 잘 봤습니다. 앞으로도 좋은 영상 기대할게요. 화이팅")
         val videoDetail = videoRepo.findById(videoId)!!
         if (config.autoSubscribe) {
             youtubeApi.subscribeToChannel(videoDetail.channelId, youtubeToken)
@@ -324,7 +325,9 @@ class VideoService(
             PromotedVideoUserLogModel(
                 userId = userId, videoId = videoId,
                 channelId = videoDetail.channelId,
-                liked = config.autoLike, commented = config.autoComment, subscribed = config.autoSubscribe
+                liked = config.autoLike,
+                commented = config.autoComment,
+                subscribed = config.autoSubscribe
             )
         )
     }

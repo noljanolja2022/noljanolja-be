@@ -9,6 +9,7 @@ data class PromoteVideoRequest (
     val autoComment: Boolean,
     val startDate: LocalDate,
     val endDate: LocalDate,
+    val interactionDelay: Int
 )
 
 data class ReactToPromotedVideoReq(

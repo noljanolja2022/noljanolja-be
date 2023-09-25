@@ -765,6 +765,7 @@ create TABLE IF NOT EXISTS `promoted_videos`
     `auto_like`         TINYINT(1)      NOT NULL DEFAULT 0,
     `auto_subscribe`    TINYINT(1)      NOT NULL DEFAULT 0,
     `auto_comment`      TINYINT(1)      NOT NULL DEFAULT 0,
+    `interaction_delay` INT             NOT NULL DEFAULT 0,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP,
 

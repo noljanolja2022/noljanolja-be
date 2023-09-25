@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 18/9/2023:
-      - Update promoted video API
-      - Add promoted video model
+    Changelog - 24/9/2023:
+      - Add Coin Exchange API
+      - Add react to promoted video API
   version: 1.0.7
   title: NoljaNolja Swagger
   contact:
@@ -2227,6 +2227,9 @@ components:
           type: boolean
         autoSubscribe:
           type: boolean
+        interactionDelay:
+          type: number
+          description: the amount of time in seconds that user must wait before they can react to a promoted video.
         createdAt:
           type: string
           format: datetime

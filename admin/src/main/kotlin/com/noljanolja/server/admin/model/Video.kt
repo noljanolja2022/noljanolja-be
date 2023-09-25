@@ -55,6 +55,7 @@ data class PromotedVideoConfig(
     val autoLike: Boolean,
     val autoSubscribe: Boolean,
     val autoComment: Boolean,
+    val interactionDelay: Int,
     val endDate: LocalDate,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
@@ -68,4 +69,5 @@ data class PromoteVideoRequest (
     val autoComment: Boolean,
     val startDate: LocalDate,
     val endDate: LocalDate,
+    val interactionDelay: Int
 )
