@@ -58,6 +58,7 @@ class UserService(
             id = userId,
             name = request.name,
             email = request.email,
+            phone = request.phone,
             dob = request.dob,
             avatar = request.avatar,
             gender = request.gender,

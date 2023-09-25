@@ -78,7 +78,7 @@ class UserHandler(
         val existingUser = userService.getUser(userId) ?: throw UserNotFound
         val updatedUser = userService.upsertUser(existingUser.copy(
             name = req.name?.takeIf { it.isNotBlank() } ?: existingUser.name,
-            email = req.email?.takeIf { it.isNotBlank() } ?: existingUser.email,
+            phone = req.phone?.takeIf { it.isNotBlank() } ?: existingUser.phone,
             avatar = req.avatar?.takeIf { it.isNotBlank() } ?: existingUser.avatar,
             dob = req.dob ?: existingUser.dob,
             gender = req.gender ?: existingUser.gender,
@@ -99,7 +99,7 @@ class UserHandler(
         val upsertUser = existingUser?.copy(
             // TODO only upsert non null / blank value from upsertUserRequest:
             name = upsertUserRequest.name?.takeIf { it.isNotBlank() } ?: existingUser.name,
-            email = upsertUserRequest.email?.takeIf { it.isNotBlank() } ?: existingUser.email,
+            phone = upsertUserRequest.phone?.takeIf { it.isNotBlank() } ?: existingUser.phone,
             avatar = upsertUserRequest.avatar?.takeIf { it.isNotBlank() } ?: existingUser.avatar,
             dob = upsertUserRequest.dob ?: existingUser.dob,
             gender = upsertUserRequest.gender ?: existingUser.gender,
@@ -108,7 +108,6 @@ class UserHandler(
             id = upsertUserRequest.id,
             name = upsertUserRequest.name.orEmpty(),
             avatar = upsertUserRequest.avatar,
-            // TODO new user should have phone
             phone = upsertUserRequest.phone.orEmpty(),
             email = upsertUserRequest.email,
             dob = upsertUserRequest.dob,
