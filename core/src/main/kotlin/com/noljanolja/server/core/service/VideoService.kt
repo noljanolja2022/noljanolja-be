@@ -33,7 +33,8 @@ class VideoService(
     private val userRepo: UserRepo,
     private val promotedVideoRepo: PromotedVideoRepo,
     private val youtubeApi: YoutubeApi,
-    private val promotedVideoUserLogRepo: PromotedVideoUserLogRepo
+    private val promotedVideoUserLogRepo: PromotedVideoUserLogRepo,
+    private val channelSubscriptionRepo: ChannelSubscriptionRepo
 ) {
     suspend fun getVideoDetails(
         videoId: String,
@@ -312,23 +313,71 @@ class VideoService(
         if (config.videoId != videoId) throw CustomBadRequestException("Invalid promoted videoId")
         val record = promotedVideoUserLogRepo.findByVideoIdAndUserId(videoId, config.videoId)
         if (record != null && record.liked && record.commented && record.subscribed) return
-        if (config.autoLike)
-            youtubeApi.rateVideo(videoId, youtubeToken, RateVideoAction.like.toString())
-        //TODO: update the comment
-        if (config.autoComment)
-            youtubeApi.addToplevelComment(videoId, youtubeToken, "영상 재미있게 잘 봤습니다. 앞으로도 좋은 영상 기대할게요. 화이팅")
         val videoDetail = videoRepo.findById(videoId)!!
-        if (config.autoSubscribe) {
-            youtubeApi.subscribeToChannel(videoDetail.channelId, youtubeToken)
-        }
-        promotedVideoUserLogRepo.save(
-            PromotedVideoUserLogModel(
-                userId = userId, videoId = videoId,
-                channelId = videoDetail.channelId,
-                liked = config.autoLike,
-                commented = config.autoComment,
-                subscribed = config.autoSubscribe
-            )
+        //TODO: update the comment
+        val newRecord = PromotedVideoUserLogModel(
+            userId = userId, videoId = videoId,
+            channelId = videoDetail.channelId,
+            liked = record?.liked ?: false,
+            commented = record?.commented ?: false,
+            subscribed = record?.subscribed ?: false
         )
+        if (config.autoLike && !newRecord.liked) {
+            try {
+                val likedVideoRecord = videoUserRepo.findByVideoIdAndUserId(
+                    videoId = videoId,
+                    userId = userId,
+                )
+                if (likedVideoRecord == null || !likedVideoRecord.isLiked) {
+                    youtubeApi.rateVideo(videoId, youtubeToken, RateVideoAction.like.toString())
+                    videoUserRepo.save(likedVideoRecord?.apply {
+                        isLiked = true
+                    } ?: VideoUserModel(
+                        videoId = videoId,
+                        userId = userId,
+                        isLiked = true
+                    ))
+                }
+                newRecord.liked = true
+            } catch (e: Exception) {
+                print("Unable to like video: ${e.message}")
+            }
+        }
+
+        if (config.autoComment && !newRecord.commented) {
+            try {
+                val commentContent = "영상 재미있게 잘 봤습니다. 앞으로도 좋은 영상 기대할게요. 화이팅"
+                youtubeApi.addToplevelComment(videoId, youtubeToken, commentContent)
+                videoCommentRepo.save(
+                    VideoCommentModel(
+                        comment = commentContent,
+                        commenterId = userId,
+                        videoId = videoId,
+                    ))
+                newRecord.commented = true
+            } catch (e: Exception) {
+                print("Unable to comment on video: ${e.message}")
+            }
+        }
+
+        if (config.autoSubscribe && !newRecord.subscribed) {
+            val existingSubscription = channelSubscriptionRepo.findByChannelIdAndUserId(newRecord.channelId, userId)
+            if (existingSubscription == null) {
+                try {
+                    val youtubeResource = youtubeApi.subscribeToChannel(videoDetail.channelId, youtubeToken)
+                    channelSubscriptionRepo.save(
+                        ChannelSubscriptionModel(
+                            userId = userId, channelId = newRecord.channelId, subscriptionId = youtubeResource.id
+                        )
+                    )
+                    newRecord.subscribed = true
+                } catch (e: Exception) {
+                    print("Unable to subscribe to channel: ${e.message}")
+                }
+            } else {
+                newRecord.subscribed = true
+            }
+        }
+        promotedVideoUserLogRepo.save(newRecord)
     }
 }

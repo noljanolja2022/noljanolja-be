@@ -23,13 +23,13 @@ data class PromotedVideoUserLogModel(
     val channelId: String,
 
     @Column("liked")
-    val liked: Boolean,
+    var liked: Boolean = false,
 
     @Column("commented")
-    val commented: Boolean,
+    var commented: Boolean = false,
 
     @Column("subscribed")
-    val subscribed: Boolean,
+    var subscribed: Boolean = false,
 
     @Column("created_at")
     @CreatedDate
