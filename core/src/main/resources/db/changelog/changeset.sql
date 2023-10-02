@@ -33,8 +33,6 @@ create TABLE IF NOT EXISTS `users`
     FULLTEXT idx_referral_code (`referral_code`)
 ) ENGINE = InnoDB;
 
-create UNIQUE INDEX `idx_country_code_phone_number` ON `users` (`country_code`, `phone_number`);
-
 create INDEX `idx_phone_number` ON `users` (`phone_number`);
 
 create UNIQUE INDEX `idx_email` ON `users` (`email`);

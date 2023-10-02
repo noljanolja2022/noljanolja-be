@@ -180,16 +180,18 @@ class UserService(
                 isNewUser = isNewUser
             )
         ).also {
-            contactsRepo.findByPhoneNumberAndCountryCode(
-                phone = it.phoneNumber,
-                countryCode = it.countryCode,
-            ).toList().ifEmpty {
-                contactsRepo.save(
-                    ContactModel(
-                        countryCode = it.countryCode,
-                        phoneNumber = it.phoneNumber,
+            if (it.phoneNumber.isNotBlank() && it.countryCode.isNotBlank()) {
+                contactsRepo.findByPhoneNumberAndCountryCode(
+                    phone = it.phoneNumber,
+                    countryCode = it.countryCode,
+                ).toList().ifEmpty {
+                    contactsRepo.save(
+                        ContactModel(
+                            countryCode = it.countryCode,
+                            phoneNumber = it.phoneNumber,
+                        )
                     )
-                )
+                }
             }
         }.toUser(objectMapper)
     }
@@ -209,7 +211,9 @@ class UserService(
         // Get existing user contacts
         val existingUserContacts = userContactsRepo.findAllByUserId(userId).toList()
         // Get exising user contact details
-        val contactPhones = userContacts.mapNotNull { it.phone?.let { parsePhoneNumber(it, user.countryCode.toInt()) } }
+        val contactPhones = userContacts.mapNotNull { userContact ->
+            userContact.phone?.let { parsePhoneNumber(it, user.countryCode.toIntOrNull()) }
+        }
         val existingContacts = contactsRepo.findAllByPhoneNumberIn(
             phones = contactPhones.map { it.nationalNumber.toString() },
         ).toList()
@@ -220,7 +224,7 @@ class UserService(
         val updateUserContacts = mutableListOf<UserContactModel>()
         userContacts.forEachIndexed { index, userContact ->
             // parse phone number
-            val phoneNumber = parsePhoneNumber(userContact.phone.orEmpty(), user.countryCode.toInt())
+            val phoneNumber = parsePhoneNumber(userContact.phone.orEmpty(), user.countryCode.toIntOrNull())
                 ?: return@forEachIndexed
             // only check contact which has valid phone number
             // find an existing contact which has the same number
@@ -286,7 +290,7 @@ class UserService(
     private suspend fun addUserToContact(recipientId: String, personTobeAddedId: String) {
         val friend = userRepo.findById(personTobeAddedId) ?: throw UserNotFound
         val friendPn =
-            parsePhoneNumber(friend.phoneNumber, friend.countryCode.toInt()) ?: throw Error.InvalidPhoneNumber
+            parsePhoneNumber(friend.phoneNumber, friend.countryCode.toIntOrNull()) ?: throw Error.InvalidPhoneNumber
         var existingContact = contactsRepo.findByPhoneNumberAndCountryCode(
             friendPn.nationalNumber.toString(),
             friendPn.countryCode.toString()

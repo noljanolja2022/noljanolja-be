@@ -7,11 +7,11 @@ const val KOREAN_COUNTRY_CODE = 82
 
 fun parsePhoneNumber(
     phone: String?,
-    fallbackCountryCode: Int = KOREAN_COUNTRY_CODE,
+    fallbackCountryCode: Int? = null,
 ) =
     try {
         PhoneNumberUtil.getInstance().let {
-            it.parse(phone, it.getRegionCodeForCountryCode(fallbackCountryCode))
+            it.parse(phone, it.getRegionCodeForCountryCode(fallbackCountryCode ?: KOREAN_COUNTRY_CODE))
         }
     } catch (e: Exception) {
         null
