@@ -1166,7 +1166,7 @@ class CoreApi(
         .onStatus(HttpStatusCode::is5xxServerError) {
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
-        .awaitBody<Response<Double>>().data!!
+        .awaitBody<Response<CoreCoinExchangeConfig>>().data!!
 
     suspend fun exchangePointToCoin(
         points: Long,

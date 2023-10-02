@@ -11,6 +11,7 @@ class RewardRouter(
 ) {
     companion object {
         const val REWARD_ROUTE = "/api/v1/reward"
+        const val COIN_EXCHANGE_ROUTE = "/api/v1/coin-exchange"
     }
 
     @Bean
@@ -36,5 +37,9 @@ class RewardRouter(
             }
         }
         GET("/api/v2/reward/videos/configs/{videoId}", rewardHandler::getRewardConfigByVideo)
+        (COIN_EXCHANGE_ROUTE).nest {
+            GET("rate", rewardHandler::getCoinToPointExchangeConfig)
+            PUT("rate", rewardHandler::updateCoinToPointExchangeConfig)
+        }
     }
 }

@@ -3,7 +3,6 @@ package com.noljanolja.server.consumer.rest
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
-import com.noljanolja.server.consumer.model.ExchangeRate
 import com.noljanolja.server.consumer.rest.request.ExchangePointToCoinRequest
 import com.noljanolja.server.consumer.service.CoinExchangeService
 import org.springframework.stereotype.Component
@@ -25,11 +24,11 @@ class CoinExchangeHandler(
     }
 
     suspend fun getCoinToPointExchangeRate(request: ServerRequest): ServerResponse {
-        val rate = coinExchangeService.getCoinToPointExchangeRate()
+        val res = coinExchangeService.getCoinToPointExchangeRate()
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
-                    data = ExchangeRate(rate)
+                    data = res
                 )
             )
     }

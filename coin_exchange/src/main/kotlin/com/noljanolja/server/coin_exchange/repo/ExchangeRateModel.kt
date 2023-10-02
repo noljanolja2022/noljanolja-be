@@ -8,13 +8,16 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 
 @Table("exchange_rate")
-class ExchangeRateModel(
+data class ExchangeRateModel(
     @Id
     @Column("id")
-    val id: Long,
+    val id: Long = 0,
 
     @Column("coin_to_point_rate")
     var coinToPointRate: Double = 0.0,
+
+    @Column("reward_recurring_amount")
+    var rewardRecurringAmount: Int = 0,
 
     @Column("created_at")
     @CreatedDate

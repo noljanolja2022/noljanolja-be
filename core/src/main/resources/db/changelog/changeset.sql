@@ -817,20 +817,11 @@ DROP TABLE IF EXISTS `exchange_rate`;
 
 create TABLE IF NOT EXISTS `exchange_rate`
 (
-    `id`                    BIGINT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `coin_to_point_rate`    DOUBLE      NOT NULL,
-    `created_at`            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP
-) ENGINE = InnoDB;
-
-DROP TABLE IF EXISTS `exchange_rate`;
-
-create TABLE IF NOT EXISTS `exchange_rate`
-(
-    `id`                    BIGINT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `coin_to_point_rate`    DOUBLE      NOT NULL,
-    `created_at`            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP
+    `id`                        BIGINT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `coin_to_point_rate`        DOUBLE      NOT NULL,
+    `reward_recurring_amount`   INT         NOT NULL DEFAULT 0,
+    `created_at`                DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`                DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
 
 DROP TABLE IF EXISTS `promoted_video_user_logs`;

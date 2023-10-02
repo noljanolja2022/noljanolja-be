@@ -4,6 +4,7 @@ package com.noljanolja.server.admin.adapter.core
 import com.noljanolja.server.admin.adapter.core.request.CoreUpsertChatConfigRequest
 import com.noljanolja.server.admin.adapter.core.request.CoreUpsertVideoConfigRequest
 import com.noljanolja.server.admin.model.*
+import com.noljanolja.server.admin.rest.request.CoinExchangeReq
 import com.noljanolja.server.admin.rest.request.UpsertCheckinConfigRequest
 import com.noljanolja.server.common.rest.Response
 import org.springframework.beans.factory.annotation.Qualifier
@@ -26,6 +27,7 @@ class CoreApi(
         const val STICKER_PACK_ENDPOINT = "/api/v1/media/sticker-packs"
         const val VIDEO_ENDPOINT = "/api/v1/media/videos"
         const val REWARD_ENDPOINT = "/api/v1/reward"
+        const val COIN_EXCHANGE_ROUTE = "/api/v1/coin-exchange"
         const val GIFT_ROUTES = "/api/v1/gifts"
         const val BANNER_ENDPOINT = "/api/v1/banners"
     }
@@ -703,4 +705,35 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<ReferralConfig>>().data!!
+
+    suspend fun getCoinExchangeConfig() = webClient.get()
+        .uri { builder ->
+            builder.path("$COIN_EXCHANGE_ROUTE/rate").build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoinExchangeConfig>>().data!!
+
+    suspend fun updateCoinExchangeConfig(payload: CoinExchangeReq) = webClient.put()
+        .uri { builder ->
+            builder.path("$COIN_EXCHANGE_ROUTE/rate").build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoinExchangeConfig>>().data!!
 }

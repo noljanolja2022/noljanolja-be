@@ -1,6 +1,7 @@
 package com.noljanolja.server.coin_exchange.rest
 
 import com.noljanolja.server.coin_exchange.model.CoinTransaction
+import com.noljanolja.server.coin_exchange.model.request.CoinExchangeReq
 import com.noljanolja.server.coin_exchange.model.request.ExchangePointRequest
 import com.noljanolja.server.coin_exchange.service.CoinExchangeService
 import com.noljanolja.server.common.exception.InvalidParamsException
@@ -40,13 +41,22 @@ class CoinExchangeHandler(
             )
     }
 
-    suspend fun getCoinToPointExchangeRate(request: ServerRequest): ServerResponse {
-        val rate = coinExchangeService.getCoinToPointExchangeRate()
+    suspend fun getCoinToPointExchangeConfig(request: ServerRequest): ServerResponse {
+        val rate = coinExchangeService.getCoinExchangeConfig()
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
                     data = rate,
                 )
+            )
+    }
+
+    suspend fun updateCoinToPointExchangeConfig(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<CoinExchangeReq>() ?: throw RequestBodyRequired
+        val res = coinExchangeService.updateCoinToPointConfig(payload)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(data = res)
             )
     }
 

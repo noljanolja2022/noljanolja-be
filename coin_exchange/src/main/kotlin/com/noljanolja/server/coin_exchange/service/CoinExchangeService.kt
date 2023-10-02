@@ -1,14 +1,15 @@
 package com.noljanolja.server.coin_exchange.service
 
+import com.noljanolja.server.coin_exchange.exception.Error
 import com.noljanolja.server.coin_exchange.model.CoinTransaction
+import com.noljanolja.server.coin_exchange.model.request.CoinExchangeReq
+import com.noljanolja.server.coin_exchange.repo.*
+import com.noljanolja.server.common.utils.REASON_EXCHANGE_POINT
+import com.noljanolja.server.loyalty.service.LoyaltyService
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import com.noljanolja.server.coin_exchange.exception.Error
-import com.noljanolja.server.coin_exchange.repo.*
-import com.noljanolja.server.common.utils.REASON_EXCHANGE_POINT
-import com.noljanolja.server.loyalty.service.LoyaltyService
 import java.time.Instant as JavaInstant
 
 @Component
@@ -19,7 +20,17 @@ class CoinExchangeService(
     private val exchangeRateRepo: ExchangeRateRepo,
     private val loyaltyService: LoyaltyService,
 ) {
-    suspend fun getCoinToPointExchangeRate() = exchangeRateRepo.findFirstBy()?.coinToPointRate ?: 0.0
+    suspend fun getCoinExchangeConfig(): ExchangeRateModel {
+        return exchangeRateRepo.findFirstBy() ?: ExchangeRateModel()
+    }
+
+    suspend fun updateCoinToPointConfig(payload: CoinExchangeReq) {
+        val cachedConfig = exchangeRateRepo.findFirstBy() ?: ExchangeRateModel(
+            coinToPointRate = payload.coinToPointRate,
+            rewardRecurringAmount = payload.rewardRecurringAmount
+        )
+        exchangeRateRepo.save(cachedConfig)
+    }
 
     suspend fun exchangePointToCoin(
         points: Long,
@@ -30,7 +41,7 @@ class CoinExchangeService(
             points = -points,
             reason = REASON_EXCHANGE_POINT,
         )
-        val coinToPointRate = getCoinToPointExchangeRate()
+        val coinToPointRate = getCoinExchangeConfig().coinToPointRate
         if (coinToPointRate == 0.0) throw Error.InsufficientCoinBalance
         val receivedCoinAmounts = points / coinToPointRate
         return addTransaction(

@@ -2,6 +2,7 @@ package com.noljanolja.server.admin.rest
 
 import com.noljanolja.server.admin.model.RoomType
 import com.noljanolja.server.admin.model.UpsertReferralConfigReq
+import com.noljanolja.server.admin.rest.request.CoinExchangeReq
 import com.noljanolja.server.admin.rest.request.UpsertChatConfigRequest
 import com.noljanolja.server.admin.rest.request.UpsertCheckinConfigRequest
 import com.noljanolja.server.admin.rest.request.UpsertVideoConfigRequest
@@ -159,6 +160,25 @@ class RewardHandler(
                 body = Response(
                     data = res,
                 )
+            )
+    }
+
+    suspend fun getCoinToPointExchangeConfig(request: ServerRequest): ServerResponse {
+        val res = rewardService.getCoinToPointConfig()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res,
+                )
+            )
+    }
+
+    suspend fun updateCoinToPointExchangeConfig(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<CoinExchangeReq>() ?: throw RequestBodyRequired
+        val res = rewardService.updateCoinToPointConfig(payload)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(data = res)
             )
     }
 }

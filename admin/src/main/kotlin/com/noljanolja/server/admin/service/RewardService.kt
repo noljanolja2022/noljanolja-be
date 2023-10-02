@@ -8,6 +8,7 @@ import com.noljanolja.server.admin.adapter.core.toChatRewardConfig
 import com.noljanolja.server.admin.adapter.core.toVideoRewardConfig
 import com.noljanolja.server.admin.exception.Error
 import com.noljanolja.server.admin.model.*
+import com.noljanolja.server.admin.rest.request.CoinExchangeReq
 import com.noljanolja.server.admin.rest.request.UpsertChatConfigRequest
 import com.noljanolja.server.admin.rest.request.UpsertCheckinConfigRequest
 import com.noljanolja.server.admin.rest.request.UpsertVideoConfigRequest
@@ -100,5 +101,13 @@ class RewardService(
 
     suspend fun upsertReferralConfig(payload: UpsertReferralConfigReq): ReferralConfig {
         return coreApi.updateReferralConfig(payload)
+    }
+
+    suspend fun getCoinToPointConfig(): CoinExchangeConfig {
+        return coreApi.getCoinExchangeConfig()
+    }
+
+    suspend fun updateCoinToPointConfig(payload: CoinExchangeReq): CoinExchangeConfig {
+         return coreApi.updateCoinExchangeConfig(payload)
     }
 }

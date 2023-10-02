@@ -1,9 +1,8 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 24/9/2023:
-      - Add Coin Exchange API
-      - Add react to promoted video API
+    Changelog - 2/10/2023:
+      - Update Coin Exchange API
   version: 1.0.7
   title: NoljaNolja Swagger
   contact:
@@ -1702,13 +1701,13 @@ paths:
   /api/v1/coin-exchange/rate:
     get:
       tags: [ Coin Exchange ]
-      summary: Get coin to point exchange rate
-      description: Get coin to point exchange rate
+      summary: Get coin to point exchange config
+      description: Get coin to point exchange config
       security:
         - bearerAuth: [ ]
       responses:
         "200":
-          description: Get coin to point exchange rate
+          description: Get coin to point exchange config
           content:
             application/json:
               schema:
@@ -1719,9 +1718,12 @@ paths:
                       data:
                         type: object
                         properties:
-                          rate:
+                          coinToPointRate:
                             type: number
                             format: double
+                          rewardRecurringAmount:
+                            type: number
+                            format: int
   /api/v1/coin-exchange/me/balance:
     get:
       tags: [ Coin Exchange ]
