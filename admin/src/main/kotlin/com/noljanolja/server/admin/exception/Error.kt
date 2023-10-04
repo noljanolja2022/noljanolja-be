@@ -23,4 +23,16 @@ sealed class Error(
         "File not found",
         null
     )
+
+    object FileExceedMaxSize : BaseException(
+        400_010,
+        "File upload size exceeded threshold",
+        null
+    )
+
+    object NoPrivilegeUser : BaseException(
+        403_000,
+        "User doesn't have required privilege to access",
+        null
+    )
 }

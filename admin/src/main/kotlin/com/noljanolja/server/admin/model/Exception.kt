@@ -8,7 +8,7 @@ sealed class CoreServiceError(
     cause: Throwable?,
 ) : BaseException(code, message, cause) {
     companion object {
-        const val BAD_REQUEST = 400_002
+        const val BAD_REQUEST = 400_000
         const val USER_NOT_FOUND = 404_001
         const val INTERNAL_ERROR = 500_002
     }
@@ -36,15 +36,3 @@ sealed class CoreServiceError(
         null,
     )
 }
-
-object FileExceedMaxSize : BaseException(
-    400_010,
-    "File upload size exceeded threshold",
-    null
-)
-
-object NoPrivilegeUser : CoreServiceError(
-    403_000,
-    "User doesn't have required privilege to access",
-    null
-)

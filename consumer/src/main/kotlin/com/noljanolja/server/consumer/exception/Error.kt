@@ -39,12 +39,10 @@ sealed class Error(
 ) : BaseException(code, message, cause) {
     companion object {
         const val FILE_NOT_FOUND = 404_002
-        const val CANNOT_UPDATE_CONVERSATION_PARTICIPANT = 403_001
         const val FILE_EXCEED_MAX_SIZE = 400_010
         const val EXCEED_MAX_ATTACHMENTS_SIZE = 400_011
         const val INVALID_CONTENT_TYPE = 400_012
         const val CANNOT_UPDATE_CONVERSATION = 400_013
-        const val CANNOT_TAKE_ACTION_ON_YOUTUBE = 400_014
     }
 
     object FileExceedMaxSize : BaseException(
@@ -75,17 +73,5 @@ sealed class Error(
         CANNOT_UPDATE_CONVERSATION,
         "Cannot update conversation",
         null,
-    )
-
-    object NoPermissionToUpdateConversationParticipant: BaseException(
-        CANNOT_UPDATE_CONVERSATION_PARTICIPANT,
-        "Cannot update conversation participant",
-        null,
-    )
-
-    object NoYoutubeAccountForAction: BaseException(
-        CANNOT_TAKE_ACTION_ON_YOUTUBE,
-        "User has no youtube account setup. Please setup first and try again",
-        null
     )
 }

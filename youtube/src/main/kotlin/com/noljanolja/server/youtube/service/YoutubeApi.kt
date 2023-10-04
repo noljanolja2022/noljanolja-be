@@ -186,6 +186,9 @@ class YoutubeApi(
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<YoutubeError>().mapNotNull { response ->
+                if (response.error.message.contains("Google+")) {
+                    Error.NoYoutubeAccountForAction
+                }
                 BaseException(response.error.code.toInt(), response.error.message, null)
             }
         }

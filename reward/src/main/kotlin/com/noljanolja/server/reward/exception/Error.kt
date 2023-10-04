@@ -10,7 +10,7 @@ sealed class Error(
     companion object {
         const val CONFIG_NOT_FOUND = 404_009
         const val CHECKIN_CONFIG_NOT_FOUND = 404_016
-        const val INVALID_VIDEO_CONFIG = 400_200
+        const val INVALID_VIDEO_CONFIG = 400_101
 
     }
 

@@ -2,8 +2,8 @@ package com.noljanolja.server.admin.filter
 
 import com.noljanolja.server.admin.adapter.auth.AuthApi
 import com.noljanolja.server.admin.adapter.auth.AuthUser
+import com.noljanolja.server.admin.exception.Error
 import com.noljanolja.server.admin.model.CoreServiceError
-import com.noljanolja.server.admin.model.NoPrivilegeUser
 import com.noljanolja.server.common.exception.InvalidTokenProvidedException
 import com.noljanolja.server.common.exception.NoTokenProvidedException
 import com.noljanolja.server.common.filter.BaseWebFilter
@@ -39,7 +39,7 @@ class AuthFilter(
         }
         val authUser = authApi.getUser(token)?.apply { bearerToken = token } ?: throw CoreServiceError.UserNotFound
         if (authUser.roles.intersect(PRIVILEGED_ROLES).isEmpty()) {
-            throw NoPrivilegeUser
+            throw Error.NoPrivilegeUser
         }
         chain.filter(exchange)
             .contextWrite(AuthUserHolder.withUser(authUser))

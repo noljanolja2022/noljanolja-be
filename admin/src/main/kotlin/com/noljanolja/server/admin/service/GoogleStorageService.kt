@@ -5,7 +5,6 @@ import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.noljanolja.server.admin.exception.Error
-import com.noljanolja.server.admin.model.FileExceedMaxSize
 import com.noljanolja.server.admin.model.ResourceInfo
 import com.noljanolja.server.admin.model.UploadInfo
 import com.noljanolja.server.common.utils.toByteBuffer
@@ -53,7 +52,7 @@ class GoogleStorageService(
                     writer.write(content)
                 }
                 if (currentUploadSize > limitSize)
-                    throw FileExceedMaxSize
+                    throw Error.FileExceedMaxSize
             }
             val uploadedFile = storage.get(blobId)
             if (isPublicAccessible) {
