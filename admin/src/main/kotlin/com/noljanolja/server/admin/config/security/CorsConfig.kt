@@ -15,7 +15,7 @@ class CorsConfig {
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration().apply {
-            allowedOriginPatterns = listOf("http://localhost:[*]", "*.admin.ppnyy.com" )
+            allowedOriginPatterns = listOf("http://localhost:[*]", "*.ppnyy.com" )
             allowedMethods = listOf("*")
             allowedHeaders = listOf("*")
         }

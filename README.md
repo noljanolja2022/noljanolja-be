@@ -101,3 +101,18 @@ Either use docker or local instance. Prefer docker for lightweight
    ```
 
 # Deploy server to GKE
+
+1. Build the module
+```agsl
+./gradlew admin:assemble
+```
+
+2. Run deploy script with 2 params: env and module
+```agsl
+scripts/deploy.sh prod admin
+```
+
+# Config hostname
+
+Go to cafe link
+Config A record
