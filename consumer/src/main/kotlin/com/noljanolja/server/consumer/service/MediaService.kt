@@ -23,13 +23,13 @@ class MediaService(
         return coreApi.getStickerPack(stickerPackId)!!
     }
 
-    suspend fun getChannelDetail(channelId: String) : Channel? {
+    suspend fun getChannelDetail(channelId: String): Channel? {
         return coreApi.getChannelDetail(
             channelId = channelId,
         ).data?.toChannel()
     }
 
-    suspend fun subscribeToChannel(channelId: String,userId: String, youtubeToken: String, isSubscribing: Boolean) {
+    suspend fun subscribeToChannel(channelId: String, userId: String, youtubeToken: String, isSubscribing: Boolean) {
         coreApi.subscribeToChannel(
             youtubeToken,
             userId = userId,
@@ -96,10 +96,10 @@ class MediaService(
             isHighlighted = isHighlighted,
             categoryId = categoryId,
         ).let { (videos, total) ->
-            val rewardProgresses = coreApi.getUserVideoRewardProgresses(
+            val rewardProgresses = if (videos.isNotEmpty()) coreApi.getUserVideoRewardProgresses(
                 userId = userId,
                 videoIds = videos.map { it.id }
-            )
+            ) else emptyList()
             Pair(
                 videos.map { video -> video.toConsumerVideo(rewardProgresses.firstOrNull { it.videoId == video.id }) },
                 total
@@ -129,10 +129,10 @@ class MediaService(
             days = days,
             limit = limit
         ).let { videos ->
-            val rewardProgresses = coreApi.getUserVideoRewardProgresses(
+            val rewardProgresses = if (videos.isNotEmpty()) coreApi.getUserVideoRewardProgresses(
                 userId = userId,
                 videoIds = videos.map { it.id },
-            )
+            ) else emptyList()
             videos.map { video -> video.toConsumerVideo(rewardProgresses.firstOrNull { it.videoId == video.id }) }
         }
     }

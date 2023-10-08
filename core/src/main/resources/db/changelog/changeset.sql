@@ -28,7 +28,7 @@ create TABLE IF NOT EXISTS `users`
     `referral_code` VARCHAR(8)                       NOT NULL,
     `referred_by`   VARCHAR(255)                     NOT NULL,
     `created_at`    DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`    DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`    DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FULLTEXT idx_referral_code (`referral_code`)
 ) ENGINE = InnoDB;

@@ -1,5 +1,7 @@
 package com.noljanolja.server.consumer.adapter.core
 
+
+
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
