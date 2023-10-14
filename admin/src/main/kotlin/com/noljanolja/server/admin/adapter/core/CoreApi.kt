@@ -95,6 +95,23 @@ class CoreApi(
         }
         .awaitBody<Response<CoreUser>>().data!!
 
+    suspend fun deleteUser(
+        userId: String,
+    ) = webClient.delete()
+        .uri { builder ->
+            builder.path("$USERS_ENDPOINT/$userId").build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
     suspend fun getStickerPacks() =
         webClient.get()
             .uri { builder -> builder.path(STICKER_PACK_ENDPOINT).build() }

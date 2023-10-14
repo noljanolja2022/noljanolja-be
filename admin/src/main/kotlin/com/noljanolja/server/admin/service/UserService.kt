@@ -52,9 +52,7 @@ class UserService(
         )).toAdminUser()
     }
 
-    suspend fun deleteUser(userId: String): User {
-        return coreApi.updateUser(userId, CoreUserUpdateReq(
-            isDeleted = true
-        )).toAdminUser()
+    suspend fun deleteUser(userId: String) {
+        coreApi.deleteUser(userId)
     }
 }
