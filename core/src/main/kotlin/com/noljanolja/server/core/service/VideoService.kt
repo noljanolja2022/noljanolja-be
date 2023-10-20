@@ -34,7 +34,8 @@ class VideoService(
     private val promotedVideoRepo: PromotedVideoRepo,
     private val youtubeApi: YoutubeApi,
     private val promotedVideoUserLogRepo: PromotedVideoUserLogRepo,
-    private val channelSubscriptionRepo: ChannelSubscriptionRepo
+    private val channelSubscriptionRepo: ChannelSubscriptionRepo,
+    private val videoGeneratedCommentRepo: VideoGeneratedCommentRepo,
 ) {
     suspend fun getVideoDetails(
         videoId: String,
@@ -102,8 +103,11 @@ class VideoService(
     }
 
     suspend fun upsertVideo(
-        youtubeUrl: String, isHighlight: Boolean,
-        youtubeVideo: YoutubeVideo, youtubeChannel: YoutubeChannel, youtubeCategory: YoutubeVideoCategory
+        youtubeUrl: String,
+        isHighlight: Boolean,
+        youtubeVideo: YoutubeVideo,
+        youtubeChannel: YoutubeChannel,
+        youtubeCategory: YoutubeVideoCategory
     ): Video {
         val channel = videoChannelRepo.save(
             (videoChannelRepo.findById(youtubeChannel.id)
@@ -302,6 +306,21 @@ class VideoService(
         )
     }
 
+    suspend fun upsertGeneratedComments(
+        videoId: String,
+        comments: List<String>
+    ) {
+        videoGeneratedCommentRepo.deleteAllByVideoId(videoId)
+        videoGeneratedCommentRepo.saveAll(
+            comments.map {
+                VideoGeneratedComment(
+                    content = it,
+                    videoId = videoId,
+                )
+            }
+        ).toList()
+    }
+
     suspend fun reactToPromotedVideo(
         videoId: String, youtubeToken: String, userId: String
     ) {
@@ -316,7 +335,8 @@ class VideoService(
         val videoDetail = videoRepo.findById(videoId)!!
         //TODO: update the comment
         val newRecord = PromotedVideoUserLogModel(
-            userId = userId, videoId = videoId,
+            userId = userId,
+            videoId = videoId,
             channelId = videoDetail.channelId,
             liked = record?.liked ?: false,
             commented = record?.commented ?: false,
@@ -343,17 +363,18 @@ class VideoService(
                 print("Unable to like video: ${e.message}")
             }
         }
-
-        if (config.autoComment && !newRecord.commented) {
+        val comments = videoGeneratedCommentRepo.findAllByVideoId(videoId).toList()
+        if (config.autoComment && !newRecord.commented && comments.isNotEmpty()) {
             try {
-                val commentContent = "영상 재미있게 잘 봤습니다. 앞으로도 좋은 영상 기대할게요. 화이팅"
+                val commentContent = comments.random().content
                 youtubeApi.addToplevelComment(videoId, youtubeToken, commentContent)
                 videoCommentRepo.save(
                     VideoCommentModel(
                         comment = commentContent,
                         commenterId = userId,
                         videoId = videoId,
-                    ))
+                    )
+                )
                 newRecord.commented = true
             } catch (e: Exception) {
                 print("Unable to comment on video: ${e.message}")
@@ -367,7 +388,9 @@ class VideoService(
                     val youtubeResource = youtubeApi.subscribeToChannel(videoDetail.channelId, youtubeToken)
                     channelSubscriptionRepo.save(
                         ChannelSubscriptionModel(
-                            userId = userId, channelId = newRecord.channelId, subscriptionId = youtubeResource.id
+                            userId = userId,
+                            channelId = newRecord.channelId,
+                            subscriptionId = youtubeResource.id,
                         )
                     )
                     newRecord.subscribed = true

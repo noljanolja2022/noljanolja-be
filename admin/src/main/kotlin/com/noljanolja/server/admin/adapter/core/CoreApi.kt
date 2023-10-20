@@ -753,4 +753,21 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoinExchangeConfig>>().data!!
+
+    suspend fun upsertVideoGeneratedComments(
+        comments: List<String>,
+        videoId: String,
+    ) = webClient.post()
+        .uri { uriBuilder -> uriBuilder.path("$VIDEO_ENDPOINT/{videoId}/generated-comments").build(videoId) }
+        .bodyValue(comments)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
 }

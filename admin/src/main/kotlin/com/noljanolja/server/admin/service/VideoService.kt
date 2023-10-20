@@ -1,6 +1,9 @@
 package com.noljanolja.server.admin.service
 
 import com.noljanolja.server.admin.adapter.core.CoreApi
+import com.noljanolja.server.admin.adapter.openai.ChatCompletionRequest
+import com.noljanolja.server.admin.adapter.openai.OpenAIApi
+import com.noljanolja.server.admin.adapter.youtube.YoutubeApi
 import com.noljanolja.server.admin.model.PromoteVideoRequest
 import com.noljanolja.server.admin.model.PromotedVideoConfig
 import com.noljanolja.server.admin.model.Video
@@ -8,16 +11,30 @@ import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.common.rest.Response
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.net.URL
 
 @Component
 class VideoService(
+    private val youtubeApi: YoutubeApi,
     private val coreApi: CoreApi,
+    private val openAIApi: OpenAIApi,
     private val notificationService: NotificationService,
 ) {
+    data class SampleComment1(
+        val comment: String,
+    )
+
+    data class SampleComment2(
+        val text: String,
+    )
+
+    private val logger = LoggerFactory.getLogger(VideoService::class.java)
+
     companion object {
         const val TOPIC_PROMOTE_VIDEO = "/topics/promote-video"
     }
@@ -34,8 +51,7 @@ class VideoService(
     }
 
     suspend fun getVideo(query: String? = null, page: Int, pageSize: Int): Response<List<Video>> {
-        val res = coreApi.getVideo(query, page, pageSize)
-        return res
+        return coreApi.getVideo(query, page, pageSize)
     }
 
     suspend fun deleteVideo(videoId: String) {
@@ -63,6 +79,49 @@ class VideoService(
                 )
             }
         }
+    }
+
+    suspend fun generateComments(
+        videoId: String,
+    ): List<String> {
+        val snippet = youtubeApi.fetchVideoDetail(listOf(videoId)).items.firstOrNull()?.snippet ?: return emptyList()
+        val description = snippet.description
+        val response = openAIApi.chatCompletion(
+            request = ChatCompletionRequest(
+                messages = listOf(
+                    ChatCompletionRequest.ChatMessage(
+                        role = "system",
+                        content = "Imagine you are a person commenting on a video. Try to come up with 5 different comments based on description and title of the video. The title and the description will be provided in xml in user query. Your response should be in JSON array format"
+                    ),
+                    ChatCompletionRequest.ChatMessage(
+                        role = "user",
+                        content = "<title>${snippet.title}</title>" +
+                                "<description>${description.chunked(1800).first()}</description>"
+                    )
+                )
+            )
+        )
+        /*
+            The reason we need to try catch many times is because sometimes the AI may generate weird JSON format
+            which will lead to exception when we try to decode the JSON in the wrong format
+         */
+        val comments = try {
+            Json.decodeFromString<List<String>>(response.choices.first().message.content)
+        } catch (e: Exception) {
+            Json.decodeFromString<List<SampleComment1>>(response.choices.first().message.content).map { it.comment }
+        } catch (e: Exception) {
+            Json.decodeFromString<List<SampleComment2>>(response.choices.first().message.content).map { it.text }
+        } catch (e: Exception) {
+            logger.error("Failed to decode the generated comments: ${e.message}")
+            emptyList()
+        }
+        if (comments.isNotEmpty()) {
+            coreApi.upsertVideoGeneratedComments(
+                comments = comments,
+                videoId = videoId,
+            )
+        }
+        return comments
     }
 
     private fun parseYoutubeUrlQuery(url: String): List<Pair<String, String>> {

@@ -36,3 +36,28 @@ sealed class CoreServiceError(
         null,
     )
 }
+
+sealed class OpenAIError(
+    code: Int,
+    message: String,
+    cause: Throwable?,
+) : BaseException(code, message, null) {
+    companion object {
+        const val BAD_REQUEST = 400_100
+        const val CONNECTION_ERROR = 500_100
+    }
+
+    class BadRequest(
+        message: String,
+    ) : OpenAIError(
+        BAD_REQUEST,
+        message = "[OpenAI] $message",
+        cause = null,
+    )
+
+    object ConnectionError : OpenAIError(
+        CONNECTION_ERROR,
+        "[OpenAI] Error connecting to OpenAI server",
+        null,
+    )
+}

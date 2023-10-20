@@ -29,6 +29,7 @@ class MediaRouter(
                 GET("/{id}", mediaHandler::getVideoDetail)
                 DELETE("/{id}", mediaHandler::deleteVideo)
                 POST("/{id}/promoted", mediaHandler::updatePromotedVideo)
+                POST("/{id}/comments", mediaHandler::generateComments)
             }
         }
     }

@@ -42,6 +42,25 @@ class DataModule {
         return buildWebClient(webClientBuilder, config)
     }
 
+    @Bean
+    fun openAIWebClient(
+        webClientBuilder: WebClient.Builder,
+        serviceConfig: ServiceConfig,
+    ): WebClient {
+        val config = serviceConfig.configs.first { it.id == ServiceConfig.Config.ServiceID.OPEN_AI }
+        webClientBuilder.defaultHeader("Authorization", "Bearer ${config.extra["apiKey"]}")
+        return buildWebClient(webClientBuilder, config)
+    }
+
+    @Bean
+    fun youtubeWebClient(
+        webClientBuilder: WebClient.Builder,
+        serviceConfig: ServiceConfig,
+    ): WebClient {
+        val config = serviceConfig.configs.first { it.id == ServiceConfig.Config.ServiceID.YOUTUBE }
+        return buildWebClient(webClientBuilder, config)
+    }
+
     private fun buildWebClient(
         webClientBuilder: WebClient.Builder,
         config: ServiceConfig.Config,

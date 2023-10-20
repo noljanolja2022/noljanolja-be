@@ -3,7 +3,6 @@ package com.noljanolja.server.consumer.service
 import com.noljanolja.server.consumer.adapter.core.*
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.adapter.core.request.CreateConversationRequest
-import com.noljanolja.server.consumer.config.AppConfig
 import com.noljanolja.server.consumer.exception.Error
 import com.noljanolja.server.consumer.model.Conversation
 import com.noljanolja.server.consumer.model.Message
@@ -27,7 +26,6 @@ class ConversationService(
     private val notificationService: NotificationService,
     private val storageService: GoogleStorageService,
     private val socketRequester: SocketRequester,
-    private val appConfig: AppConfig,
 ) {
     companion object {
         const val IMAGE_CONTENT_TYPE_PREFIX = "image/"

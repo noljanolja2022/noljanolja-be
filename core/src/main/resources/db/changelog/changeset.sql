@@ -842,3 +842,18 @@ create TABLE IF NOT EXISTS `promoted_video_user_logs`
     FOREIGN KEY (video_id) REFERENCES videos(id) ON delete CASCADE,
     FOREIGN KEY (channel_id) REFERENCES video_channels(id) ON delete CASCADE
 ) ENGINE = InnoDB;
+
+-- changeset tranhieu956230@gmail.com::19
+
+DROP TABLE IF EXISTS `video_generated_comments`;
+
+CREATE TABLE IF NOT EXISTS `video_generated_comments`
+(
+    `id`            BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `content`       TEXT            NOT NULL,
+    `video_id`      VARCHAR(255)    NOT NULL,
+    `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (video_id) REFERENCES videos(id) ON delete CASCADE
+) ENGINE = InnoDB;

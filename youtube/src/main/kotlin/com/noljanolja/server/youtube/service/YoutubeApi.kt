@@ -32,8 +32,7 @@ class YoutubeApi(
         const val COMMENT_THREAD_ENDPOINT = "/v3/commentThreads"
     }
 
-    val apiKey = serviceConfig.configs.first { it.id == ServiceConfig.Config.ServiceID.YOUTUBE }.extra["apiKey"]
-        ?: ""
+    val apiKey = serviceConfig.configs.first { it.id == ServiceConfig.Config.ServiceID.YOUTUBE }.extra["apiKey"].orEmpty()
 
     suspend fun fetchVideoDetail(
         ids: List<String>,

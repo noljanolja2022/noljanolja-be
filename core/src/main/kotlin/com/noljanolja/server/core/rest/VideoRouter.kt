@@ -29,6 +29,7 @@ class VideoRouter(
                 POST("views", videoHandler::viewVideo)
                 POST("likes", videoHandler::likeVideo)
                 GET("comments", videoHandler::getVideoComments)
+                POST("generated-comments", videoHandler::upsertVideoGeneratedComments)
                 POST("comments", videoHandler::postComment)
                 POST("promote", videoHandler::promoteVideo)
                 POST("react-promote", videoHandler::reactToPromotedVideo)

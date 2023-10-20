@@ -268,4 +268,18 @@ class VideoHandler(
                 body = Response<Nothing>()
             )
     }
+
+    suspend fun upsertVideoGeneratedComments(request: ServerRequest): ServerResponse {
+        val videoId = request.pathVariable("videoId").takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("videoId")
+        val comments = request.awaitBodyOrNull<List<String>>() ?: throw RequestBodyRequired
+        videoService.upsertGeneratedComments(
+            videoId = videoId,
+            comments = comments,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
 }

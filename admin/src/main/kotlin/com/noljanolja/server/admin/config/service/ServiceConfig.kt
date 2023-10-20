@@ -17,7 +17,9 @@ data class ServiceConfig(val configs: List<Config>) {
     ) {
         enum class ServiceID {
             CORE,
-            AUTH
+            AUTH,
+            OPEN_AI,
+            YOUTUBE,
         }
     }
 }

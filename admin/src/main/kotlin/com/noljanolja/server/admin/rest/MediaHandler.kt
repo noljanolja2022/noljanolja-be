@@ -160,10 +160,12 @@ class MediaHandler(
 
     suspend fun getPromotedVideos(request: ServerRequest): ServerResponse {
         val res = videoService.getPromotedVideo()
-        return ServerResponse.ok().bodyValueAndAwait(Response(
-            data = res.data,
-            pagination = res.pagination
-        ))
+        return ServerResponse.ok().bodyValueAndAwait(
+            Response(
+                data = res.data,
+                pagination = res.pagination
+            )
+        )
     }
 
     suspend fun updatePromotedVideo(request: ServerRequest): ServerResponse {
@@ -172,5 +174,19 @@ class MediaHandler(
         val reqBody = request.awaitBodyOrNull<PromoteVideoRequest>() ?: throw RequestBodyRequired
         videoService.updatePromotedVideo(videoId, reqBody)
         return ServerResponse.ok().bodyValueAndAwait(Response<Nothing>())
+    }
+
+    suspend fun generateComments(request: ServerRequest): ServerResponse {
+        val videoId = request.pathVariable(PATH_ID).takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException(PATH_ID)
+        val comments = videoService.generateComments(
+            videoId = videoId,
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = comments
+                )
+            )
     }
 }
