@@ -1,5 +1,6 @@
 package com.noljanolja.server.consumer.rest
 
+import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
@@ -37,7 +38,7 @@ class CoinExchangeHandler(
         val payload = request.awaitBodyOrNull<ExchangePointToCoinRequest>() ?: throw RequestBodyRequired
         val transaction = coinExchangeService.exchangePointToCoin(
             userId = AuthUserHolder.awaitUser().id,
-            points = payload.points
+            points = payload.points.also { if (it <= 0) throw InvalidParamsException("points") }
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
