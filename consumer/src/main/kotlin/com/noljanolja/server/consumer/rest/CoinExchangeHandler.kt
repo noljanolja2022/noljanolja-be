@@ -1,10 +1,7 @@
 package com.noljanolja.server.consumer.rest
 
-import com.noljanolja.server.common.exception.InvalidParamsException
-import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
-import com.noljanolja.server.consumer.rest.request.ExchangePointToCoinRequest
 import com.noljanolja.server.consumer.service.CoinExchangeService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -35,10 +32,9 @@ class CoinExchangeHandler(
     }
 
     suspend fun exchangePointToCoin(request: ServerRequest): ServerResponse {
-        val payload = request.awaitBodyOrNull<ExchangePointToCoinRequest>() ?: throw RequestBodyRequired
         val transaction = coinExchangeService.exchangePointToCoin(
             userId = AuthUserHolder.awaitUser().id,
-            points = payload.points.also { if (it <= 0) throw InvalidParamsException("points") }
+            points = 1
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
