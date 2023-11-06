@@ -1,0 +1,7 @@
+gift-biz-services:
+  configs:
+    - id: GIFTBIZ
+      baseUrl: ${GIFTBIZ_BASE_URL}
+      extra:
+        authCode: ${GIFTBIZ_AUTH_CODE}
+        authToken: ${GIFTBIZ_AUTH_TOKEN}

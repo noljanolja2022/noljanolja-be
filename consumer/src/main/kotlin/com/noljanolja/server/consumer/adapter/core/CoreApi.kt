@@ -5,6 +5,7 @@ import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.adapter.core.request.*
 import com.noljanolja.server.consumer.exception.CoreServiceError
 import com.noljanolja.server.consumer.model.Message
+import com.noljanolja.server.consumer.model.Product
 import com.noljanolja.server.consumer.model.SimpleUser
 import com.noljanolja.server.consumer.model.StickerPack
 import com.noljanolja.server.consumer.rest.request.AddFriendRequest
@@ -40,6 +41,7 @@ class CoreApi(
         const val GIFT_ENDPOINT = "/api/v1/gifts"
         const val BANNER_ENDPOINT = "/api/v1/banners"
         const val COIN_EXCHANGE_ENDPOINT = "/api/v1/coin-exchange"
+        const val SHOP_PRODUCT_ENDPOINT = "/api/v1/shop/product"
 
         val coreErrorsMapping = mapOf(
             404_001 to CoreServiceError.UserNotFound
@@ -1229,4 +1231,25 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreCoinTransaction>>>().data!!
+
+    suspend fun getProducts(
+        page: Int, pageSize: Int, query: String? = null
+    ) = webClient.get()
+        .uri { uriBuilder -> uriBuilder.path(SHOP_PRODUCT_ENDPOINT)
+            .queryParam("page", page)
+            .queryParam("pageSize", pageSize)
+            .queryParamIfPresent("query", Optional.ofNullable(query))
+            .queryParam("isActive", true)
+            .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<Product>>>()
 }

@@ -6,6 +6,8 @@ include(
     ":reward",
     ":coin_exchange",
     ":gifts",
+    ":gift-biz",
+
     ":youtube",
     ":core",
     ":auth",

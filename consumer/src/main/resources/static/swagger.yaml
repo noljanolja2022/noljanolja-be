@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 2/10/2023:
-      - Update Coin Exchange API
-  version: 1.0.7
+    Changelog - 6/11/2023:
+      - Update Shop API, allow fetching product list
+  version: 1.0.8
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -23,6 +23,8 @@ tags:
   - name: Gift
   - name: Coin Exchange
     description: Coin exchange, coin balance, transactions
+  - name: Shop
+    description: Regarding getting list of products, purchasing product, etc.
 paths:
   /api/v1/users/me:
     get:
@@ -1664,6 +1666,7 @@ paths:
                     properties:
                       data:
                         $ref: "#/components/schemas/MyGift"
+
   /api/v1/banners:
     get:
       tags: [ Banner ]
@@ -1698,6 +1701,7 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/Banner"
+
   /api/v1/coin-exchange/rate:
     get:
       tags: [ Coin Exchange ]
@@ -1820,6 +1824,46 @@ paths:
                     properties:
                       data:
                         $ref: "#/components/schemas/CoinTransaction"
+
+  /api/v1/shop/products:
+    get:
+      tags: [ Shop ]
+      summary: Get list of products
+      description: Products can be used to exchange with coin
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: number
+            format: integer
+          required: false
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+            format: integer
+          required: false
+        - in: query
+          name: query
+          schema:
+            type: string
+          required: false
+      responses:
+        "200":
+          description: On success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponseWithPagination"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Product"
 components:
   securitySchemes:
     bearerAuth: # arbitrary name for the security scheme
@@ -2453,3 +2497,23 @@ components:
         createdAt:
           type: string
           format: datetime
+    Product:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        img:
+          type: string
+        brandCode:
+          type: string
+        brand:
+          type: string
+        brandImg:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          description: in coin unit

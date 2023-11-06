@@ -244,3 +244,8 @@ serverYoutubeRuntime = [
 serverYoutubeProcessor = [
     "spring-boot-configuration-processor"
 ]
+
+
+serverGiftBizProcessor = [
+    "spring-boot-configuration-processor"
+]

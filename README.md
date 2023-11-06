@@ -1,3 +1,4 @@
+
 # Prerequisite
 
 - Redis
@@ -116,3 +117,12 @@ scripts/deploy.sh prod admin
 
 Go to cafe link
 Config A record
+
+# Work with secret on GKE
+
+- To edit
+```agsl
+kubectl edit secret <secret-name>
+```
+
+We can modify the value in this file. Remember, we must encode the value to base64 first before input it the file

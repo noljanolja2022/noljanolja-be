@@ -847,7 +847,7 @@ create TABLE IF NOT EXISTS `promoted_video_user_logs`
 
 DROP TABLE IF EXISTS `video_generated_comments`;
 
-CREATE TABLE IF NOT EXISTS `video_generated_comments`
+create TABLE IF NOT EXISTS `video_generated_comments`
 (
     `id`            BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `content`       TEXT            NOT NULL,
@@ -856,4 +856,22 @@ CREATE TABLE IF NOT EXISTS `video_generated_comments`
     `updated_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP,
 
     FOREIGN KEY (video_id) REFERENCES videos(id) ON delete CASCADE
+) ENGINE = InnoDB;
+
+DROP TABLE IF EXISTS `shop_products`;
+
+create TABLE IF NOT EXISTS `shop_products`
+(
+    `id`            VARCHAR(255)    NOT NULL PRIMARY KEY,
+    `name`          VARCHAR(255)    NOT NULL,
+    `img`           TEXT            ,
+    `description`   TEXT            ,
+    `brand`         VARCHAR(255)    NOT NULL,
+    `brand_img`     TEXT            NOT NULL,
+    `brand_code`    VARCHAR(255)    NOT NULL,
+    `real_money_price` BIGINT       NOT NULL DEFAULT 0,
+    `price`         BIGINT          NOT NULL DEFAULT 0,
+    `is_active`     TINYINT(1)      NOT NULL DEFAULT 0,
+    `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
