@@ -21,6 +21,14 @@ class GiftHandler(
         const val DEFAULT_PAGE_SIZE = 10
     }
 
+    suspend fun importGifts(request: ServerRequest): ServerResponse {
+        giftService.importProducts()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
     suspend fun getAllGifts(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
@@ -102,7 +110,6 @@ class GiftHandler(
                 categoryId = categoryId,
                 brandId = brandId,
                 price = price,
-                maxBuyTimes = maxBuyTimes,
             )
         }
         return ServerResponse.ok()
@@ -125,7 +132,6 @@ class GiftHandler(
                 price = price,
                 startTime = startTime,
                 endTime = endTime,
-                maxBuyTimes = maxBuyTimes,
             )
         }
         return ServerResponse.ok()

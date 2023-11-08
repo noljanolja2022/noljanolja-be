@@ -565,7 +565,7 @@ create TABLE IF NOT EXISTS `gifts`
 (
     `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `name`              VARCHAR(255)    NOT NULL,
-    `description`       VARCHAR(1024)   NOT NULL,
+    `description`       TEXT            NOT NULL,
     `image`             VARCHAR(255)    NOT NULL,
     `start_time`        DATETIME        NOT NULL,
     `end_time`          DATETIME        NOT NULL,
@@ -573,13 +573,12 @@ create TABLE IF NOT EXISTS `gifts`
     `brand_id`          BIGINT          NOT NULL,
     `total`             INT             NOT NULL,
     `remaining`         INT             NOT NULL,
-    `max_buy_times`     INT             NOT NULL,
     `price`             BIGINT          NOT NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (brand_id) REFERENCES gift_brands(id) ON delete CASCADE,
-    FOREIGN KEY (category_id) REFERENCES gift_categories(id) ON delete CASCADE
+--    FOREIGN KEY (brand_id) REFERENCES gift_brands(id) ON delete CASCADE,
+--    FOREIGN KEY (category_id) REFERENCES gift_categories(id) ON delete CASCADE
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------
@@ -856,22 +855,4 @@ create TABLE IF NOT EXISTS `video_generated_comments`
     `updated_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP,
 
     FOREIGN KEY (video_id) REFERENCES videos(id) ON delete CASCADE
-) ENGINE = InnoDB;
-
-DROP TABLE IF EXISTS `shop_products`;
-
-create TABLE IF NOT EXISTS `shop_products`
-(
-    `id`            VARCHAR(255)    NOT NULL PRIMARY KEY,
-    `name`          VARCHAR(255)    NOT NULL,
-    `img`           TEXT            ,
-    `description`   TEXT            ,
-    `brand`         VARCHAR(255)    NOT NULL,
-    `brand_img`     TEXT            NOT NULL,
-    `brand_code`    VARCHAR(255)    NOT NULL,
-    `real_money_price` BIGINT       NOT NULL DEFAULT 0,
-    `price`         BIGINT          NOT NULL DEFAULT 0,
-    `is_active`     TINYINT(1)      NOT NULL DEFAULT 0,
-    `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;

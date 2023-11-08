@@ -19,7 +19,7 @@ data class CoreGift(
     val codes: List<String>,
     val total: Int,
     val remaining: Int,
-    val maxBuyTimes: Int,
+    val maxBuyTimes: Int = 10,
 ) {
     data class Brand(
         val id: Long,
@@ -58,7 +58,7 @@ fun CoreGift.toGift() = Gift(
     brand = brand.toGiftBrand(),
     category = category.toGiftCategory(),
     price = price,
-    isPurchasable = remaining > 0 && Instant.now() in startTime..endTime && codes.size < maxBuyTimes,
+    isPurchasable = true,
 )
 
 fun CoreGift.toMyGift() = codes.map {

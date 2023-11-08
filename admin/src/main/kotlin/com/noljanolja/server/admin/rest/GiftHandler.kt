@@ -31,6 +31,16 @@ class GiftHandler(
         const val DEFAULT_PAGE_SIZE = 10
     }
 
+    suspend fun importGifts(request: ServerRequest): ServerResponse {
+        giftService.importProductManually()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                Response(
+                    data = "res",
+                )
+            )
+    }
+
     suspend fun getGifts(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE

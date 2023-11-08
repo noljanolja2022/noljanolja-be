@@ -1,9 +1,11 @@
 package com.noljanolja.server.gift.service
 
+import com.nolgobuljia.server.giftbiz.service.GiftBizApi
 import com.noljanolja.server.coin_exchange.service.CoinExchangeService
 import com.noljanolja.server.common.utils.REASON_PURCHASE_GIFT
 import com.noljanolja.server.gift.exception.Error
 import com.noljanolja.server.gift.model.Gift
+import com.noljanolja.server.gift.model.toGift
 import com.noljanolja.server.gift.repo.*
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.PageRequest
@@ -18,8 +20,26 @@ class GiftService(
     private val giftCategoryRepo: GiftCategoryRepo,
     private val giftCodeRepo: GiftCodeRepo,
     private val giftRepo: GiftRepo,
+    private val giftBizApi: GiftBizApi,
     private val coinExchangeService: CoinExchangeService,
 ) {
+    suspend fun importProducts() {
+        var pageNum = 1
+        val pageSize= 20
+        while (true) {
+            val res = giftBizApi.getGoodsList(pageNum, pageSize)
+            val convertedRes = res.result?.goodsList?.map { it.toGift() } ?: emptyList()
+            val payload = convertedRes.map { GiftModel.fromGift(it) }
+
+            giftRepo.saveAll(payload).toList()
+            val total = res.result?.listNum ?: 0
+            if (total < pageSize * pageNum) {
+                break
+            }
+            pageNum++
+        }
+    }
+
     suspend fun buyGift(
         userId: String,
         giftId: Long,
@@ -30,7 +50,7 @@ class GiftService(
             giftCodeRepo.countByUserIdAndGiftId(
                 userId = userId,
                 giftId = giftId,
-            ) >= gift.maxBuyTimes
+            ) >= 0
         ) throw Error.MaximumBuyTimesReached
         coinExchangeService.addTransaction(
             userId = userId,
@@ -146,7 +166,6 @@ class GiftService(
         categoryId: Long,
         price: Long,
         brandId: Long,
-        maxBuyTimes: Int,
     ): Gift {
         val category = giftCategoryRepo.findById(categoryId) ?: throw Error.CategoryNotFound
         val brand = giftBrandRepo.findById(brandId) ?: throw Error.BrandNotFound
@@ -162,7 +181,6 @@ class GiftService(
                 total = codes.size,
                 remaining = codes.size,
                 price = price,
-                maxBuyTimes = maxBuyTimes,
             )
         )
         val giftCodes = giftCodeRepo.saveAll(
@@ -188,7 +206,6 @@ class GiftService(
         price: Long?,
         startTime: Instant?,
         endTime: Instant?,
-        maxBuyTimes: Int?,
     ): Gift {
         val gift = giftRepo.findById(giftId) ?: throw Error.GiftNotFound
         val category = giftCategoryRepo.findById(gift.categoryId)!!
@@ -202,7 +219,6 @@ class GiftService(
                 startTime?.let { this.startTime = it }
                 endTime?.let { this.endTime = it }
                 price?.let { this.price = it }
-                maxBuyTimes?.let { this.maxBuyTimes = it }
             }
         ).apply {
             this.brand = brand

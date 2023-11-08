@@ -7,6 +7,11 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface GiftRepo : CoroutineCrudRepository<GiftModel, Long> {
+
+    fun findAllByNameIn(
+        name: List<String>
+    ):  Flow<GiftModel>
+
     @Query(
         """
         SELECT * FROM gifts WHERE 

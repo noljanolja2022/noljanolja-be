@@ -16,6 +16,7 @@ class GiftRouter(
     @Bean
     fun giftRoutes() = coRouter {
         (GIFT_ROUTES and accept(MediaType.APPLICATION_JSON)).nest {
+            GET("import", giftHandler::importGifts)
             "/categories".nest {
                 GET("", giftHandler::getCategories)
             }

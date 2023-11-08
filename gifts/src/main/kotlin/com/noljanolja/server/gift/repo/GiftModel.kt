@@ -45,9 +45,6 @@ data class GiftModel(
     @Column("remaining")
     var remaining: Int,
 
-    @Column("max_buy_times")
-    var maxBuyTimes: Int = 0,
-
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -64,6 +61,23 @@ data class GiftModel(
 
     @Transient
     var codes: List<String> = emptyList()
+
+    companion object {
+        fun fromGift(e: Gift): GiftModel {
+            return GiftModel(
+                name = e.name,
+                description = e.description,
+                image = e.image,
+                startTime = e.startTime,
+                endTime = e.endTime,
+                categoryId = e.category.id,
+                brandId = e.brand.id,
+                total = e.total,
+                price = e.price,
+                remaining = e.remaining,
+            )
+        }
+    }
 }
 
 fun GiftModel.toGift() = Gift(
@@ -79,5 +93,4 @@ fun GiftModel.toGift() = Gift(
     category = category.toGiftCategory(),
     codes = codes,
     price = price,
-    maxBuyTimes = maxBuyTimes,
 )

@@ -22,14 +22,14 @@ data class GiftBizGood(
     val exhGenderCd: String?,
     val exhAgeCd: String?,
     val validPrdDay: String?,
-    val rmRecvNumAmount: Long,
+    val rmRecvNumAmount: Int,
     val goodsComName: String,
     val goodsName: String,
     val mmsReserveFlag: BooleanFlag?, //bool
     val firstBuyFlag: BooleanFlag?, //bool
     val goodsStateCd: String?,
     val brandCode: String,
-    val goodsNo: Int,
+    val goodsNo: Long,
     val brandName: String,
     val mmsBarcdCreateYn: String?, //bool
     val goodsEventDesc: String?,
@@ -44,7 +44,7 @@ data class GiftBizGood(
     val rmRecvNumFlag: String?, //bool
     val goodsCode: String,
     val goodsTypeDtlNm: String,
-    val category1Seq: Int?,
+    val category1Seq: Long?,
     val goodsImgS: String,
     val affiliate: String,
     val validPrdTypeCd: String,

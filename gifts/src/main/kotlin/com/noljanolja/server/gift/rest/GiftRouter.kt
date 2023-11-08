@@ -26,6 +26,7 @@ class GiftRouter(
                 PATCH("{brandId}", giftHandler::updateBrand)
                 DELETE("{brandId}", giftHandler::deleteBrand)
             }
+            GET("import", giftHandler::importGifts)
 
             "/{giftId}".nest {
                 GET("", giftHandler::getGiftDetail)

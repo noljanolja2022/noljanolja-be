@@ -12,7 +12,7 @@ data class ServiceConfig(val configs: List<Config>) {
     data class Config(
         val id: ServiceID,
         val baseUrl: String,
-        val timeoutMillis: Long = 5000L,
+        val timeoutMillis: Long = 50000L,
         val extra: Map<String, String> = mutableMapOf(),
     ) {
         enum class ServiceID {

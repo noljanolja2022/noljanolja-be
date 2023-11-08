@@ -9,5 +9,4 @@ data class UpdateGiftRequest(
     val price: Long? = null,
     val startTime: Instant? = null,
     val endTime: Instant? = null,
-    val maxBuyTimes: Int? = null,
 )

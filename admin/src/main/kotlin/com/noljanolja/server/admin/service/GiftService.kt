@@ -8,6 +8,11 @@ import org.springframework.stereotype.Component
 class GiftService(
     private val coreApi: CoreApi
 ) {
+
+    suspend fun importProductManually() {
+        coreApi.importProducts()
+    }
+
     suspend fun getGifts(
         categoryId: Long?,
         brandId: Long?,

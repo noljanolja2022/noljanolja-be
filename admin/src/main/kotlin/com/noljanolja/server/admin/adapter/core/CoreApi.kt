@@ -30,8 +30,21 @@ class CoreApi(
         const val COIN_EXCHANGE_ROUTE = "/api/v1/coin-exchange"
         const val GIFT_ROUTES = "/api/v1/gifts"
         const val BANNER_ENDPOINT = "/api/v1/banners"
-        const val SHOP_PRODUCT_ENDPOINT = "/api/v1/shop/product"
     }
+    suspend fun importProducts() = webClient.get()
+        .uri { uriBuilder -> uriBuilder.path("$GIFT_ROUTES/import")
+            .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
 
     suspend fun getUsers(
         page: Int = 1,
@@ -761,41 +774,6 @@ class CoreApi(
     ) = webClient.post()
         .uri { uriBuilder -> uriBuilder.path("$VIDEO_ENDPOINT/{videoId}/generated-comments").build(videoId) }
         .bodyValue(comments)
-        .retrieve()
-        .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
-        }
-        .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
-        }
-        .awaitBody<Response<Nothing>>()
-
-    suspend fun getProducts(
-        page: Int, pageSize: Int, query: String? = null
-    ) = webClient.get()
-        .uri { uriBuilder -> uriBuilder.path(SHOP_PRODUCT_ENDPOINT)
-            .queryParam("page", page)
-            .queryParam("pageSize", pageSize)
-            .queryParamIfPresent("query", Optional.ofNullable(query))
-            .build()
-        }
-        .retrieve()
-        .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
-        }
-        .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
-        }
-        .awaitBody<Response<List<Product>>>()
-
-    suspend fun importProducts() = webClient.get()
-        .uri { uriBuilder -> uriBuilder.path("$SHOP_PRODUCT_ENDPOINT/import")
-            .build()
-        }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
