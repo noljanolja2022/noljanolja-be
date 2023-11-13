@@ -73,6 +73,7 @@ Either use docker or local instance. Prefer docker for lightweight
    ```agsl
    py cli.py downgrade
    ```
+   
 # Start local server
 
 1. Setup these environment variable for `consumer` server
@@ -109,16 +110,11 @@ Either use docker or local instance. Prefer docker for lightweight
    --default-authentication-plugin=mysql_native_password
    ```
 
-# Deploy server to GKE
+# Debug dev or prod db
 
-1. Build the module
+1. Start with port forwarding
 ```agsl
-./gradlew admin:assemble
-```
-
-2. Run deploy script with 2 params: env and module
-```agsl
-scripts/deploy.sh prod admin
+kubectl port-forward $(kubectl get pod --selector="app=mysql" --output jsonpath='{.items[0].metadata.name}') 8020:3306
 ```
 
 # Config hostname
@@ -126,11 +122,5 @@ scripts/deploy.sh prod admin
 Go to cafe link
 Config A record
 
-# Work with secret on GKE
-
-- To edit
-```agsl
-kubectl edit secret <secret-name>
-```
-
-We can modify the value in this file. Remember, we must encode the value to base64 first before input it the file
+# Deployment
+Check README in docker
