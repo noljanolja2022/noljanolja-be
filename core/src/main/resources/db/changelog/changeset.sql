@@ -533,26 +533,9 @@ DROP TABLE IF EXISTS `gift_brands`;
 
 create TABLE IF NOT EXISTS `gift_brands`
 (
-    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `id`                VARCHAR(255)    NOT NULL PRIMARY KEY,
     `name`              VARCHAR(255)    NOT NULL,
-    `image`             VARCHAR(255)    NOT NULL,
-    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Table `gift_categories`
--- -----------------------------------------------------
-
-DROP TABLE IF EXISTS `gift_categories`;
-
-create TABLE IF NOT EXISTS `gift_categories`
-(
-    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `code`              VARCHAR(255)    NOT NULL,
-    `image`             VARCHAR(255)    NOT NULL,
-    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `image`             VARCHAR(255)    NOT NULL
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------
@@ -563,38 +546,34 @@ DROP TABLE IF EXISTS `gifts`;
 
 create TABLE IF NOT EXISTS `gifts`
 (
-    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `id`                VARCHAR(64)     NOT NULL PRIMARY KEY,
+    `gift_no`           BIGINT          NOT NULL,
     `name`              VARCHAR(255)    NOT NULL,
     `description`       TEXT            NOT NULL,
     `image`             VARCHAR(255)    NOT NULL,
-    `start_time`        DATETIME        NOT NULL,
     `end_time`          DATETIME        NOT NULL,
-    `category_id`       BIGINT          NOT NULL,
-    `brand_id`          BIGINT          NOT NULL,
-    `total`             INT             NOT NULL,
-    `remaining`         INT             NOT NULL,
+    `brand_id`          VARCHAR(255)    NOT NULL,
     `price`             BIGINT          NOT NULL,
+    `retail_price`      BIGINT          NOT NULL DEFAULT 0,
+    `is_active`         TINYINT         NOT NULL DEFAULT 1,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
---    FOREIGN KEY (brand_id) REFERENCES gift_brands(id) ON delete CASCADE,
---    FOREIGN KEY (category_id) REFERENCES gift_categories(id) ON delete CASCADE
+    FOREIGN KEY (brand_id) REFERENCES gift_brands(id) ON delete CASCADE
 ) ENGINE = InnoDB;
 
--- -----------------------------------------------------
--- Table `gift_codes`
--- -----------------------------------------------------
+DROP TABLE IF EXISTS `gift_transactions`;
 
-DROP TABLE IF EXISTS `gift_codes`;
-
-create TABLE IF NOT EXISTS `gift_codes`
+create TABLE IF NOT EXISTS `gift_transactions`
 (
-    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `gift_id`           BIGINT          NOT NULL,
-    `user_id`           VARCHAR(255)    NULL,
-    `code`              VARCHAR(255)    NOT NULL,
+    `id`                VARCHAR(20)     NOT NULL PRIMARY KEY,
+    `gift_id`           VARCHAR(255)    NOT NULL ,
+    `user_id`           VARCHAR(255)    NOT NULL ,
+    `price`             BIGINT          NOT NULL,
+    `order_no`          VARCHAR(64)     NOT NULL,
+    `pin_no`            VARCHAR(64)     NULL,
+    `bar_code`          VARCHAR(128)    NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (gift_id) REFERENCES gifts(id) ON delete CASCADE
 ) ENGINE = InnoDB;

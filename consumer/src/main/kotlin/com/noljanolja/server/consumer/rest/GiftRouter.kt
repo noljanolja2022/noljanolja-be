@@ -18,7 +18,6 @@ class GiftRouter(
         (GIFT_ROUTES and accept(MediaType.APPLICATION_JSON)).nest {
             GET("", giftHandler::getGifts)
             GET("/me", giftHandler::getMyGifts)
-            GET("/categories", giftHandler::getGiftCategories)
             GET("/brands", giftHandler::getGiftBrands)
             GET("/{giftId}", giftHandler::getGiftDetail)
             POST("/{giftId}/buy", giftHandler::buyGift)

@@ -1,9 +1,11 @@
 package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.common.model.Pagination
-import com.noljanolja.server.consumer.adapter.core.*
+import com.noljanolja.server.consumer.adapter.core.CoreApi
+import com.noljanolja.server.consumer.adapter.core.toGift
+import com.noljanolja.server.consumer.adapter.core.toGiftBrand
 import com.noljanolja.server.consumer.model.Gift
-import com.noljanolja.server.consumer.model.MyGift
+import com.noljanolja.server.consumer.model.PurchasedGift
 import org.springframework.stereotype.Component
 
 @Component
@@ -12,40 +14,36 @@ class GiftService(
 ) {
     suspend fun getMyGifts(
         userId: String,
-        categoryId: Long?,
-        brandId: Long?,
+        brandId: String?,
         page: Int,
         pageSize: Int,
-    ): Pair<List<MyGift>, Pagination> {
+    ): Pair<List<PurchasedGift>, Pagination> {
         return coreApi.getUserGifts(
             userId = userId,
-            categoryId = categoryId,
             brandId = brandId,
             page = page,
             pageSize = pageSize,
-        ).let { (gifts, pagination) -> Pair(gifts.flatMap { it.toMyGift() }, pagination) }
+        ).let { (gifts, pagination) -> Pair(gifts.map { it.toPurchasedGift() }, pagination) }
     }
 
     suspend fun buyGift(
         userId: String,
-        giftId: Long,
-    ): MyGift {
+        giftId: String,
+    ): PurchasedGift {
         return coreApi.buyGift(
             userId = userId,
             giftId = giftId,
-        ).toMyGift().first()
+        ).toPurchasedGift()
     }
 
     suspend fun getGifts(
         userId: String,
-        categoryId: Long?,
-        brandId: Long?,
+        brandId: String?,
         page: Int,
         pageSize: Int,
     ): Pair<List<Gift>, Pagination> {
         return coreApi.getAllGifts(
             userId = userId,
-            categoryId = categoryId,
             brandId = brandId,
             page = page,
             pageSize = pageSize,
@@ -54,15 +52,13 @@ class GiftService(
 
     suspend fun getGiftDetail(
         userId: String,
-        giftId: Long,
+        giftId: String,
     ): Gift {
         return coreApi.getGiftDetail(
             userId = userId,
             giftId = giftId,
         ).toGift()
     }
-
-    suspend fun getGiftCategories() = coreApi.getCategories().map { it.toGiftCategory() }
 
     suspend fun getBrands(
         page: Int,

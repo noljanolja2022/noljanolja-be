@@ -17,23 +17,15 @@ class GiftRouter(
     fun giftRoutes() = coRouter {
         (GIFT_ROUTES and accept(MediaType.APPLICATION_JSON)).nest {
             GET("import", giftHandler::importGifts)
-            "/categories".nest {
-                GET("", giftHandler::getCategories)
-            }
 
             "/brands".nest {
                 GET("", giftHandler::getBrands)
-                POST("", giftHandler::createBrand)
-                PATCH("{brandId}", giftHandler::updateBrand)
-                DELETE("{brandId}", giftHandler::deleteBrand)
             }
             "/{giftId}".nest {
                 GET("", giftHandler::getGiftDetail)
-                DELETE("", giftHandler::deleteGift)
                 PATCH("", giftHandler::updateGift)
             }
             GET("", giftHandler::getGifts)
-            POST("", giftHandler::createGift)
         }
     }
 }

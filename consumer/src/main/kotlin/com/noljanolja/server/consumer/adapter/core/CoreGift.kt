@@ -2,43 +2,47 @@ package com.noljanolja.server.consumer.adapter.core
 
 import com.noljanolja.server.consumer.model.Gift
 import com.noljanolja.server.consumer.model.GiftBrand
-import com.noljanolja.server.consumer.model.GiftCategory
-import com.noljanolja.server.consumer.model.MyGift
+import com.noljanolja.server.consumer.model.PurchasedGift
 import java.time.Instant
 
 data class CoreGift(
-    val id: Long,
+    val id: String,
+    val giftNo: Long,
     val name: String,
     val description: String,
     val image: String,
-    val startTime: Instant,
-    val endTime: Instant,
-    val price: Long,
+    val endTime: Instant = Instant.now(),
+    val price: Long = 0,
     val brand: Brand,
-    val category: Category,
-    val codes: List<String>,
-    val total: Int,
-    val remaining: Int,
-    val maxBuyTimes: Int = 10,
+    val qrCode: String? = null
 ) {
     data class Brand(
-        val id: Long,
+        val id: String,
         val name: String,
-        val image: String,
-    )
-
-    data class Category(
-        val id: Long,
-        val code: String,
         val image: String,
     )
 }
 
-fun CoreGift.Category.toGiftCategory() = GiftCategory(
-    id = id,
-    code = code,
-    image = image,
-)
+data class CorePurchasedGift(
+    val id: String,
+    val giftId: String,
+    val qrCode: String,
+    val name: String,
+    val description: String,
+    val image: String,
+    val brand: GiftBrand,
+) {
+    fun toPurchasedGift() =
+        PurchasedGift(
+            id = id,
+            giftId = giftId,
+            name = name,
+            description = description,
+            image = image,
+            brand = brand,
+            qrCode = qrCode,
+        )
+}
 
 fun CoreGift.Brand.toGiftBrand() = GiftBrand(
     id = id,
@@ -48,27 +52,11 @@ fun CoreGift.Brand.toGiftBrand() = GiftBrand(
 
 fun CoreGift.toGift() = Gift(
     id = id,
+    giftNo = giftNo,
     name = name,
     description = description,
     image = image,
-    startTime = startTime,
     endTime = endTime,
-    total = total,
-    remaining = remaining,
     brand = brand.toGiftBrand(),
-    category = category.toGiftCategory(),
     price = price,
-    isPurchasable = true,
 )
-
-fun CoreGift.toMyGift() = codes.map {
-    MyGift(
-        id = id,
-        name = name,
-        description = description,
-        image = image,
-        brand = brand.toGiftBrand(),
-        category = category.toGiftCategory(),
-        code = it,
-    )
-}

@@ -1,9 +1,14 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 6/11/2023:
-      - Update Shop API, allow fetching product list
-  version: 1.0.8
+    Changelog - 10/11/2023:
+      - Update Gift API and buy API
+    Main changes
+      - Add giftNo field
+      - Change data type for id field of Gift
+      - Remove several fields from Gift
+      - Add new model to retrieve purchased gifts
+  version: 1.0.9
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -1458,17 +1463,11 @@ paths:
   /api/v1/gifts/me:
     get:
       tags: [ Gift ]
-      summary: Get my gifts
-      description: Get my gifts
+      summary: Get my purchased gifts
+      description: Return all bought gifts along with the qrcode associate with it
       security:
         - bearerAuth: [ ]
       parameters:
-        - in: query
-          name: categoryId
-          schema:
-            type: number
-            format: int64
-          required: false
         - in: query
           name: brandId
           schema:
@@ -1494,7 +1493,7 @@ paths:
           required: false
       responses:
         "200":
-          description: Return my gifts
+          description: Return purchased gifts
           content:
             application/json:
               schema:
@@ -1505,7 +1504,7 @@ paths:
                       data:
                         type: array
                         items:
-                          $ref: "#/components/schemas/MyGift"
+                          $ref: "#/components/schemas/PurchasedGift"
   /api/v1/gifts:
     get:
       tags: [ Gift ]
@@ -1514,12 +1513,6 @@ paths:
       security:
         - bearerAuth: [ ]
       parameters:
-        - in: query
-          name: categoryId
-          schema:
-            type: number
-            format: int64
-          required: false
         - in: query
           name: brandId
           schema:
@@ -1591,31 +1584,10 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/GiftBrand"
-  /api/v1/gifts/categories:
-    get:
-      tags: [ Gift ]
-      summary: Get gift categories
-      description: Get gift categories
-      security:
-        - bearerAuth: [ ]
-      responses:
-        "200":
-          description: Return all gift categories
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/BaseResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/GiftCategory"
   /api/v1/gifts/{giftId}:
     get:
       tags: [ Gift ]
-      summary: Get detail of gift
+      summary: Get detail of gift in the shop
       description: Get detail of gift
       security:
         - bearerAuth: [ ]
@@ -1642,7 +1614,7 @@ paths:
     post:
       tags: [ Gift ]
       summary: Buy a gift
-      description: Buy a gift
+      description: Buy a gift with the appropriate funds available to user.
       security:
         - bearerAuth: [ ]
       parameters:
@@ -1654,7 +1626,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Return empty response
+          description: Return purchased gift
           content:
             application/json:
               schema:
@@ -1663,7 +1635,9 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: "#/components/schemas/MyGift"
+                        $ref: "#/components/schemas/PurchasedGift"
+        "400":
+          description: Fail when user has insufficient fund
 
   /api/v1/banners:
     get:
@@ -2301,6 +2275,8 @@ components:
       type: object
       properties:
         id:
+          type: string
+        giftNo:
           type: number
           format: int64
         name:
@@ -2309,62 +2285,39 @@ components:
           type: string
         image:
           type: string
-        startTime:
-          type: string
-          format: datetime
         endTime:
           type: string
           format: datetime
         price:
           type: number
           format: int64
-        total:
-          type: number
-          format: integer
-        remaining:
-          type: number
-          format: integer
-        isPurchasable:
-          type: boolean
-        category:
-          $ref: '#/components/schemas/GiftCategory'
         brand:
           $ref: '#/components/schemas/GiftBrand'
-    MyGift:
+    PurchasedGift:
       type: object
       properties:
         id:
-          type: number
-          format: int64
+          type: string
+          description: The id of the purchased transation
+        giftId:
+          type: string
+          description: equivalent to id of the gift
         name:
           type: string
         description:
           type: string
         image:
           type: string
-        code:
+        qrCode:
           type: string
-        category:
-          $ref: '#/components/schemas/GiftCategory'
         brand:
           $ref: '#/components/schemas/GiftBrand'
     GiftBrand:
       type: object
       properties:
         id:
-          type: number
-          format: int64
+          type: string
         name:
-          type: string
-        image:
-          type: string
-    GiftCategory:
-      type: object
-      properties:
-        id:
-          type: number
-          format: int64
-        code:
           type: string
         image:
           type: string

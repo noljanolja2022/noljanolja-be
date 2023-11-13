@@ -1,4 +1,4 @@
-package com.noljanolja.server.gift.rest
+package com.noljanolja.server.core.rest
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,28 +16,17 @@ class GiftRouter(
     @Bean
     fun giftRoutes() = coRouter {
         (GIFT_ROUTES and accept(MediaType.APPLICATION_JSON)).nest {
-            "/categories".nest {
-                GET("", giftHandler::getCategories)
-            }
-
+            GET("", giftHandler::getAllGifts)
+            GET("import", giftHandler::importGifts)
             "/brands".nest {
                 GET("", giftHandler::getBrands)
-                POST("", giftHandler::createBrand)
-                PATCH("{brandId}", giftHandler::updateBrand)
-                DELETE("{brandId}", giftHandler::deleteBrand)
             }
-            GET("import", giftHandler::importGifts)
-
             "/{giftId}".nest {
                 GET("", giftHandler::getGiftDetail)
-                DELETE("", giftHandler::deleteGift)
-                PATCH("", giftHandler::updateGift)
                 POST("/buy", giftHandler::buyGift)
             }
 
-            GET("", giftHandler::getAllGifts)
             GET("/users/{userId}", giftHandler::getUserGifts)
-            POST("", giftHandler::createGift)
         }
     }
 }

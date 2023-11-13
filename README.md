@@ -7,6 +7,14 @@
 - Docker (recommended)
 - IntelliJ (recommended)
 
+# Setup Redis image
+
+1. Pull redis image from Docker hub
+2. Run the image with Host port to your choice (eg: 6379)
+   ```dbn-psql
+   REDIS_HOST
+   REDIS_PORT
+   ```
 # Start Db service
 
 Either use docker or local instance. Prefer docker for lightweight

@@ -24,12 +24,12 @@ class CoinExchangeService(
         return exchangeRateRepo.findFirstBy() ?: ExchangeRateModel()
     }
 
-    suspend fun updateCoinToPointConfig(payload: CoinExchangeReq) {
-        val cachedConfig = exchangeRateRepo.findFirstBy() ?: ExchangeRateModel(
-            coinToPointRate = payload.coinToPointRate,
+    suspend fun updateCoinToPointConfig(payload: CoinExchangeReq): ExchangeRateModel {
+        val cachedConfig = (exchangeRateRepo.findFirstBy() ?: ExchangeRateModel()).apply {
+            coinToPointRate = payload.coinToPointRate
             rewardRecurringAmount = payload.rewardRecurringAmount
-        )
-        exchangeRateRepo.save(cachedConfig)
+        }
+        return exchangeRateRepo.save(cachedConfig)
     }
 
     suspend fun exchangePointToCoin(
@@ -43,7 +43,7 @@ class CoinExchangeService(
         )
         val coinToPointRate = getCoinExchangeConfig().coinToPointRate
         if (coinToPointRate == 0.0) throw Error.InsufficientCoinBalance
-        val receivedCoinAmounts = points / coinToPointRate
+        val receivedCoinAmounts = points * coinToPointRate
         return addTransaction(
             userId = userId,
             amount = receivedCoinAmounts,
