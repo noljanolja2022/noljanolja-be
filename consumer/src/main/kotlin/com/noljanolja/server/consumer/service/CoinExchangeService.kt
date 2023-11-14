@@ -15,13 +15,11 @@ class CoinExchangeService(
         userId: String,
     ) = coreApi.getUserCoinBalance(userId)
 
-    suspend fun getCoinToPointExchangeRate() = coreApi.getCoinToPointExchangeRate()
+    suspend fun getPointToCoinExchangeRate() = coreApi.getPointToCoinExchangeRate()
 
     suspend fun exchangePointToCoin(
-        points: Long,
         userId: String,
     ) = coreApi.exchangePointToCoin(
-        points = points,
         userId = userId,
     ).toCoinTransaction(translator)
 

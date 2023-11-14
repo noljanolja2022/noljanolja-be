@@ -771,7 +771,7 @@ create TABLE IF NOT EXISTS `user_balances`
 (
     `id`            BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `user_id`       VARCHAR(255)    NOT NULL,
-    `balance`       DOUBLE          NOT NULL,
+    `balance`       BIGINT          NOT NULL DEFAULT 0,
     `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP,
 
@@ -784,7 +784,7 @@ create TABLE IF NOT EXISTS `coin_transactions`
 (
     `id`            BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `balance_id`    BIGINT          NOT NULL,
-    `amount`        DOUBLE          NOT NULL,
+    `amount`        BIGINT          NOT NULL,
     `reason`        VARCHAR(255)    NOT NULL,
     `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -796,7 +796,8 @@ DROP TABLE IF EXISTS `exchange_rate`;
 create TABLE IF NOT EXISTS `exchange_rate`
 (
     `id`                        BIGINT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `coin_to_point_rate`        DOUBLE      NOT NULL,
+    `coin`                      INT         NOT NULL DEFAULT 0,
+    `point`                     INT         NOT NULL DEFAULT 0,
     `reward_recurring_amount`   INT         NOT NULL DEFAULT 0,
     `created_at`                DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`                DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON update CURRENT_TIMESTAMP

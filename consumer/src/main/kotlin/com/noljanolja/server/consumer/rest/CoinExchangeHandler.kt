@@ -1,12 +1,13 @@
 package com.noljanolja.server.consumer.rest
 
-import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
-import com.noljanolja.server.consumer.rest.request.ExchangePointRequest
 import com.noljanolja.server.consumer.service.CoinExchangeService
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.*
+import org.springframework.web.reactive.function.server.ServerRequest
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.bodyValueAndAwait
+import org.springframework.web.reactive.function.server.queryParamOrNull
 import java.time.Instant
 
 @Component
@@ -23,8 +24,8 @@ class CoinExchangeHandler(
             )
     }
 
-    suspend fun getCoinToPointExchangeRate(request: ServerRequest): ServerResponse {
-        val res = coinExchangeService.getCoinToPointExchangeRate()
+    suspend fun getPointToCoinExchangeRate(request: ServerRequest): ServerResponse {
+        val res = coinExchangeService.getPointToCoinExchangeRate()
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
@@ -34,10 +35,8 @@ class CoinExchangeHandler(
     }
 
     suspend fun exchangePointToCoin(request: ServerRequest): ServerResponse {
-        val payload = request.awaitBodyOrNull<ExchangePointRequest>() ?: throw RequestBodyRequired
         val transaction = coinExchangeService.exchangePointToCoin(
             userId = AuthUserHolder.awaitUser().id,
-            points = payload.points
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

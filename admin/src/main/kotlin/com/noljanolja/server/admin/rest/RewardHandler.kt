@@ -163,8 +163,8 @@ class RewardHandler(
             )
     }
 
-    suspend fun getCoinToPointExchangeConfig(request: ServerRequest): ServerResponse {
-        val res = rewardService.getCoinToPointConfig()
+    suspend fun getPointToCoinExchangeConfig(request: ServerRequest): ServerResponse {
+        val res = rewardService.getPointToCoinConfig()
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
@@ -173,9 +173,9 @@ class RewardHandler(
             )
     }
 
-    suspend fun updateCoinToPointExchangeConfig(request: ServerRequest): ServerResponse {
+    suspend fun updatePointToCoinExchangeConfig(request: ServerRequest): ServerResponse {
         val payload = request.awaitBodyOrNull<CoinExchangeReq>() ?: throw RequestBodyRequired
-        val res = rewardService.updateCoinToPointConfig(payload)
+        val res = rewardService.updatePointToCoinConfig(payload)
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(data = res)

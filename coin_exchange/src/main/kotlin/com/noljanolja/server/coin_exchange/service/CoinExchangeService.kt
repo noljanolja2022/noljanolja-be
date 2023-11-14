@@ -1,9 +1,9 @@
 package com.noljanolja.server.coin_exchange.service
 
-import com.noljanolja.server.coin_exchange.exception.Error
 import com.noljanolja.server.coin_exchange.model.CoinTransaction
 import com.noljanolja.server.coin_exchange.model.request.CoinExchangeReq
 import com.noljanolja.server.coin_exchange.repo.*
+import com.noljanolja.server.common.exception.CustomBadRequestException
 import com.noljanolja.server.common.utils.REASON_EXCHANGE_POINT
 import com.noljanolja.server.loyalty.service.LoyaltyService
 import kotlinx.coroutines.flow.toList
@@ -24,29 +24,33 @@ class CoinExchangeService(
         return exchangeRateRepo.findFirstBy() ?: ExchangeRateModel()
     }
 
-    suspend fun updateCoinToPointConfig(payload: CoinExchangeReq): ExchangeRateModel {
+    suspend fun updatePointToCoinConfig(payload: CoinExchangeReq): ExchangeRateModel {
+        if (payload.point < 1 || payload.coin < 1) throw CustomBadRequestException("Point or coin conversion rate can't be lower than 1")
         val cachedConfig = (exchangeRateRepo.findFirstBy() ?: ExchangeRateModel()).apply {
-            coinToPointRate = payload.coinToPointRate
+            point = payload.point
+            coin = payload.coin
             rewardRecurringAmount = payload.rewardRecurringAmount
         }
         return exchangeRateRepo.save(cachedConfig)
     }
 
     suspend fun exchangePointToCoin(
-        points: Long,
         userId: String,
     ): CoinTransaction {
+        val config = getCoinExchangeConfig()
+        if (config.point < 1 || config.coin < 1) throw CustomBadRequestException("The current exchange rate is invalid")
+        val currentMember = loyaltyService.getMember(userId)
+        if (currentMember.point < config.point) {
+            throw CustomBadRequestException("Insufficient fund")
+        }
         loyaltyService.addTransaction(
             memberId = userId,
-            points = -points,
+            points = -config.point.toLong(),
             reason = REASON_EXCHANGE_POINT,
         )
-        val coinToPointRate = getCoinExchangeConfig().coinToPointRate
-        if (coinToPointRate == 0.0) throw Error.InsufficientCoinBalance
-        val receivedCoinAmounts = points * coinToPointRate
         return addTransaction(
             userId = userId,
-            amount = receivedCoinAmounts,
+            amount = config.coin.toLong(),
             reason = REASON_EXCHANGE_POINT
         )
     }
@@ -57,11 +61,11 @@ class CoinExchangeService(
 
     suspend fun addTransaction(
         userId: String,
-        amount: Double,
+        amount: Long,
         reason: String,
     ): CoinTransaction {
         val userBalance = userBalanceRepo.findByUserId(userId) ?: UserBalanceModel(userId = userId)
-        if (userBalance.balance + amount < 0) throw Error.InsufficientCoinBalance
+        if (userBalance.balance + amount < 0) throw CustomBadRequestException("Insufficient fund")
         userBalance.balance += amount
         val savedBalance = userBalanceRepo.save(userBalance)
         return coinTransactionRepo.save(

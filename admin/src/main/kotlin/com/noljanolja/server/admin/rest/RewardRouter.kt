@@ -38,8 +38,8 @@ class RewardRouter(
         }
         GET("/api/v2/reward/videos/configs/{videoId}", rewardHandler::getRewardConfigByVideo)
         (COIN_EXCHANGE_ROUTE).nest {
-            GET("rate", rewardHandler::getCoinToPointExchangeConfig)
-            PUT("rate", rewardHandler::updateCoinToPointExchangeConfig)
+            GET("rate", rewardHandler::getPointToCoinExchangeConfig)
+            PUT("rate", rewardHandler::updatePointToCoinExchangeConfig)
         }
     }
 }

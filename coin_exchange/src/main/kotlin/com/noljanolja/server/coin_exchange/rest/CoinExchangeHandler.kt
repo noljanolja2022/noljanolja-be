@@ -2,7 +2,6 @@ package com.noljanolja.server.coin_exchange.rest
 
 import com.noljanolja.server.coin_exchange.model.CoinTransaction
 import com.noljanolja.server.coin_exchange.model.request.CoinExchangeReq
-import com.noljanolja.server.coin_exchange.model.request.ExchangePointRequest
 import com.noljanolja.server.coin_exchange.service.CoinExchangeService
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.exception.RequestBodyRequired
@@ -27,10 +26,8 @@ class CoinExchangeHandler(
     }
 
     suspend fun exchangePointToCoin(request: ServerRequest): ServerResponse {
-        val payload = request.awaitBodyOrNull<ExchangePointRequest>() ?: throw RequestBodyRequired
         val userId = request.pathVariable("userId").ifBlank { throw InvalidParamsException("userId") }
         val transaction = coinExchangeService.exchangePointToCoin(
-            points = payload.points,
             userId = userId,
         )
         return ServerResponse.ok()
@@ -41,7 +38,7 @@ class CoinExchangeHandler(
             )
     }
 
-    suspend fun getCoinToPointExchangeConfig(request: ServerRequest): ServerResponse {
+    suspend fun getPointToCoinExchangeConfig(request: ServerRequest): ServerResponse {
         val rate = coinExchangeService.getCoinExchangeConfig()
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -51,9 +48,9 @@ class CoinExchangeHandler(
             )
     }
 
-    suspend fun updateCoinToPointExchangeConfig(request: ServerRequest): ServerResponse {
+    suspend fun updatePointToCoinExchangeConfig(request: ServerRequest): ServerResponse {
         val payload = request.awaitBodyOrNull<CoinExchangeReq>() ?: throw RequestBodyRequired
-        val res = coinExchangeService.updateCoinToPointConfig(payload)
+        val res = coinExchangeService.updatePointToCoinConfig(payload)
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(data = res)

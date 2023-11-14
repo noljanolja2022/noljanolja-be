@@ -1124,9 +1124,11 @@ class CoreApi(
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/videos/{videoId}/react-promote").build(videoId)
         }
-        .bodyValue(CoreReactToPromotedVideoReq(
-            youtubeToken = youtubeToken, userId = userId
-        ))
+        .bodyValue(
+            CoreReactToPromotedVideoReq(
+                youtubeToken = youtubeToken, userId = userId
+            )
+        )
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
@@ -1138,7 +1140,7 @@ class CoreApi(
         }
         .awaitBody<Response<Nothing>>()
 
-    suspend fun getCoinToPointExchangeRate() = webClient.get()
+    suspend fun getPointToCoinExchangeRate() = webClient.get()
         .uri { builder ->
             builder.path("$COIN_EXCHANGE_ENDPOINT/rate").build()
         }
@@ -1154,13 +1156,11 @@ class CoreApi(
         .awaitBody<Response<CoreCoinExchangeConfig>>().data!!
 
     suspend fun exchangePointToCoin(
-        points: Long,
         userId: String,
     ) = webClient.post()
         .uri { builder ->
             builder.path("$COIN_EXCHANGE_ENDPOINT/users/{userId}/convert").build(userId)
         }
-        .bodyValue(CoreExchangePointRequest(points))
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->

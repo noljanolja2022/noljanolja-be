@@ -1,6 +1,7 @@
 package com.noljanolja.server.admin.rest.request
 
 data class CoinExchangeReq(
-    var coinToPointRate: Double = 0.0,
-    var rewardRecurringAmount: Int = 0,
+    val coin: Int = 0,
+    val point: Int = 0,
+    val rewardRecurringAmount: Int = 0,
 )

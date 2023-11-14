@@ -103,11 +103,11 @@ class RewardService(
         return coreApi.updateReferralConfig(payload)
     }
 
-    suspend fun getCoinToPointConfig(): CoinExchangeConfig {
+    suspend fun getPointToCoinConfig(): CoinExchangeConfig {
         return coreApi.getCoinExchangeConfig()
     }
 
-    suspend fun updateCoinToPointConfig(payload: CoinExchangeReq): CoinExchangeConfig {
+    suspend fun updatePointToCoinConfig(payload: CoinExchangeReq): CoinExchangeConfig {
          return coreApi.updateCoinExchangeConfig(payload)
     }
 }

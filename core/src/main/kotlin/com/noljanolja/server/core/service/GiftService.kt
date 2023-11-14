@@ -61,7 +61,7 @@ class GiftService(
         val user = userRepo.findById(userId) ?: throw UserNotFound
         coinExchangeService.addTransaction(
             userId = userId,
-            amount = -gift.price.toDouble(),
+            amount = -gift.price,
             reason = REASON_PURCHASE_GIFT
         )
 

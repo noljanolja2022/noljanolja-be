@@ -18,7 +18,7 @@ data class UserBalanceModel(
     val userId: String,
 
     @Column("balance")
-    var balance: Double = 0.0,
+    var balance: Long = 0,
 
     @Column("created_at")
     @CreatedDate

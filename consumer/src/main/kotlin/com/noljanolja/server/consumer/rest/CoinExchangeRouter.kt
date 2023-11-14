@@ -16,7 +16,7 @@ class CoinExchangeRouter(
     @Bean
     fun coinExchangeRoutes() = coRouter {
         (COIN_EXCHANGE_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
-            GET("/rate", coinExchangeHandler::getCoinToPointExchangeRate)
+            GET("/rate", coinExchangeHandler::getPointToCoinExchangeRate)
 
             "/me".nest {
                 GET("/transactions", coinExchangeHandler::getUserCoinTransactions)

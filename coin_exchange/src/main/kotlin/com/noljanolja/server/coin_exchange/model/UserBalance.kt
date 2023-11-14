@@ -4,6 +4,6 @@ import java.time.Instant
 
 data class UserBalance(
     val id: Long,
-    val balance: Double,
+    val balance: Long,
     val createdAt: Instant,
 )

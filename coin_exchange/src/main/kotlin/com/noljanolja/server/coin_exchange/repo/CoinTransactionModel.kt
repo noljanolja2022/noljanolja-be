@@ -17,7 +17,7 @@ data class CoinTransactionModel(
     val balanceId: Long,
 
     @Column("amount")
-    val amount: Double,
+    val amount: Long,
 
     @Column("reason")
     val reason: String,

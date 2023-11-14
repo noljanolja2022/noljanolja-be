@@ -5,6 +5,7 @@ data class CoreCoinBalance(
 )
 
 data class CoreCoinExchangeConfig(
-    var coinToPointRate: Double = 0.0,
+    var point: Int = 0,
+    var coin: Int = 0,
     var rewardRecurringAmount: Int = 0,
 )

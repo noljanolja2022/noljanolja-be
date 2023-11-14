@@ -6,7 +6,7 @@ data class CoinTransaction(
     val id: Long,
     val balanceId: Long,
     val reason: String,
-    val amount: Double,
+    val amount: Long,
     val status: Status = Status.COMPLETED,
     val createdAt: Instant,
 ) {

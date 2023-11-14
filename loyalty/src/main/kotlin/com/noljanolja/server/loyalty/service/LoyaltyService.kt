@@ -22,12 +22,18 @@ class LoyaltyService(
         val KOREA_TIME_ZONE = TimeZone.of("UTC+9")
     }
 
+    private suspend fun createNewMember(memberId: String): MemberInfoModel {
+        return memberInfoRepo.save(MemberInfoModel(
+            memberId = memberId,
+        ).apply { isNewRecord = true })
+    }
+
     suspend fun getStartOfCurrentDay(
         timeZone: TimeZone = KOREA_TIME_ZONE
     ) = Clock.System.todayIn(KOREA_TIME_ZONE).atStartOfDayIn(KOREA_TIME_ZONE).toJavaInstant()
 
     suspend fun getMember(memberId: String): MemberInfo {
-        val member = memberInfoRepo.findById(memberId) ?: throw Error.MemberNotFound
+        val member = memberInfoRepo.findById(memberId) ?: createNewMember(memberId)
         val tiers = tierConfigRepo.findAllByOrderByMinPointAsc().toList().map { it.toTierConfig() }
         val todayTransactions = transactionRepo.findAllByMemberIdAndCreatedAtIsAfterOrderByCreatedAtAsc(
             memberId = memberId,
@@ -61,16 +67,15 @@ class LoyaltyService(
         points: Long,
         reason: String,
     ): Transaction {
-        memberInfoRepo.findByMemberIdForUpdate(memberId)?.let {
-            if (it.availablePoints + points < 0) throw Error.InsufficientPointBalance
-            memberInfoRepo.save(
-                MemberInfoModel(
-                    memberId = memberId,
-                    availablePoints = it.availablePoints + points,
-                    accumulatedPoints = it.accumulatedPoints + (points.takeIf { it > 0 } ?: 0),
-                )
+        val member = memberInfoRepo.findByMemberIdForUpdate(memberId) ?: createNewMember(memberId)
+        if (member.availablePoints + points < 0) throw Error.InsufficientPointBalance
+        memberInfoRepo.save(
+            MemberInfoModel(
+                memberId = memberId,
+                availablePoints = member.availablePoints + points,
+                accumulatedPoints = member.accumulatedPoints + (points.takeIf { it > 0 } ?: 0),
             )
-        } ?: throw Error.MemberNotFound
+        )
         return transactionRepo.save(
             TransactionModel(
                 memberId = memberId,

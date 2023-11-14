@@ -1677,13 +1677,13 @@ paths:
   /api/v1/coin-exchange/rate:
     get:
       tags: [ Coin Exchange ]
-      summary: Get coin to point exchange config
-      description: Get coin to point exchange config
+      summary: Get point to coin exchange config
+      description: Get point to coin exchange config
       security:
         - bearerAuth: [ ]
       responses:
         "200":
-          description: Get coin to point exchange config
+          description: Get point to coin exchange config
           content:
             application/json:
               schema:
@@ -1694,9 +1694,12 @@ paths:
                       data:
                         type: object
                         properties:
-                          coinToPointRate:
+                          point:
                             type: number
-                            format: double
+                            format: int
+                          coin:
+                            type: number
+                            format: int
                           rewardRecurringAmount:
                             type: number
                             format: int
@@ -1722,7 +1725,7 @@ paths:
                         properties:
                           balance:
                             type: number
-                            format: double
+                            format: int32
   /api/v1/coin-exchange/me/transactions:
     get:
       tags: [ Coin Exchange ]
@@ -1771,19 +1774,9 @@ paths:
     post:
       tags: [ Coin Exchange ]
       summary: Exchange point to coin
-      description: Exchange point to coin
+      description: Deduct a configurable amount of point from user, and reward user with configurable amount of point
       security:
         - bearerAuth: [ ]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                points:
-                  type: number
-                  format: int64
       responses:
         "200":
           description: Exchange point to coin
@@ -2402,7 +2395,7 @@ components:
           type: string
         amount:
           type: number
-          format: double
+          format: int64
         status:
           type: string
           enum: [ COMPLETED ]
