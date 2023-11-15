@@ -66,6 +66,30 @@ class GiftService(
         )
 
         val transactionId = UUID.randomUUID().toString().replace("-", "").substring(0, 20)
+        // Temporary used for development. Should switch to ENV dependent soon
+        if (true) {
+            val fakeTransaction = GiftTransactionModel(
+                _id = transactionId,
+                userId = userId,
+                price = gift.price.toDouble(),
+                giftCode = gift._id,
+                barCode = "https://imgs.giftishow.co.kr/Resource2/mms/20231115/16/mms_64fc3df5e55ab267c683824b0e4d4222_01.jpg",
+                orderNo = "fake Order number",
+                pinNumber = "123456"
+            ).apply {
+                isNewRecord = true
+            }
+            giftTransactionRepo.save(fakeTransaction)
+            return PurchasedGift(
+                id = transactionId,
+                qrCode = "https://imgs.giftishow.co.kr/Resource2/mms/20231115/16/mms_64fc3df5e55ab267c683824b0e4d4222_01.jpg",
+                description = gift.description,
+                image = gift.image,
+                brand = brand.toGiftBrand(),
+                name = gift.name,
+                giftId = gift.id
+            )
+        }
         val res = giftBizApi.buyCoupon(
             goodsCode = gift._id,
             user.phoneNumber,
