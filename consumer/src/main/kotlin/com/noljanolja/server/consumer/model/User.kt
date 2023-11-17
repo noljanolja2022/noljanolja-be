@@ -25,7 +25,7 @@ data class User(
     val updatedAt: Instant = Instant.now(),
     val referralCode: String = "",
     val referredBy: String = "",
-    var coinBalance: Double = 0.0,
+    var coinBalance: Long = 0,
 )
 
 data class UserPreferences(

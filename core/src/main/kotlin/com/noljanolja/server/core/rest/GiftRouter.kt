@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.server.coRouter
 
+// TODO: move this to gifts module
 @Configuration
 class GiftRouter(
     private val giftHandler: GiftHandler,
@@ -27,6 +28,7 @@ class GiftRouter(
             }
 
             GET("/users/{userId}", giftHandler::getUserGifts)
+            GET("/users/{userId}/count", giftHandler::getUserGiftCount)
         }
     }
 }

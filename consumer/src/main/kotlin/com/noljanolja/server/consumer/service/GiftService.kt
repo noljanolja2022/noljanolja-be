@@ -1,16 +1,16 @@
 package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.common.model.Pagination
-import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.adapter.core.toGift
 import com.noljanolja.server.consumer.adapter.core.toGiftBrand
+import com.noljanolja.server.consumer.adapter.gift.GiftApi
 import com.noljanolja.server.consumer.model.Gift
 import com.noljanolja.server.consumer.model.PurchasedGift
 import org.springframework.stereotype.Component
 
 @Component
 class GiftService(
-    private val coreApi: CoreApi,
+    private val giftApi: GiftApi,
 ) {
     suspend fun getMyGifts(
         userId: String,
@@ -18,7 +18,7 @@ class GiftService(
         page: Int,
         pageSize: Int,
     ): Pair<List<PurchasedGift>, Pagination> {
-        return coreApi.getUserGifts(
+        return giftApi.getUserGifts(
             userId = userId,
             brandId = brandId,
             page = page,
@@ -30,7 +30,7 @@ class GiftService(
         userId: String,
         giftId: String,
     ): PurchasedGift {
-        return coreApi.buyGift(
+        return giftApi.buyGift(
             userId = userId,
             giftId = giftId,
         ).toPurchasedGift()
@@ -42,7 +42,7 @@ class GiftService(
         page: Int,
         pageSize: Int,
     ): Pair<List<Gift>, Pagination> {
-        return coreApi.getAllGifts(
+        return giftApi.getAllGifts(
             userId = userId,
             brandId = brandId,
             page = page,
@@ -54,7 +54,7 @@ class GiftService(
         userId: String,
         giftId: String,
     ): Gift {
-        return coreApi.getGiftDetail(
+        return giftApi.getGiftDetail(
             userId = userId,
             giftId = giftId,
         ).toGift()
@@ -63,7 +63,7 @@ class GiftService(
     suspend fun getBrands(
         page: Int,
         pageSize: Int,
-    ) = coreApi.getBrands(
+    ) = giftApi.getBrands(
         page = page,
         pageSize = pageSize,
     ).let { (brands, pagination) -> Pair(brands.map { it.toGiftBrand() }, pagination) }

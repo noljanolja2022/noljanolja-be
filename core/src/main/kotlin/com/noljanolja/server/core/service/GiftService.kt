@@ -6,14 +6,15 @@ import com.noljanolja.server.common.exception.CustomBadRequestException
 import com.noljanolja.server.common.exception.UserNotFound
 import com.noljanolja.server.common.utils.REASON_PURCHASE_GIFT
 import com.noljanolja.server.core.model.dto.PurchasedGift
+import com.noljanolja.server.core.model.toGift
 import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.gift.exception.Error
 import com.noljanolja.server.gift.model.Gift
 import com.noljanolja.server.gift.model.GiftBrand
-import com.noljanolja.server.gift.model.toGift
 import com.noljanolja.server.gift.repo.*
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -126,7 +127,10 @@ class GiftService(
         page: Int,
         pageSize: Int,
     ): Pair<List<PurchasedGift>, Long> {
-        val purchasedGifts = giftTransactionRepo.findByUserId(userId).toList()
+        val purchasedGifts = giftTransactionRepo.findByUserId(
+            userId,
+            pageable = Pageable.ofSize(pageSize).withPage(page - 1)
+        ).toList()
         val gifts = giftRepo.findAllById(purchasedGifts.map { it.giftCode }.distinct()).toList()
         val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
         return Pair(
@@ -138,6 +142,15 @@ class GiftService(
             giftTransactionRepo.countAllByUserId(
                 userId = userId,
             )
+        )
+    }
+
+    // TODO: implement checking for expired gift
+    suspend fun getUserGiftCount(
+        userId: String, includeExpired: Boolean
+    ): Long {
+        return giftTransactionRepo.countAllByUserId(
+            userId = userId,
         )
     }
 

@@ -1,14 +1,9 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 10/11/2023:
-      - Update Gift API and buy API
-    Main changes
-      - Add giftNo field
-      - Change data type for id field of Gift
-      - Remove several fields from Gift
-      - Add new model to retrieve purchased gifts
-  version: 1.0.9
+    Changelog - 17/11/2023:
+      - Update coin exchange balance API
+  version: 1.0.10
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -1726,6 +1721,10 @@ paths:
                           balance:
                             type: number
                             format: int32
+                          giftCount:
+                            type: number
+                            format: int32
+
   /api/v1/coin-exchange/me/transactions:
     get:
       tags: [ Coin Exchange ]

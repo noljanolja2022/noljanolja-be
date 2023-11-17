@@ -2,18 +2,28 @@ package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.adapter.core.toCoinTransaction
+import com.noljanolja.server.consumer.adapter.gift.GiftApi
 import com.noljanolja.server.consumer.config.language.Translator
+import com.noljanolja.server.consumer.model.RewardInfo
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
 class CoinExchangeService(
     private val coreApi: CoreApi,
+    private val giftApi: GiftApi,
     private val translator: Translator,
 ) {
     suspend fun getUserBalance(
         userId: String,
-    ) = coreApi.getUserCoinBalance(userId)
+    ): RewardInfo {
+        val coinBalance = coreApi.getUserCoinBalance(userId)
+        val giftCount = giftApi.getUserGiftCount(userId)
+        return RewardInfo(
+            balance = coinBalance.balance,
+            giftCount = giftCount
+        )
+    }
 
     suspend fun getPointToCoinExchangeRate() = coreApi.getPointToCoinExchangeRate()
 

@@ -8,10 +8,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
 
-    fun findAllByNameIn(
-        name: List<String>
-    ):  Flow<GiftModel>
-
     @Query(
         """
         SELECT * FROM gifts WHERE 
@@ -50,30 +46,6 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
     suspend fun countAllBy(
         brandId: Long?,
     ): Long
-
-    @Query(
-        """
-        SELECT * FROM gifts WHERE id = :giftId FOR UPDATE 
-    """
-    )
-    suspend fun findByProductNo(
-        giftId: Long,
-    ): GiftModel?
-
-//    @Query("""
-//        SELECT gifts.* FROM gifts INNER JOIN gift_codes ON gifts.id = gift_codes.gift_id
-//        WHERE gift_codes.user_id = :userId AND
-//        IF(:brandId IS NOT NULL, gifts.brand_id = :brandId, TRUE)
-//        ORDER BY created_at DESC
-//        LIMIT :limit  OFFSET :offset
-//    """)
-//    suspend fun findGiftsOfUser(
-//        userId: String,
-//        brandId: Long?,
-//        limit: Int,
-//        offset: Int,
-//    ): Flow<GiftModel>
-
 
     suspend fun countAllByIsActive(
         isActive: Boolean

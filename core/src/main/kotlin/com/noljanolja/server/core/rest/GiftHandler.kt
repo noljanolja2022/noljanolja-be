@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.bodyValueAndAwait
 import org.springframework.web.reactive.function.server.queryParamOrNull
 
+// TODO: move this to gifts module
 @Component
 class GiftHandler(
     private val giftService: GiftService,
@@ -74,6 +75,18 @@ class GiftHandler(
                         pageSize = pageSize,
                         total = total,
                     )
+                )
+            )
+    }
+
+    suspend fun getUserGiftCount(request: ServerRequest): ServerResponse {
+        val userId = request.pathVariable("userId")
+        val includeExpired = request.queryParamOrNull("includeExpired")?.toBoolean() ?: false
+        val res = giftService.getUserGiftCount(userId, includeExpired)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res
                 )
             )
     }
