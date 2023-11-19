@@ -9,7 +9,9 @@ data class Gift(
     val description: String,
     val image: String,
     val endTime: Instant,
+    val limitDay: Int,
     val brand: GiftBrand,
+    val category: GiftCategory? = null,
     val price: Long,
     val retailPrice: Long,
     val isActive: Boolean = false

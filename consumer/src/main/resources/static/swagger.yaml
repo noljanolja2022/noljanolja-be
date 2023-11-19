@@ -2304,6 +2304,8 @@ components:
           type: string
         brand:
           $ref: '#/components/schemas/GiftBrand'
+        category:
+          $ref: '#/components/schemas/GiftCategory'
     GiftBrand:
       type: object
       properties:
@@ -2312,6 +2314,13 @@ components:
         name:
           type: string
         image:
+          type: string
+    GiftCategory:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
           type: string
     MessageReaction:
       type: object

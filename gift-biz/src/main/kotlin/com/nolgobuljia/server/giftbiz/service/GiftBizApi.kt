@@ -73,7 +73,7 @@ class GiftBizApi(
 
     suspend fun buyCoupon(
         goodsCode: String,
-        phoneNumber: String,
+        phoneNumber: String = "01031475811",
         transactionId: String,
         msgTitle: String = "NolgoBuljia",
         msgDetail: String = "Here is your exchanged coupon"
@@ -84,7 +84,7 @@ class GiftBizApi(
         formData.add("mms_msg", msgDetail)
         formData.add("mms_title", msgTitle)
         formData.add("callback_no", "01031475811")
-        formData.add("phone_no", "01031475811")
+        formData.add("phone_no", phoneNumber)
         formData.add("tr_id", transactionId)
 //        formData.add("rev_info_yn", )
 //        formData.add("rev_info_date", )

@@ -9,19 +9,22 @@ data class Gift(
     val description: String,
     val image: String,
     val endTime: Instant,
-    val brand: Brand,
+    val brand: GiftBrand,
+    val category: GiftCategory? = null,
+    val limitDay: Int,
     val price: Long,
     val retailPrice: Long,
     val isActive: Boolean = false
-) {
-    data class Brand(
-        val id: String,
-        val name: String,
-        var image: String,
-    )
-}
+)
 
-data class UpdateGiftRequest(
-    val isActive: Boolean,
-    val price: Long
+data class GiftBrand(
+    val id: String,
+    val name: String,
+    var image: String,
+)
+
+data class GiftCategory(
+    val id: Long,
+    val name: String = "Other",
+    var image: String? = null,
 )

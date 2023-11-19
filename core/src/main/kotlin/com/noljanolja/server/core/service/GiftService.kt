@@ -3,47 +3,56 @@ package com.noljanolja.server.core.service
 import com.nolgobuljia.server.giftbiz.service.GiftBizApi
 import com.noljanolja.server.coin_exchange.service.CoinExchangeService
 import com.noljanolja.server.common.exception.CustomBadRequestException
-import com.noljanolja.server.common.exception.UserNotFound
+import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.utils.REASON_PURCHASE_GIFT
 import com.noljanolja.server.core.model.dto.PurchasedGift
 import com.noljanolja.server.core.model.toGift
-import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.gift.exception.Error
 import com.noljanolja.server.gift.model.Gift
 import com.noljanolja.server.gift.model.GiftBrand
+import com.noljanolja.server.gift.model.GiftCategory
 import com.noljanolja.server.gift.repo.*
+import com.noljanolja.server.gift.rest.UpdateGiftCategoryReq
+import com.noljanolja.server.gift.rest.UpdateGiftReq
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.*
 
 @Component
 @Transactional
 class GiftService(
     private val giftBrandRepo: GiftBrandRepo,
-    private val userRepo: UserRepo,
+    private val giftCategoryRepo: GiftCategoryRepo,
     private val giftRepo: GiftRepo,
     private val giftBizApi: GiftBizApi,
     private val coinExchangeService: CoinExchangeService,
     private val giftTransactionRepo: GiftTransactionRepo
 ) {
+    //TODO: turn this into a cron job instead of API
     suspend fun importProducts() {
         var pageNum = 1
         val pageSize = 20
         while (true) {
             val res = giftBizApi.getGoodsList(pageNum, pageSize)
-            val convertedRes = res.result?.goodsList?.map { it.toGift() } ?: emptyList()
-            val brands = convertedRes.map { it.brand }.distinctBy { it.id }
+            val newGifts = res.result?.goodsList?.map { it.toGift() } ?: emptyList()
+            // Sync brands
+            val brands = newGifts.map { it.brand }.distinctBy { it.id }
             val existedBrands = giftBrandRepo.findAllById(brands.map { it.id }).toList()
             if (existedBrands.size < brands.size) {
                 val existedBrandIds = existedBrands.map { it._id }
                 val newBrands = brands.filter { !existedBrandIds.contains(it.id) }
                 giftBrandRepo.saveAll(newBrands.map { GiftBrandModel.fromGiftBrand(it) }).toList()
             }
-            val payload = convertedRes.map { GiftModel.fromGift(it) }
 
+            val existedGifts = giftRepo.findAllById(newGifts.map { it.id }).toList()
+            val payload = newGifts.map { newGift ->
+                val existedGift = existedGifts.firstOrNull { it.id == newGift.id }
+                GiftModel.fromGift(existedGift, newGift)
+            }
             giftRepo.saveAll(payload).toList()
             val total = res.result?.listNum ?: 0
             if (total < pageSize * pageNum) {
@@ -59,7 +68,6 @@ class GiftService(
     ): PurchasedGift {
         val gift = giftRepo.findById(giftId) ?: throw Error.GiftNotFound
         val brand = giftBrandRepo.findById(gift.brandId) ?: throw Error.GiftNotFound
-        val user = userRepo.findById(userId) ?: throw UserNotFound
         coinExchangeService.addTransaction(
             userId = userId,
             amount = -gift.price,
@@ -93,7 +101,6 @@ class GiftService(
         }
         val res = giftBizApi.buyCoupon(
             goodsCode = gift._id,
-            user.phoneNumber,
             transactionId = transactionId
         )
         val couponRes = res.result
@@ -121,6 +128,16 @@ class GiftService(
         )
     }
 
+    suspend fun updateGift(giftId: String, payload: UpdateGiftReq): Gift {
+        val gift = giftRepo.findById(giftId) ?: throw InvalidParamsException("Id")
+        val res = giftRepo.save(gift.apply {
+            isActive = payload.isActive
+            price = payload.price
+            categoryId = payload.categoryId
+        })
+        return res.toGift()
+    }
+
     suspend fun getUserGifts(
         userId: String,
         brandId: Long?,
@@ -134,10 +151,10 @@ class GiftService(
         val gifts = giftRepo.findAllById(purchasedGifts.map { it.giftCode }.distinct()).toList()
         val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
         return Pair(
-            gifts.map { gift ->
-                val brand = brands.first { it._id == gift.brandId }
-                val giftTransaction = purchasedGifts.first { it.giftCode == gift._id }
-                PurchasedGift.fromGiftModel(gift, brand, giftTransaction)
+            purchasedGifts.map { pg ->
+                val giftDetail = gifts.first { it.id == pg.giftCode }
+                val brand = brands.first { it._id == giftDetail.brandId }
+                PurchasedGift.fromGiftModel(giftDetail, brand, pg)
             },
             giftTransactionRepo.countAllByUserId(
                 userId = userId,
@@ -156,7 +173,9 @@ class GiftService(
 
     suspend fun getAllGifts(
         userId: String?,
-        brandId: Long?,
+        query: String?,
+        brandId: String?,
+        categoryId: Long?,
         page: Int,
         pageSize: Int,
         forConsumer: Boolean = false
@@ -164,19 +183,24 @@ class GiftService(
         val gifts = (if (forConsumer)
             giftRepo.findAllByActive(
                 brandId = brandId,
+                categoryId = categoryId,
                 limit = pageSize,
                 offset = (page - 1) * pageSize,
             ) else
             giftRepo.findAllBy(
                 brandId = brandId,
+                categoryId = categoryId,
                 limit = pageSize,
                 offset = (page - 1) * pageSize,
             )).toList()
         val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
+        val categories = giftCategoryRepo.findAllById(gifts.mapNotNull { it.categoryId }.distinct()).toList()
         return Pair(
             gifts.map { gift ->
-                gift.brand = brands.first { it._id == gift.brandId }
-                gift.toGift()
+                gift.toGift(
+                    brandModel = brands.first { it._id == gift.brandId },
+                    categoryModel = categories.firstOrNull { it.id == gift.categoryId }
+                )
             },
             if (forConsumer)
                 giftRepo.countAllByIsActive(true)
@@ -189,9 +213,10 @@ class GiftService(
         giftCode: String,
         userId: String?,
     ): Gift {
-        return giftRepo.findById(giftCode)?.apply {
-            brand = giftBrandRepo.findById(brandId)!!
-        }?.toGift() ?: throw Error.GiftNotFound
+        val gift = giftRepo.findById(giftCode) ?: throw Error.GiftNotFound
+        val brand = giftBrandRepo.findById(gift.brandId)!!
+        val category = gift.categoryId?.let { giftCategoryRepo.findById(it) }
+        return gift.toGift(brand, category)
     }
 
     suspend fun getBrands(
@@ -215,5 +240,46 @@ class GiftService(
             ).toList().map { it.toGiftBrand() },
             giftBrandRepo.count(),
         )
+    }
+
+    suspend fun getCategories(
+        query: String? = null,
+        page: Int,
+        pageSize: Int,
+    ): Pair<List<GiftCategory>, Long> {
+        val pageable = PageRequest.of(page - 1, pageSize)
+        if (query != null) {
+            val res =
+                giftCategoryRepo.findAllByNameContains(
+                    query,
+                    pageable = pageable
+                ).toList().map { it.toGiftCategory() }
+            val count = giftCategoryRepo.countByNameContains(query)
+            return Pair(res, count)
+        }
+        return Pair(
+            giftCategoryRepo.findAllBy(
+                pageable = pageable
+            ).toList().map { it.toGiftCategory() },
+            giftCategoryRepo.count(),
+        )
+    }
+
+    suspend fun updateCategory(id: Long, payload: UpdateGiftCategoryReq) {
+        if (id > 0) {
+            val existedCategory =
+                giftCategoryRepo.findById(id) ?: throw CustomBadRequestException("Invalid category Id provided")
+            giftCategoryRepo.save(existedCategory.apply {
+                name = payload.name
+                updatedAt = Instant.now()
+            })
+        } else {
+            giftCategoryRepo.save(
+                GiftCategoryModel(
+                    id = id,
+                    name = payload.name
+                )
+            )
+        }
     }
 }

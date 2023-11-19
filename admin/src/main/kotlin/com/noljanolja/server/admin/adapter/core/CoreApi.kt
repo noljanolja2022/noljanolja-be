@@ -28,25 +28,8 @@ class CoreApi(
         const val VIDEO_ENDPOINT = "/api/v1/media/videos"
         const val REWARD_ENDPOINT = "/api/v1/reward"
         const val COIN_EXCHANGE_ROUTE = "/api/v1/coin-exchange"
-        const val GIFT_ROUTES = "/api/v1/gifts"
         const val BANNER_ENDPOINT = "/api/v1/banners"
     }
-
-    suspend fun importProducts() = webClient.get()
-        .uri { uriBuilder ->
-            uriBuilder.path("$GIFT_ROUTES/import")
-                .build()
-        }
-        .retrieve()
-        .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
-        }
-        .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
-        }
-        .awaitBody<Response<Nothing>>()
 
     suspend fun getUsers(
         page: Int = 1,
@@ -452,68 +435,6 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreCheckinConfig>>>().data!!
-
-    suspend fun getGifts(
-        brandId: Long?,
-        page: Int = 1,
-        pageSize: Int = 10,
-    ) = webClient.get()
-        .uri { builder ->
-            builder.path(GIFT_ROUTES)
-                .queryParam("page", page)
-                .queryParam("pageSize", pageSize)
-                .queryParamIfPresent("brandId", Optional.ofNullable(brandId))
-                .build()
-        }
-        .retrieve()
-        .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
-        }
-        .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
-        }
-        .awaitBody<Response<List<Gift>>>()
-
-    suspend fun getGift(
-        giftId: String
-    ) = webClient.get()
-        .uri { builder ->
-            builder.path("$GIFT_ROUTES/$giftId").build()
-        }
-        .retrieve()
-        .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
-        }
-        .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
-        }
-        .awaitBody<Response<Gift>>().data!!
-
-
-    suspend fun getBrands(
-        page: Int, pageSize: Int, query: String?
-    ) = webClient.get()
-        .uri { builder ->
-            builder.path("$GIFT_ROUTES/brands")
-                .queryParam("page", page)
-                .queryParam("pageSize", pageSize)
-                .queryParamIfPresent("query", Optional.ofNullable(query))
-                .build()
-        }
-        .retrieve()
-        .onStatus(HttpStatusCode::is4xxClientError) {
-            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
-                CoreServiceError.CoreServiceBadRequest(response.message)
-            }
-        }
-        .onStatus(HttpStatusCode::is5xxServerError) {
-            Mono.just(CoreServiceError.CoreServiceInternalError)
-        }
-        .awaitBody<Response<List<Gift.Brand>>>().data!!
 
     suspend fun getBanners(
         name: String?,

@@ -540,6 +540,22 @@ create TABLE IF NOT EXISTS `gift_brands`
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------
+-- Table `gift_categories`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `gift_categories`;
+
+create TABLE IF NOT EXISTS `gift_categories`
+(
+    `id`                BIGINT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `name`              VARCHAR(255)    NULL,
+    `image`             VARCHAR(255)    NULL,
+    `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
 -- Table `gifts`
 -- -----------------------------------------------------
 
@@ -553,7 +569,9 @@ create TABLE IF NOT EXISTS `gifts`
     `description`       TEXT            NOT NULL,
     `image`             VARCHAR(255)    NOT NULL,
     `end_time`          DATETIME        NOT NULL,
+    `limit_day`         INT             NOT NULL DEFAULT 1,
     `brand_id`          VARCHAR(255)    NOT NULL,
+    `category_id`       BIGINT          NULL,
     `price`             BIGINT          NOT NULL,
     `retail_price`      BIGINT          NOT NULL DEFAULT 0,
     `is_active`         TINYINT         NOT NULL DEFAULT 1,

@@ -1,9 +1,11 @@
 package com.noljanolja.server.admin.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.noljanolja.server.admin.model.UpdateGiftRequest
+import com.noljanolja.server.admin.rest.request.UpdateGiftCategoryReq
+import com.noljanolja.server.admin.rest.request.UpdateGiftRequest
 import com.noljanolja.server.admin.service.GiftService
 import com.noljanolja.server.admin.service.GoogleStorageService
+import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -32,9 +34,9 @@ class GiftHandler(
     suspend fun getGifts(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
-        val brandId = request.queryParamOrNull("brandId")?.toLongOrNull()
+        val query = request.queryParamOrNull("query")
         val res = giftService.getGifts(
-            brandId = brandId,
+            query = query,
             page = page,
             pageSize = pageSize,
         )
@@ -60,12 +62,12 @@ class GiftHandler(
 
     suspend fun updateGift(request: ServerRequest): ServerResponse {
         val giftId = request.pathVariable("giftId")
-        val payload = request.awaitBodyOrNull<UpdateGiftRequest>()
-//        val res = giftService.updateGift(giftId, payload)
+        val payload = request.awaitBodyOrNull<UpdateGiftRequest>() ?: throw RequestBodyRequired
+        val res = giftService.updateGift(giftId, payload)
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 Response(
-                    data = "res",
+                    data = res,
                 )
             )
     }
@@ -74,7 +76,7 @@ class GiftHandler(
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
         val query = request.queryParamOrNull("query")
-        val brands = giftService.getBrands(
+        val res = giftService.getBrands(
             page = page,
             pageSize = pageSize,
             query = query
@@ -82,7 +84,37 @@ class GiftHandler(
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 Response(
-                    data = brands,
+                    data = res.data,
+                    pagination = res.pagination
+                )
+            )
+    }
+
+    suspend fun getCategories(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
+        val query = request.queryParamOrNull("query")
+        val res = giftService.getCategories(
+            page = page,
+            pageSize = pageSize,
+            query = query
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                Response(
+                    data = res.data,
+                    pagination = res.pagination
+                )
+            )
+    }
+
+    suspend fun updateCategory(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<UpdateGiftCategoryReq>() ?: throw RequestBodyRequired
+        val res = giftService.updateCategory(payload)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                Response(
+                    data = res
                 )
             )
     }

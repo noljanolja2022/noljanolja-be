@@ -21,6 +21,10 @@ class GiftRouter(
             "/brands".nest {
                 GET("", giftHandler::getBrands)
             }
+            "/categories".nest {
+                GET("", giftHandler::getCategories)
+                PUT("", giftHandler::updateCategory)
+            }
             "/{giftId}".nest {
                 GET("", giftHandler::getGiftDetail)
                 PATCH("", giftHandler::updateGift)

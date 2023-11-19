@@ -1,14 +1,14 @@
 package com.noljanolja.server.core.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
+import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.service.GiftService
+import com.noljanolja.server.gift.rest.UpdateGiftCategoryReq
+import com.noljanolja.server.gift.rest.UpdateGiftReq
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.ServerRequest
-import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.bodyValueAndAwait
-import org.springframework.web.reactive.function.server.queryParamOrNull
+import org.springframework.web.reactive.function.server.*
 
 // TODO: move this to gifts module
 @Component
@@ -31,11 +31,15 @@ class GiftHandler(
     suspend fun getAllGifts(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
-        val brandId = request.queryParamOrNull("brandId")?.toLongOrNull()
+        val brandId = request.queryParamOrNull("brandId")
+        val categoryId = request.queryParamOrNull("categoryId")?.toLongOrNull()
+        val query = request.queryParamOrNull("query")
         val forConsumer = request.queryParamOrNull("forConsumer")?.toBoolean() ?: false
         val userId = request.queryParamOrNull("userId")
         val (gifts, total) = giftService.getAllGifts(
             brandId = brandId,
+            categoryId = categoryId,
+            query = query,
             page = page,
             pageSize = pageSize,
             userId = userId,
@@ -106,6 +110,21 @@ class GiftHandler(
             )
     }
 
+    suspend fun updateGift(request: ServerRequest): ServerResponse {
+        val giftId = request.pathVariable("giftId")
+        val payload = request.awaitBodyOrNull<UpdateGiftReq>() ?: throw RequestBodyRequired
+        val gift = giftService.updateGift(
+            giftId,
+            payload
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = gift,
+                )
+            )
+    }
+
     suspend fun buyGift(request: ServerRequest): ServerResponse {
         val giftId = request.pathVariable("giftId")
         val userId = request.queryParamOrNull("userId")?.takeIf { it.isNotBlank() }
@@ -140,6 +159,40 @@ class GiftHandler(
                         pageSize = pageSize,
                         total = total,
                     )
+                )
+            )
+    }
+
+    suspend fun getCategories(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
+        val query = request.queryParamOrNull("query")
+        val (data, total) = giftService.getCategories(
+            page = page,
+            pageSize = pageSize,
+            query = query
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = data,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = total,
+                    )
+                )
+            )
+    }
+
+    suspend fun updateCategory(request: ServerRequest): ServerResponse {
+        val giftId = request.pathVariable("id").toLong()
+        val payload = request.awaitBodyOrNull<UpdateGiftCategoryReq>() ?: throw RequestBodyRequired
+        val res = giftService.updateCategory(giftId, payload)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = res,
                 )
             )
     }

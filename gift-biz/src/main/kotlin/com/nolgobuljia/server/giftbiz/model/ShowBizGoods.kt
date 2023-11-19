@@ -1,5 +1,7 @@
 package com.nolgobuljia.server.giftbiz.model
 
+import java.time.Instant
+
 data class GiftBizGoodsListResponse(
     val listNum: Long,
     val goodsList: List<GiftBizGood> = emptyList()
@@ -12,7 +14,7 @@ data class GiftBizGood(
     /**
      * Sale end date
      */
-    val endDate: String,
+    val endDate: Instant,
     val rmYn: String?, //bool
     val discountPrice: Int,
     val mmsGoodsImg: String?,
@@ -89,6 +91,7 @@ data class GiftBizGood(
     val goodsCode: String,
     val goodsTypeDtlNm: String,
     val category1Seq: Long?,
+    val categoryName1: String?,
     val goodsImgS: String,
     /**
      * Valid period type can be days, or months, etc
@@ -99,9 +102,9 @@ data class GiftBizGood(
      */
     val validPrdDay: String?,
     /**
-     * Validity period
+     * Validity period starting from purchased date
      */
-    val limitday :String? = null,
+    val limitDay :Int,
     val saleDateFlag: String?, //bool
     /**
      * Price after discount from supplier

@@ -1,6 +1,7 @@
 package com.noljanolja.server.gift.repo
 
 import com.noljanolja.server.gift.model.Gift
+import com.noljanolja.server.gift.model.GiftBrand
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
@@ -34,6 +35,12 @@ data class GiftModel(
     @Column("brand_id")
     val brandId: String,
 
+    @Column("category_id")
+    var categoryId: Long? = null,
+
+    @Column("limit_day")
+    val limitDay: Int = 1,
+
     @Column("price")
     var price: Long,
 
@@ -41,7 +48,7 @@ data class GiftModel(
     var retailPrice: Long,
 
     @Column("is_active")
-    val isActive: Boolean,
+    var isActive: Boolean,
 
     @Column("created_at")
     @CreatedDate
@@ -57,38 +64,39 @@ data class GiftModel(
 
     override fun isNew() = isNewRecord
 
-    @Transient
-    var brand: GiftBrandModel = GiftBrandModel(brandId)
-
     companion object {
-        fun fromGift(e: Gift): GiftModel {
+        fun fromGift(eg: GiftModel?, e: Gift): GiftModel {
             return GiftModel(
                 _id = e.id,
                 giftNo = e.giftNo,
-                name = e.name,
-                description = e.description,
-                image = e.image,
+                name = eg?.name ?: e.name,
+                description = eg?.description ?: e.description,
+                image = eg?.image ?: e.image,
                 endTime = e.endTime,
                 brandId = e.brand.id,
-                price = e.price,
-                retailPrice = e.price,
-                isActive = false
+                price = eg?.price ?: e.price,
+                retailPrice = eg?.retailPrice ?: e.retailPrice,
+                isActive = false,
+                createdAt = eg?.createdAt ?: Instant.now(),
+                limitDay = e.limitDay
             ).apply {
-                isNewRecord = true
+                isNewRecord = eg == null
             }
         }
     }
 }
 
-fun GiftModel.toGift() = Gift(
+fun GiftModel.toGift(brandModel: GiftBrandModel? = null, categoryModel: GiftCategoryModel? = null) = Gift(
     id = _id,
     giftNo = giftNo,
     name = name,
     description = description,
     image = image,
     endTime = endTime,
-    brand = brand.toGiftBrand(),
+    brand = brandModel?.toGiftBrand() ?: GiftBrand(id = brandId),
+    category = categoryModel?.toGiftCategory(),
     price = price,
     retailPrice = retailPrice,
+    limitDay = limitDay,
     isActive = isActive
 )
