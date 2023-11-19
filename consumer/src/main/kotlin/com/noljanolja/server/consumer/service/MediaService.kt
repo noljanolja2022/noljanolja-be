@@ -1,6 +1,7 @@
 package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.consumer.adapter.core.*
+import com.noljanolja.server.consumer.adapter.core.request.CoreIgnoreVideoRequest
 import com.noljanolja.server.consumer.adapter.core.request.CoreLikeVideoRequest
 import com.noljanolja.server.consumer.adapter.core.request.PostCommentRequest
 import com.noljanolja.server.consumer.model.*
@@ -35,6 +36,16 @@ class MediaService(
             userId = userId,
             channelId = channelId,
             isSubscribing = isSubscribing
+        )
+    }
+
+    suspend fun ignoreVideo(
+        videoId: String,
+        userId: String
+    ) {
+        coreApi.ignoreVideo(
+            videoId = videoId,
+            payload = CoreIgnoreVideoRequest(userId)
         )
     }
 
@@ -88,6 +99,7 @@ class MediaService(
         isHighlighted: Boolean? = null,
         categoryId: String? = null,
         userId: String,
+        isExcludeIgnoredVideos: Boolean
     ): Pair<List<Video>, Long> {
         return coreApi.getVideos(
             query = query,
@@ -95,6 +107,8 @@ class MediaService(
             pageSize = pageSize,
             isHighlighted = isHighlighted,
             categoryId = categoryId,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
         ).let { (videos, total) ->
             val rewardProgresses = if (videos.isNotEmpty()) coreApi.getUserVideoRewardProgresses(
                 userId = userId,
@@ -110,12 +124,17 @@ class MediaService(
     suspend fun getVideos(
         videoIds: List<String>,
         userId: String,
+        isExcludeIgnoredVideos: Boolean
     ): List<Video> {
         val rewardProgresses = coreApi.getUserVideoRewardProgresses(
             userId = userId,
             videoIds = videoIds,
         )
-        return coreApi.getVideos(videoIds).data?.map { video ->
+        return coreApi.getVideos(
+            videoIds = videoIds,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
+        ).data?.map { video ->
             video.toConsumerVideo(rewardProgresses.firstOrNull { it.videoId == video.id })
         }.orEmpty()
     }
@@ -124,10 +143,13 @@ class MediaService(
         days: Int,
         limit: Int? = null,
         userId: String,
+        isExcludeIgnoredVideos: Boolean
     ): List<Video> {
         return coreApi.getTrendingVideos(
             days = days,
-            limit = limit
+            limit = limit,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
         ).let { videos ->
             val rewardProgresses = if (videos.isNotEmpty()) coreApi.getUserVideoRewardProgresses(
                 userId = userId,
@@ -171,7 +193,14 @@ class MediaService(
     suspend fun getPromotedVideos(
         page: Int,
         pageSize: Int,
-    ): List<CorePromotedVideoConfig> = coreApi.getPromotedVideos(page, pageSize)
+        userId: String,
+        isExcludeIgnoredVideos: Boolean
+    ): List<CorePromotedVideoConfig> = coreApi.getPromotedVideos(
+        page = page,
+        pageSize = pageSize,
+        userId = userId,
+        isExcludeIgnoredVideos = isExcludeIgnoredVideos
+    )
 
     suspend fun reactToPromotedVideo(videoId: String, youtubeToken: String, userId: String) {
         coreApi.reactToPromotedVideo(videoId, youtubeToken, userId)

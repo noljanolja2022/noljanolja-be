@@ -31,6 +31,7 @@ class MediaRouter(
                     GET("", mediaHandler::getVideoDetails)
                     POST("likes", mediaHandler::likeVideo)
                     POST("comments", mediaHandler::postComment)
+                    POST("ignores", mediaHandler::ignoreVideo)
                     GET("comments", mediaHandler::getVideoComments)
                     POST("react-promote", mediaHandler::reactToPromotedVideo)
                 }

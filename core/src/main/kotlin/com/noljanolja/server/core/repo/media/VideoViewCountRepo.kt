@@ -29,11 +29,17 @@ interface VideoViewCountRepo : CoroutineCrudRepository<VideoViewCountModel, Long
         """
             SELECT videos.* FROM videos INNER JOIN 
             (SELECT video_id, SUM(view_count) as total_view_count FROM video_view_counts WHERE created_at >= (CURRENT_DATE() - INTERVAL :days DAY) GROUP BY video_id LIMIT :limit) as v
-            ON videos.id = v.video_id ORDER BY v.total_view_count DESC
+            ON videos.id = v.video_id 
+            WHERE IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
+                videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
+                TRUE)
+            ORDER BY v.total_view_count DESC
         """
     )
     suspend fun findTopTrendingVideos(
         days: Int,
         limit: Int,
+        userId: String? = null,
+        isExcludeIgnoredVideos: Boolean? = null
     ): Flow<VideoModel>
 }

@@ -62,11 +62,15 @@ class VideoService(
         query: String? = null,
         isHighlighted: Boolean? = null,
         categoryId: String? = null,
+        userId: String? = null,
+        isExcludeIgnoredVideos: Boolean? = null
     ): Pair<List<Video>, Long> {
         val videos = videoRepo.findAllBy(
             isHighlighted = isHighlighted,
             categoryId = categoryId,
             query = query,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos,
             offset = (page - 1) * pageSize,
             limit = pageSize,
         ).toList()
@@ -74,6 +78,8 @@ class VideoService(
             isHighlighted = isHighlighted,
             categoryId = categoryId,
             query = query,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
         )
         val channels = videoChannelRepo.findAllById(videos.map { it.channelId }.toSet()).toList()
         val categories = videoCategoryRepo.findAllById(videos.map { it.categoryId }.toSet()).toList()
@@ -84,8 +90,16 @@ class VideoService(
         }, total)
     }
 
-    suspend fun getVideosByIds(ids: List<String>): List<Video> {
-        val videos = videoRepo.findAllById(ids).toList()
+    suspend fun getVideosByIds(
+        ids: List<String>,
+        userId: String? = null,
+        isExcludeIgnoredVideos: Boolean? = null
+    ): List<Video> {
+        val videos = videoRepo.findByIds(
+            ids = ids,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
+        ).toList()
         val channels = videoChannelRepo.findAllById(videos.map { it.channelId }.toSet()).toList()
         val categories = videoCategoryRepo.findAllById(videos.map { it.categoryId }.toSet()).toList()
         return videos.map { videoModel ->
@@ -179,16 +193,22 @@ class VideoService(
     suspend fun getTrendingVideos(
         days: Int = 1,
         limit: Int = 10,
+        userId: String? = null,
+        isExcludeIgnoredVideos: Boolean? = null
     ): List<Video> {
         val trendingVideos = videoViewCountRepo.findTopTrendingVideos(
             days = days,
             limit = limit,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
         ).toList().toMutableList()
         if (trendingVideos.size < limit) {
             trendingVideos.addAll(
                 videoRepo.findAllByIdNotIn(
                     ids = trendingVideos.map { it.id },
-                    pageable = Pageable.ofSize(limit - trendingVideos.size)
+                    limit = limit - trendingVideos.size,
+                    userId = userId,
+                    isExcludeIgnoredVideos = isExcludeIgnoredVideos
                 ).toList()
             )
         }
@@ -197,6 +217,19 @@ class VideoService(
             it.category = videoCategoryRepo.findById(it.categoryId)!!
             it.toVideo()
         }
+    }
+
+    suspend fun ignoreVideo(
+        videoId: String,
+        userId: String
+    ) {
+        val videoUser = videoUserRepo.findByVideoIdAndUserId(
+            videoId = videoId,
+            userId = userId
+        ) ?: videoUserRepo.save(VideoUserModel(videoId = videoId, userId = userId, isIgnored = true))
+
+        videoUser.isIgnored = true
+        videoUserRepo.save(videoUser)
     }
 
     suspend fun likeVideo(
@@ -270,20 +303,28 @@ class VideoService(
     suspend fun getPromotedVideos(
         page: Int,
         pageSize: Int,
+        userId: String? = null,
+        isExcludeIgnoredVideos: Boolean? = null
     ): Pair<List<PromotedVideoConfig>, Long> {
         val configs = promotedVideoRepo.findAllBy(
             pageable = Pageable.ofSize(pageSize).withPage(page - 1)
         ).toList()
         val res = promotedVideoRepo.findAllBy(
             offset = (page - 1) * pageSize,
-            limit = pageSize
+            limit = pageSize,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
         ).toList().map {
             it.channel = videoChannelRepo.findById(it.channelId)!!
             it.category = videoCategoryRepo.findById(it.categoryId)!!
             it.toVideo()
         }
-        val count = promotedVideoRepo.count()
-        return Pair(configs.map { config -> config.toPromotedVideo(res.first { it.id == config.videoId }) }, count)
+        val count = promotedVideoRepo.countAllBy(
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
+        )
+
+        return Pair(configs.map { config -> config.toPromotedVideo(res.firstOrNull() { it.id == config.videoId }) }, count)
     }
 
     suspend fun promoteVideo(

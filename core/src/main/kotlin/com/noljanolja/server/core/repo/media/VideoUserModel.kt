@@ -22,6 +22,9 @@ data class VideoUserModel(
     @Column("is_liked")
     var isLiked: Boolean = false,
 
+    @Column("is_ignored")
+    var isIgnored: Boolean = false,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),

@@ -10,13 +10,20 @@ interface PromotedVideoRepo : CoroutineCrudRepository<PromotedVideoModel, Long> 
     fun findAllBy(pageable: Pageable): Flow<PromotedVideoModel>
 
     @Query(
-        """
-        SELECT videos.* FROM promoted_videos inner join videos ON promoted_videos.video_id = videos.id LIMIT :limit OFFSET :offset
+    """
+        SELECT videos.* FROM promoted_videos inner join videos ON promoted_videos.video_id = videos.id WHERE
+        IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
+                videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
+                TRUE
+            )
+        LIMIT :limit OFFSET :offset
     """
     )
     fun findAllBy(
         offset: Int,
         limit: Int,
+        userId: String? = null,
+        isExcludeIgnoredVideos: Boolean? = null
     ): Flow<VideoModel>
 
     @Query(
@@ -25,4 +32,18 @@ interface PromotedVideoRepo : CoroutineCrudRepository<PromotedVideoModel, Long> 
     """
     )
     fun findAllOutdatedVideos(): Flow<Long>
+
+    @Query(
+        """
+            SELECT COUNT(*) FROM promoted_videos inner join videos ON promoted_videos.video_id = videos.id WHERE
+            IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
+                videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
+                TRUE
+                )
+        """
+    )
+    suspend fun countAllBy(
+        userId: String? = null,
+        isExcludeIgnoredVideos: Boolean? = null
+    ): Long
 }

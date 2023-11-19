@@ -350,6 +350,7 @@ create TABLE IF NOT EXISTS `video_users`
     `is_liked`        TINYINT      NOT NULL,
     `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `is_ignored`      TINYINT(1)   NOT NULL DEFAULT 0,
 
     FOREIGN KEY (video_id) REFERENCES videos(id) ON delete CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON delete CASCADE

@@ -33,6 +33,7 @@ class VideoRouter(
                 POST("comments", videoHandler::postComment)
                 POST("promote", videoHandler::promoteVideo)
                 POST("react-promote", videoHandler::reactToPromotedVideo)
+                POST("ignores", videoHandler::ignoreVideo)
             }
         }
         (CHANNEL_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {

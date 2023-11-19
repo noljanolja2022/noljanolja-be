@@ -502,6 +502,25 @@ class CoreApi(
         }
         .awaitBody<Response<Nothing>>()
 
+    suspend fun ignoreVideo(
+        videoId: String,
+        payload: CoreIgnoreVideoRequest
+    ) = webClient.post()
+        .uri {
+                builder -> builder.path("$MEDIA_ENDPOINT/videos/{videoId}/ignores").build(videoId)
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Nothing>>()
+
     suspend fun likeVideo(
         videoId: String,
         payload: CoreLikeVideoRequest,
@@ -546,12 +565,16 @@ class CoreApi(
         query: String? = null,
         isHighlighted: Boolean? = null,
         categoryId: String? = null,
+        userId: String,
+        isExcludeIgnoredVideos: Boolean
     ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/videos")
                 .queryParamIfPresent("isHighlighted", Optional.ofNullable(isHighlighted))
                 .queryParamIfPresent("categoryId", Optional.ofNullable(categoryId))
                 .queryParamIfPresent("query", Optional.ofNullable(query))
+                .queryParam("userId", userId)
+                .queryParam("isExcludeIgnoredVideos", isExcludeIgnoredVideos)
                 .build()
         }
         .retrieve()
@@ -569,10 +592,14 @@ class CoreApi(
 
     suspend fun getVideos(
         videoIds: List<String>,
+        userId: String,
+        isExcludeIgnoredVideos: Boolean
     ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/videos/watching")
                 .queryParam("videoIds", videoIds.joinToString(","))
+                .queryParam("userId", userId)
+                .queryParam("isExcludeIgnoredVideos", isExcludeIgnoredVideos)
                 .build()
         }
         .retrieve()
@@ -629,11 +656,15 @@ class CoreApi(
     suspend fun getTrendingVideos(
         days: Int,
         limit: Int? = null,
+        userId: String,
+        isExcludeIgnoredVideos: Boolean
     ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/videos/trending")
                 .queryParam("days", days)
                 .queryParamIfPresent("limit", Optional.ofNullable(limit))
+                .queryParam("userId", userId)
+                .queryParam("isExcludeIgnoredVideos", isExcludeIgnoredVideos)
                 .build()
         }
         .retrieve()
@@ -988,11 +1019,15 @@ class CoreApi(
     suspend fun getPromotedVideos(
         page: Int,
         pageSize: Int,
+        userId: String,
+        isExcludeIgnoredVideos: Boolean
     ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/videos/promoted")
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
+                .queryParam("userId", userId)
+                .queryParam("isExcludeIgnoredVideos", isExcludeIgnoredVideos)
                 .build()
         }
         .retrieve()

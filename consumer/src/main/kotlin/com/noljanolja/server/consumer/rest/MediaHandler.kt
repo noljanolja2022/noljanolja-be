@@ -130,6 +130,22 @@ class MediaHandler(
             )
     }
 
+    suspend fun ignoreVideo(serverRequest: ServerRequest): ServerResponse {
+        val videoId = serverRequest.pathVariable("videoId").takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("videoId")
+        val userId = AuthUserHolder.awaitUser().id
+
+        mediaService.ignoreVideo(
+            videoId = videoId,
+            userId = userId
+        )
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
+            )
+    }
+
     suspend fun likeVideo(serverRequest: ServerRequest): ServerResponse {
         val videoId = serverRequest.pathVariable("videoId").takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("videoId")
@@ -180,6 +196,7 @@ class MediaHandler(
             pageSize = pageSize,
             categoryId = categoryId,
             userId = AuthUserHolder.awaitUser().id,
+            isExcludeIgnoredVideos = true
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -206,6 +223,7 @@ class MediaHandler(
         val data = mediaService.getVideos(
             videoIds = videoProgressIds,
             userId = AuthUserHolder.awaitUser().id,
+            isExcludeIgnoredVideos = true
         )
         val currentProgress = videoPubSubService.getWatchingProgress(userId, videoProgressIds)
         return ServerResponse.ok()
@@ -246,6 +264,7 @@ class MediaHandler(
             days = days,
             limit = limit,
             userId = AuthUserHolder.awaitUser().id,
+            isExcludeIgnoredVideos = true
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -288,7 +307,12 @@ class MediaHandler(
     }
 
     suspend fun getPromotedVideos(serverRequest: ServerRequest): ServerResponse {
-        val videos = mediaService.getPromotedVideos(page = 1, pageSize = 10)
+        val videos = mediaService.getPromotedVideos(
+            page = 1,
+            pageSize = 10,
+            userId = AuthUserHolder.awaitUser().id,
+            isExcludeIgnoredVideos = true
+        )
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(

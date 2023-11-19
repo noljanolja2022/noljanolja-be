@@ -50,7 +50,7 @@ data class PromotedVideoModel(
 )
 
 
-fun PromotedVideoModel.toPromotedVideo(video: Video) = PromotedVideoConfig(
+fun PromotedVideoModel.toPromotedVideo(video: Video?) = PromotedVideoConfig(
     id = id,
     startDate = startDate,
     endDate = endDate,

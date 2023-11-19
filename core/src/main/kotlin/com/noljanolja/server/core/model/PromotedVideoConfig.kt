@@ -14,5 +14,5 @@ data class PromotedVideoConfig(
     val endDate: LocalDate,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
-    val video: Video
+    val video: Video?
 )

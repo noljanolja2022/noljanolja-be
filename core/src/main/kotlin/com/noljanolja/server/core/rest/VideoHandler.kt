@@ -67,12 +67,16 @@ class VideoHandler(
         val isHighlighted = request.queryParamOrNull("isHighlighted")?.toBoolean()
         val categoryId = request.queryParamOrNull("categoryId")
         val query = request.queryParamOrNull("query")
+        val userId = request.queryParamOrNull("userId")
+        val isExcludeIgnoredVideos = request.queryParamOrNull("isExcludeIgnoredVideos")?.toBoolean()
         val (videos, total) = videoService.getVideos(
             isHighlighted = isHighlighted,
             query = query,
             page = page,
             pageSize = pageSize,
             categoryId = categoryId,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -89,7 +93,13 @@ class VideoHandler(
 
     suspend fun getWatchingVideos(request: ServerRequest): ServerResponse {
         val videoIds = request.queryParamOrNull("videoIds") ?: ""
-        val data = videoService.getVideosByIds(videoIds.split(","))
+        val userId = request.queryParamOrNull("userId")
+        val isExcludeIgnoredVideos = request.queryParamOrNull("isExcludeIgnoredVideos")?.toBoolean()
+        val data = videoService.getVideosByIds(
+            ids = videoIds.split(","),
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
+        )
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 Response(
@@ -124,15 +134,37 @@ class VideoHandler(
         val days = request.queryParamOrNull("days")?.toIntOrNull()?.takeIf { it > 0 }
             ?: throw InvalidParamsException("days")
         val limit = request.queryParamOrNull("limit")?.toIntOrNull()?.takeIf { it > 0 } ?: 10
+        val userId = request.queryParamOrNull("userId")
+        val isExcludeIgnoredVideos = request.queryParamOrNull("isExcludeIgnoredVideos")?.toBoolean()
         val videos = videoService.getTrendingVideos(
             days = days,
             limit = limit,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
                     data = videos
                 )
+            )
+    }
+
+    suspend fun ignoreVideo(request: ServerRequest): ServerResponse {
+        val videoId = request.pathVariable("videoId").takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("videoId")
+        val req = request.awaitBodyOrNull<IgnoreVideoRequest>()
+        val userId = req?.userId?.takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("userId")
+
+        videoService.ignoreVideo(
+            videoId = videoId,
+            userId = userId
+        )
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response<Nothing>()
             )
     }
 
@@ -195,9 +227,13 @@ class VideoHandler(
     suspend fun getPromotedVideos(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_QUERY_PARAM_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_QUERY_PARAM_PAGE_SIZE
+        val userId = request.queryParamOrNull("userId")
+        val isExcludeIgnoredVideos = request.queryParamOrNull("isExcludeIgnoredVideos")?.toBoolean()
         val (videos, total) = videoService.getPromotedVideos(
             page = page,
             pageSize = pageSize,
+            userId = userId,
+            isExcludeIgnoredVideos = isExcludeIgnoredVideos
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
