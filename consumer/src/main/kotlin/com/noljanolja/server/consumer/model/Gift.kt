@@ -10,7 +10,15 @@ data class Gift(
     val image: String,
     val endTime: Instant,
     val price: Long,
+    val limitDay: Int = 0,
     val brand: GiftBrand,
+    val category: GiftCategory? = null
+)
+
+data class GiftCategory(
+    val id: Long,
+    val name: String?,
+    val image: String? = null
 )
 
 data class GiftBrand(
@@ -27,4 +35,5 @@ data class PurchasedGift(
     val description: String,
     val image: String,
     val brand: GiftBrand,
+    val category: GiftCategory? = null
 )

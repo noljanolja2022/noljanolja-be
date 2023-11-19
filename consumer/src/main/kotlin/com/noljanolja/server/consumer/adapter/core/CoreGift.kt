@@ -2,6 +2,7 @@ package com.noljanolja.server.consumer.adapter.core
 
 import com.noljanolja.server.consumer.model.Gift
 import com.noljanolja.server.consumer.model.GiftBrand
+import com.noljanolja.server.consumer.model.GiftCategory
 import com.noljanolja.server.consumer.model.PurchasedGift
 import java.time.Instant
 
@@ -13,13 +14,21 @@ data class CoreGift(
     val image: String,
     val endTime: Instant = Instant.now(),
     val price: Long = 0,
+    val limitDay: Int = 0,
     val brand: Brand,
+    val category: Category? = null,
     val qrCode: String? = null
 ) {
     data class Brand(
         val id: String,
         val name: String,
         val image: String,
+    )
+
+    data class Category(
+        val id: Long,
+        val name: String?,
+        val image: String? = null
     )
 }
 
@@ -50,6 +59,12 @@ fun CoreGift.Brand.toGiftBrand() = GiftBrand(
     image = image,
 )
 
+fun CoreGift.Category.toCategory() = GiftCategory(
+    id = id,
+    name = name,
+    image = image,
+)
+
 fun CoreGift.toGift() = Gift(
     id = id,
     giftNo = giftNo,
@@ -58,5 +73,7 @@ fun CoreGift.toGift() = Gift(
     image = image,
     endTime = endTime,
     brand = brand.toGiftBrand(),
+    category = category?.toCategory(),
     price = price,
+    limitDay = limitDay
 )

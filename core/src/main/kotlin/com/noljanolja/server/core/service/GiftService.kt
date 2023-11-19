@@ -150,11 +150,13 @@ class GiftService(
         ).toList()
         val gifts = giftRepo.findAllById(purchasedGifts.map { it.giftCode }.distinct()).toList()
         val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
+        val categories = giftCategoryRepo.findAllById(gifts.mapNotNull { it.categoryId }.distinct()).toList()
         return Pair(
             purchasedGifts.map { pg ->
                 val giftDetail = gifts.first { it.id == pg.giftCode }
                 val brand = brands.first { it._id == giftDetail.brandId }
-                PurchasedGift.fromGiftModel(giftDetail, brand, pg)
+                val category = categories.firstOrNull { it.id == giftDetail.categoryId }
+                PurchasedGift.fromGiftModel(giftDetail, brand, category, pg)
             },
             giftTransactionRepo.countAllByUserId(
                 userId = userId,
