@@ -40,7 +40,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
     @Query(
         """
             SELECT * FROM videos WHERE
-            id NOT IN (:ids) AND
+            (COALESCE(:ids) IS NULL OR id NOT IN (:ids)) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
                 TRUE)
@@ -48,7 +48,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         """
     )
     fun findAllByIdNotIn (
-        ids: List<String>,
+        ids: List<String>?,
         limit: Int,
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null

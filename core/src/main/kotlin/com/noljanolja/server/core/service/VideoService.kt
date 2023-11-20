@@ -205,7 +205,7 @@ class VideoService(
         if (trendingVideos.size < limit) {
             trendingVideos.addAll(
                 videoRepo.findAllByIdNotIn(
-                    ids = trendingVideos.map { it.id },
+                    ids = trendingVideos.takeIf { it.isNotEmpty() }?.map { it.id },
                     limit = limit - trendingVideos.size,
                     userId = userId,
                     isExcludeIgnoredVideos = isExcludeIgnoredVideos
