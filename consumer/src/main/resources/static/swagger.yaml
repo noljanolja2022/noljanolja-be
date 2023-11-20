@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
   description: |
-    Changelog - 17/11/2023:
-      - Update coin exchange balance API
-  version: 1.0.10
+    Changelog - 20/11/2023:
+      - Update get categories API
+  version: 1.0.11
   title: NoljaNolja Swagger
   contact:
     email: nguyenbrother9x@gmail.com
@@ -1511,6 +1511,11 @@ paths:
         - in: query
           name: brandId
           schema:
+            type: string
+          required: false
+        - in: query
+          name: categoryId
+          schema:
             type: number
             format: int64
           required: false
@@ -1527,7 +1532,7 @@ paths:
             format: integer
           required: false
         - in: query
-          name: name
+          name: query
           schema:
             type: string
           required: false
@@ -1579,6 +1584,45 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/GiftBrand"
+  /api/v1/gifts/categories:
+    get:
+      tags: [ Gift ]
+      summary: Get gift categories
+      description: Get gift Categories list
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: number
+            format: integer
+          required: false
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+            format: integer
+          required: false
+        - in: query
+          name: query
+          schema:
+            type: string
+          required: false
+      responses:
+        "200":
+          description: Return gift categories
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/BaseResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/GiftCategory"
   /api/v1/gifts/{giftId}:
     get:
       tags: [ Gift ]
@@ -2280,11 +2324,16 @@ components:
         endTime:
           type: string
           format: datetime
+        limitDay:
+          type: number
+          description: Amount of time it will be available after purchasing
         price:
           type: number
           format: int64
         brand:
           $ref: '#/components/schemas/GiftBrand'
+        category:
+          $ref: '#/components/schemas/GiftCategory'
     PurchasedGift:
       type: object
       properties:

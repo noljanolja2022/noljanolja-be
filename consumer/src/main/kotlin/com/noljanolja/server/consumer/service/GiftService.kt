@@ -42,12 +42,14 @@ class GiftService(
         brandId: String?,
         page: Int,
         pageSize: Int,
+        categoryId: Long?
     ): Pair<List<Gift>, Pagination> {
         return giftApi.getAllGifts(
             userId = userId,
             brandId = brandId,
             page = page,
             pageSize = pageSize,
+            categoryId = categoryId
         ).let { (gifts, pagination) -> Pair(gifts.map { it.toGift() }, pagination) }
     }
 

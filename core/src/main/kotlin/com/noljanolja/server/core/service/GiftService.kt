@@ -205,9 +205,15 @@ class GiftService(
                 )
             },
             if (forConsumer)
-                giftRepo.countAllByIsActive(true)
+                giftRepo.countAllByActive(
+                    brandId = brandId,
+                    categoryId = categoryId
+                )
             else
-                giftRepo.count()
+                giftRepo.countAllBy(
+                    brandId = brandId,
+                    categoryId = categoryId
+                )
         )
     }
 

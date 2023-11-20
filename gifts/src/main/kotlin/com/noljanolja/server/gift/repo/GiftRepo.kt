@@ -44,14 +44,25 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
     @Query(
         """
         SELECT COUNT(*) FROM gifts WHERE 
-        IF(:brandId IS NOT NULL, brand_id = :brandId, TRUE) 
+        IF(:brandId IS NOT NULL, brand_id = :brandId, TRUE) AND
+        IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) 
     """
     )
     suspend fun countAllBy(
         brandId: String?,
+        categoryId: Long?
     ): Long
 
-    suspend fun countAllByIsActive(
-        isActive: Boolean
+    @Query(
+        """
+        SELECT COUNT(*) FROM gifts WHERE 
+        is_active = TRUE AND
+        IF(:brandId IS NOT NULL, brand_id = :brandId, TRUE) AND
+        IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE)
+    """
+    )
+    suspend fun countAllByActive(
+        brandId: String?,
+        categoryId: Long?
     ): Long
 }
