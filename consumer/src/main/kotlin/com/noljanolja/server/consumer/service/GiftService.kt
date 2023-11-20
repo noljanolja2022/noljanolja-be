@@ -1,6 +1,7 @@
 package com.noljanolja.server.consumer.service
 
 import com.noljanolja.server.common.model.Pagination
+import com.noljanolja.server.consumer.adapter.core.toCategory
 import com.noljanolja.server.consumer.adapter.core.toGift
 import com.noljanolja.server.consumer.adapter.core.toGiftBrand
 import com.noljanolja.server.consumer.adapter.gift.GiftApi
@@ -59,6 +60,16 @@ class GiftService(
             giftId = giftId,
         ).toGift()
     }
+
+    suspend fun getCategories(
+        page: Int,
+        pageSize: Int,
+        query: String? = null
+    ) = giftApi.getCategories(
+        page = page,
+        pageSize = pageSize,
+        query = query
+    ).let { (categories, pagination) -> Pair(categories.map { it.toCategory() }, pagination) }
 
     suspend fun getBrands(
         page: Int,

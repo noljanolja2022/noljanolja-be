@@ -84,6 +84,25 @@ class GiftHandler(
             )
     }
 
+    suspend fun getGiftCategories(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
+        val query = request.queryParamOrNull("query")
+        val (categories, pagination) = giftService.getCategories(
+            page = page,
+            pageSize = pageSize,
+            query = query
+        )
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = categories,
+                    pagination = pagination
+                )
+            )
+    }
+
     suspend fun getGiftBrands(request: ServerRequest): ServerResponse {
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
