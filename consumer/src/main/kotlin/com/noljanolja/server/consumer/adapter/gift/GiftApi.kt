@@ -133,6 +133,30 @@ class GiftApi(
         }
         .awaitBody<Response<CorePurchasedGift>>().data!!
 
+    suspend fun getCategories (
+        page: Int,
+        pageSize: Int,
+        query: String? = null
+    ) = webClient.get()
+        .uri { builder -> builder.path("$ENDPOINT/categories")
+            .queryParam("page", page)
+            .queryParam("pageSize", pageSize)
+            .queryParamIfPresent("query", Optional.ofNullable(query))
+            .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<CoreGift.Category>>>().let {
+            Pair(it.data!!, it.pagination!!)
+        }
+
     suspend fun getBrands(
         page: Int,
         pageSize: Int,

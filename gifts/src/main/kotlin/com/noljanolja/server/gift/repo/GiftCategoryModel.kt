@@ -41,5 +41,6 @@ data class GiftCategoryModel(
     fun toGiftCategory() = GiftCategory(
         id = id,
         name = name,
+        image = image
     )
 }
