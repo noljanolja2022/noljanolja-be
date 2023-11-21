@@ -575,6 +575,7 @@ create TABLE IF NOT EXISTS `gifts`
     `price`             BIGINT          NOT NULL,
     `retail_price`      BIGINT          NOT NULL DEFAULT 0,
     `is_active`         TINYINT         NOT NULL DEFAULT 1,
+    `is_featured`       TINYINT         NOT NULL DEFAULT 0,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

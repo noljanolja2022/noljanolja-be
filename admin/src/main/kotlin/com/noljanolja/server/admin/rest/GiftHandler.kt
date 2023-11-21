@@ -35,10 +35,12 @@ class GiftHandler(
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
         val query = request.queryParamOrNull("query")
+        val isFeatured = request.queryParamOrNull("isFeatured")
         val res = giftService.getGifts(
             query = query,
             page = page,
             pageSize = pageSize,
+            isFeatured = isFeatured
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

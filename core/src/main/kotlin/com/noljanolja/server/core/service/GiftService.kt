@@ -180,23 +180,23 @@ class GiftService(
         categoryId: Long?,
         page: Int,
         pageSize: Int,
-        forConsumer: Boolean = false
+        forConsumer: Boolean = false,
+        isFeatured: Boolean? = null
     ): Pair<List<Gift>, Long> {
-        val gifts = (if (forConsumer)
-            giftRepo.findAllByActive(
-                brandId = brandId,
-                categoryId = categoryId,
-                limit = pageSize,
-                offset = (page - 1) * pageSize,
-                query = query
-            ) else
-            giftRepo.findAllBy(
-                brandId = brandId,
-                categoryId = categoryId,
-                limit = pageSize,
-                offset = (page - 1) * pageSize,
-                query = query
-            )).toList()
+        var isActiveFilter : Boolean? = null
+        if (forConsumer ) {
+            isActiveFilter = true
+        }
+        val gifts = giftRepo.findAllBy(
+            isActive = isActiveFilter,
+            brandId = brandId,
+            categoryId = categoryId,
+            isFeatured = isFeatured,
+            limit = pageSize,
+            offset = (page - 1) * pageSize,
+            query = query
+        ).toList()
+
         val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
         val categories = giftCategoryRepo.findAllById(gifts.mapNotNull { it.categoryId }.distinct()).toList()
         return Pair(
@@ -206,18 +206,13 @@ class GiftService(
                     categoryModel = categories.firstOrNull { it.id == gift.categoryId }
                 )
             },
-            if (forConsumer)
-                giftRepo.countAllByActive(
-                    brandId = brandId,
-                    categoryId = categoryId,
-                    query = query
-                )
-            else
-                giftRepo.countAllBy(
-                    brandId = brandId,
-                    categoryId = categoryId,
-                    query = query
-                )
+            giftRepo.countAllBy(
+                isActive = isActiveFilter,
+                brandId = brandId,
+                categoryId = categoryId,
+                isFeatured = isFeatured,
+                query = query
+            )
         )
     }
 

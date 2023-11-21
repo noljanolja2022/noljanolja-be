@@ -76,7 +76,7 @@ data class GiftModel(
                 brandId = e.brand.id,
                 price = eg?.price ?: e.price,
                 retailPrice = eg?.retailPrice ?: e.retailPrice,
-                isActive = false,
+                isActive = eg?.isActive ?: false,
                 createdAt = eg?.createdAt ?: Instant.now(),
                 limitDay = e.limitDay
             ).apply {

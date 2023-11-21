@@ -44,12 +44,14 @@ class GiftApi(
         query: String?,
         page: Int = 1,
         pageSize: Int = 10,
+        isFeatured: String?
     ) = webClient.get()
         .uri { builder ->
             builder.path(ROUTE)
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
                 .queryParamIfPresent("query", Optional.ofNullable(query))
+                .queryParamIfPresent("isFeatured", Optional.ofNullable(isFeatured))
                 .build()
         }
         .retrieve()
