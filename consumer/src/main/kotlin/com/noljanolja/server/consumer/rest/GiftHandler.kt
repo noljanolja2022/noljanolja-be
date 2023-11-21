@@ -70,12 +70,14 @@ class GiftHandler(
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
         val brandId = request.queryParamOrNull("brandId")
         val categoryId = request.queryParamOrNull("categoryId")?.toLongOrNull()
+        val query = request.queryParamOrNull("query")
         val (gifts, pagination) = giftService.getGifts(
             page = page,
             pageSize = pageSize,
             brandId = brandId,
             userId = AuthUserHolder.awaitUser().id,
-            categoryId = categoryId
+            categoryId = categoryId,
+            query = query
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

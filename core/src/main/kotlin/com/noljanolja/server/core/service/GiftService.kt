@@ -188,12 +188,14 @@ class GiftService(
                 categoryId = categoryId,
                 limit = pageSize,
                 offset = (page - 1) * pageSize,
+                query = query
             ) else
             giftRepo.findAllBy(
                 brandId = brandId,
                 categoryId = categoryId,
                 limit = pageSize,
                 offset = (page - 1) * pageSize,
+                query = query
             )).toList()
         val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
         val categories = giftCategoryRepo.findAllById(gifts.mapNotNull { it.categoryId }.distinct()).toList()
@@ -207,12 +209,14 @@ class GiftService(
             if (forConsumer)
                 giftRepo.countAllByActive(
                     brandId = brandId,
-                    categoryId = categoryId
+                    categoryId = categoryId,
+                    query = query
                 )
             else
                 giftRepo.countAllBy(
                     brandId = brandId,
-                    categoryId = categoryId
+                    categoryId = categoryId,
+                    query = query
                 )
         )
     }
