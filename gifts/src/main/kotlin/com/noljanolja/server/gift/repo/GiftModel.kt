@@ -50,6 +50,9 @@ data class GiftModel(
     @Column("is_active")
     var isActive: Boolean,
 
+    @Column("is_featured")
+    var isFeatured: Boolean,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -78,7 +81,8 @@ data class GiftModel(
                 retailPrice = eg?.retailPrice ?: e.retailPrice,
                 isActive = eg?.isActive ?: false,
                 createdAt = eg?.createdAt ?: Instant.now(),
-                limitDay = e.limitDay
+                limitDay = e.limitDay,
+                isFeatured = eg?.isFeatured ?: false
             ).apply {
                 isNewRecord = eg == null
             }
@@ -98,5 +102,6 @@ fun GiftModel.toGift(brandModel: GiftBrandModel? = null, categoryModel: GiftCate
     price = price,
     retailPrice = retailPrice,
     limitDay = limitDay,
-    isActive = isActive
+    isActive = isActive,
+    isFeatured = isFeatured
 )

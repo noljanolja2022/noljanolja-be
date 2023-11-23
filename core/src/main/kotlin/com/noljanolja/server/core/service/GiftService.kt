@@ -134,6 +134,7 @@ class GiftService(
             isActive = payload.isActive
             price = payload.price
             categoryId = payload.categoryId
+            isFeatured = payload.isFeatured
         })
         return res.toGift()
     }
@@ -184,7 +185,7 @@ class GiftService(
         isFeatured: Boolean? = null
     ): Pair<List<Gift>, Long> {
         var isActiveFilter : Boolean? = null
-        if (forConsumer ) {
+        if (forConsumer) {
             isActiveFilter = true
         }
         val gifts = giftRepo.findAllBy(

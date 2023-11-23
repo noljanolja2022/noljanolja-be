@@ -10,7 +10,8 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
 
     @Query(
         """
-        SELECT * FROM gifts WHERE 
+        SELECT * FROM gifts WHERE
+        IF(:isActive IS NOT NULL, is_active = :isActive, TRUE) AND
         IF(:brandId IS NOT NULL, brand_id = :brandId, TRUE) AND
         IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
         IF(:isFeatured IS NOT NULL, is_featured = :isFeatured, TRUE) AND

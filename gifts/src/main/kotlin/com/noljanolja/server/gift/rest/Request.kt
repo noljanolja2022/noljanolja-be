@@ -7,8 +7,8 @@ data class UpdateGiftCategoryReq(
 )
 
 data class UpdateGiftReq(
-    val name: String? = null,
     val isActive: Boolean = false,
     val categoryId: Long,
-    val price: Long
+    val price: Long,
+    val isFeatured: Boolean = false
 )

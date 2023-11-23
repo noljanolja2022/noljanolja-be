@@ -43,7 +43,8 @@ class GiftService(
         page: Int,
         pageSize: Int,
         categoryId: Long?,
-        query: String?
+        query: String?,
+        isFeatured: Boolean?
     ): Pair<List<Gift>, Pagination> {
         return giftApi.getAllGifts(
             userId = userId,
@@ -51,7 +52,8 @@ class GiftService(
             page = page,
             pageSize = pageSize,
             categoryId = categoryId,
-            query = query
+            query = query,
+            isFeatured = isFeatured
         ).let { (gifts, pagination) -> Pair(gifts.map { it.toGift() }, pagination) }
     }
 

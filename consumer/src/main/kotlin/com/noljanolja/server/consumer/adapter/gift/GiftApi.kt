@@ -47,7 +47,8 @@ class GiftApi(
         page: Int,
         pageSize: Int,
         categoryId: Long?,
-        query: String?
+        query: String?,
+        isFeatured: Boolean?
     ) = webClient.get()
         .uri { builder ->
             builder.path(ENDPOINT)
@@ -58,6 +59,7 @@ class GiftApi(
                 .queryParamIfPresent("brandId", Optional.ofNullable(brandId))
                 .queryParamIfPresent("categoryId", Optional.ofNullable(categoryId))
                 .queryParamIfPresent("query", Optional.ofNullable(query))
+                .queryParamIfPresent("isFeatured", Optional.ofNullable(isFeatured))
                 .build()
         }
         .retrieve()

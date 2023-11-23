@@ -71,13 +71,15 @@ class GiftHandler(
         val brandId = request.queryParamOrNull("brandId")
         val categoryId = request.queryParamOrNull("categoryId")?.toLongOrNull()
         val query = request.queryParamOrNull("query")
+        val isFeatured = request.queryParamOrNull("isFeatured")?.toBooleanStrictOrNull()
         val (gifts, pagination) = giftService.getGifts(
             page = page,
             pageSize = pageSize,
             brandId = brandId,
             userId = AuthUserHolder.awaitUser().id,
             categoryId = categoryId,
-            query = query
+            query = query,
+            isFeatured = isFeatured
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
