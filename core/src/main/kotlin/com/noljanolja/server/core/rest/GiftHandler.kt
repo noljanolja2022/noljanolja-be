@@ -37,6 +37,7 @@ class GiftHandler(
         val forConsumer = request.queryParamOrNull("forConsumer")?.toBoolean() ?: false
         val userId = request.queryParamOrNull("userId")
         val isFeatured = request.queryParamOrNull("isFeatured")?.toBooleanStrictOrNull()
+        val isTodayOffer = request.queryParamOrNull("isTodayOffer")?.toBooleanStrictOrNull()
         val (gifts, total) = giftService.getAllGifts(
             brandId = brandId,
             categoryId = categoryId,
@@ -45,7 +46,8 @@ class GiftHandler(
             pageSize = pageSize,
             userId = userId,
             forConsumer = forConsumer,
-            isFeatured = isFeatured
+            isFeatured = isFeatured,
+            isTodayOffer = isTodayOffer
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

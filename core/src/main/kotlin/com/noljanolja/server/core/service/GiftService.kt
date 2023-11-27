@@ -135,6 +135,7 @@ class GiftService(
             price = payload.price
             categoryId = payload.categoryId
             isFeatured = payload.isFeatured
+            isTodayOffer = payload.isTodayOffer
         })
         return res.toGift()
     }
@@ -182,7 +183,8 @@ class GiftService(
         page: Int,
         pageSize: Int,
         forConsumer: Boolean = false,
-        isFeatured: Boolean? = null
+        isFeatured: Boolean? = null,
+        isTodayOffer: Boolean? = null
     ): Pair<List<Gift>, Long> {
         var isActiveFilter : Boolean? = null
         if (forConsumer) {
@@ -195,7 +197,8 @@ class GiftService(
             isFeatured = isFeatured,
             limit = pageSize,
             offset = (page - 1) * pageSize,
-            query = query
+            query = query,
+            isTodayOffer = isTodayOffer
         ).toList()
 
         val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
@@ -212,7 +215,8 @@ class GiftService(
                 brandId = brandId,
                 categoryId = categoryId,
                 isFeatured = isFeatured,
-                query = query
+                query = query,
+                isTodayOffer = isTodayOffer
             )
         )
     }

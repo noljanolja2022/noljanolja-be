@@ -72,6 +72,7 @@ class GiftHandler(
         val categoryId = request.queryParamOrNull("categoryId")?.toLongOrNull()
         val query = request.queryParamOrNull("query")
         val isFeatured = request.queryParamOrNull("isFeatured")?.toBooleanStrictOrNull()
+        val isTodayOffer = request.queryParamOrNull("isTodayOffer")?.toBooleanStrictOrNull()
         val (gifts, pagination) = giftService.getGifts(
             page = page,
             pageSize = pageSize,
@@ -79,7 +80,8 @@ class GiftHandler(
             userId = AuthUserHolder.awaitUser().id,
             categoryId = categoryId,
             query = query,
-            isFeatured = isFeatured
+            isFeatured = isFeatured,
+            isTodayOffer = isTodayOffer
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

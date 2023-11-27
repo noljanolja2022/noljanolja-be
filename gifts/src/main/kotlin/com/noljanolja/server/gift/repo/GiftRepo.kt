@@ -15,6 +15,7 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
         IF(:brandId IS NOT NULL, brand_id = :brandId, TRUE) AND
         IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
         IF(:isFeatured IS NOT NULL, is_featured = :isFeatured, TRUE) AND
+        IF(:isTodayOffer IS NOT NULL, is_today_offer = :isTodayOffer, TRUE) AND
         IF(:query IS NOT NULL, 
             name LIKE CONCAT('%',:query,'%') OR category_id IN (SELECT id FROM gift_categories WHERE name LIKE CONCAT('%',:query,'%')), 
             TRUE
@@ -28,6 +29,7 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
         brandId: String?,
         categoryId: Long?,
         isFeatured: Boolean?,
+        isTodayOffer: Boolean?,
         limit: Int,
         offset: Int,
         query: String?
@@ -40,6 +42,7 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
         IF(:brandId IS NOT NULL, brand_id = :brandId, TRUE) AND
         IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
         IF(:isFeatured IS NOT NULL, is_featured = :isFeatured, TRUE) AND
+        IF(:isTodayOffer IS NOT NULL, is_today_offer = :isTodayOffer, TRUE) AND
         IF(:query IS NOT NULL, 
             name LIKE CONCAT('%',:query,'%') OR category_id IN (SELECT id FROM gift_categories WHERE name LIKE CONCAT('%',:query,'%')), 
             TRUE
@@ -51,6 +54,7 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
         brandId: String?,
         categoryId: Long?,
         isFeatured: Boolean?,
-        query: String?
+        query: String?,
+        isTodayOffer: Boolean?
     ): Long
 }
