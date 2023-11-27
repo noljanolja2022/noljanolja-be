@@ -613,7 +613,7 @@ class CoreApi(
         }
         .awaitBody<Response<List<CoreVideo>>>()
 
-    suspend fun getVideoDetails(
+    suspend fun getVideoDetail(
         videoId: String,
     ) = webClient.get()
         .uri { builder ->

@@ -46,6 +46,6 @@ class SocketController(
     suspend fun listenVideoProgress(request: VideoProgress) {
         val userId = ReactiveSecurityContextHolder.getContext().awaitFirst().authentication.name
         println("Received track video request from userId: $userId with event ${request.event}")
-        videoPubSubService.saveProgress(userId, request)
+        videoPubSubService.updateWatchProgress(userId, request)
     }
 }

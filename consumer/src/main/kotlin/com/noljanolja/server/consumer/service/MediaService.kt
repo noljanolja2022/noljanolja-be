@@ -167,7 +167,7 @@ class MediaService(
             userId = userId,
             videoIds = listOf(videoId),
         )
-        return coreApi.getVideoDetails(videoId).toConsumerVideo(rewardProgresses.firstOrNull())
+        return coreApi.getVideoDetail(videoId).toConsumerVideo(rewardProgresses.firstOrNull())
     }
 
     suspend fun getVideoComments(
@@ -187,7 +187,7 @@ class MediaService(
         userId: String,
         videoProgress: VideoProgress,
     ) {
-        videoPubSubService.saveProgress(userId, videoProgress)
+        videoPubSubService.updateWatchProgress(userId, videoProgress)
     }
 
     suspend fun getPromotedVideos(

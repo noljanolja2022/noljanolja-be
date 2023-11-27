@@ -37,6 +37,18 @@ data class Video(
     )
 }
 
+/**
+ * @param durationMs Last milestone recorded from user
+ * @param accumulatedTimeMs Total time watched in this video
+ */
+data class VideoWatchRecordDetail(
+    val videoId: String,
+    val lastAction: VideoProgressEvent,
+    var lastServerTime: Long = 0,
+    var durationMs: Long = 0,
+    var accumulatedTimeMs : Long = 0
+)
+
 data class VideoProgress(
     val videoId: String,
     val event: VideoProgressEvent,
@@ -45,9 +57,8 @@ data class VideoProgress(
 )
 
 enum class VideoProgressEvent {
-    PLAY, PAUSE, FINISH
+    PLAY, PAUSE
 }
-
 
 enum class RateVideoAction {
     like, dislike, none
