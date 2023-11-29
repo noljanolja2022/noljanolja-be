@@ -184,7 +184,8 @@ class GiftService(
         pageSize: Int,
         forConsumer: Boolean = false,
         isFeatured: Boolean? = null,
-        isTodayOffer: Boolean? = null
+        isTodayOffer: Boolean? = null,
+        isRecommended: Boolean? = null
     ): Pair<List<Gift>, Long> {
         var isActiveFilter : Boolean? = null
         if (forConsumer) {
@@ -198,7 +199,8 @@ class GiftService(
             limit = pageSize,
             offset = (page - 1) * pageSize,
             query = query,
-            isTodayOffer = isTodayOffer
+            isTodayOffer = isTodayOffer,
+            isRecommended = isRecommended
         ).toList()
 
         val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
@@ -216,7 +218,8 @@ class GiftService(
                 categoryId = categoryId,
                 isFeatured = isFeatured,
                 query = query,
-                isTodayOffer = isTodayOffer
+                isTodayOffer = isTodayOffer,
+                isRecommended = isRecommended
             )
         )
     }

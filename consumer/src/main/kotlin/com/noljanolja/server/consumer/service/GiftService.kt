@@ -45,7 +45,8 @@ class GiftService(
         categoryId: Long?,
         query: String?,
         isFeatured: Boolean?,
-        isTodayOffer: Boolean?
+        isTodayOffer: Boolean?,
+        isRecommended: Boolean?
     ): Pair<List<Gift>, Pagination> {
         return giftApi.getAllGifts(
             userId = userId,
@@ -55,7 +56,8 @@ class GiftService(
             categoryId = categoryId,
             query = query,
             isFeatured = isFeatured,
-            isTodayOffer = isTodayOffer
+            isTodayOffer = isTodayOffer,
+            isRecommended = isRecommended
         ).let { (gifts, pagination) -> Pair(gifts.map { it.toGift() }, pagination) }
     }
 
