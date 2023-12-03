@@ -26,9 +26,11 @@ class GiftService(
         query: String?,
         page: Int,
         pageSize: Int,
-        isFeatured: String?
+        isFeatured: Boolean?,
+        isTodayOffer: Boolean?,
+        isRecommended: Boolean?
     ): Response<List<Gift>> {
-        return giftApi.getGifts(query, page, pageSize, isFeatured)
+        return giftApi.getGifts(query, page, pageSize, isFeatured, isTodayOffer, isRecommended)
     }
 
     suspend fun getGiftDetail(giftId: String): Gift {
