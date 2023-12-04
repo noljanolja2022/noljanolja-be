@@ -2,7 +2,7 @@ package com.nolgobuljia.server.giftbiz.model
 
 data class GiftBizBrandListResponse(
     val listNum: Long,
-    val goodsList: List<GiftBizBrand> = emptyList()
+    val brandList: List<GiftBizBrand> = emptyList()
 )
 
 data class GiftBizBrand(

@@ -1,7 +1,10 @@
 package com.nolgobuljia.server.giftbiz.service
 
 import com.nolgobuljia.server.giftbiz.GiftBizServiceConfig
-import com.nolgobuljia.server.giftbiz.model.*
+import com.nolgobuljia.server.giftbiz.model.GiftBizBrandListResponse
+import com.nolgobuljia.server.giftbiz.model.GiftBizGoodsListResponse
+import com.nolgobuljia.server.giftbiz.model.GiftBizResponse
+import com.nolgobuljia.server.giftbiz.model.ShowBizCouponResponse
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -53,13 +56,8 @@ class GiftBizApi(
             .awaitBody<GiftBizResponse<GiftBizGoodsListResponse>>()
     }
 
-    suspend fun getBrandsList(
-        page: Int = 1,
-        pageSize: Int = 20,
-    ) : GiftBizResponse<GiftBizBrandListResponse> {
+    suspend fun getBrandsList() : GiftBizResponse<GiftBizBrandListResponse> {
         val formData = constructAuthHeader("0102")
-        formData.add("start", page.toString())
-        formData.add("size", pageSize.toString())
 
         return webClient.post()
             .uri {

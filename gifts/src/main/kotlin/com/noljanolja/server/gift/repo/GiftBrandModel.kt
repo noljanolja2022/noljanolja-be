@@ -34,6 +34,10 @@ data class GiftBrandModel(
                 isNewRecord = true
             }
         }
+
+        fun fromGiftBrandList(giftBrands: List<GiftBrand>): List<GiftBrandModel> {
+            return giftBrands.map { fromGiftBrand(it) }
+        }
     }
 
     fun toGiftBrand() = GiftBrand(
