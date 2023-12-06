@@ -536,7 +536,8 @@ create TABLE IF NOT EXISTS `gift_brands`
 (
     `id`                VARCHAR(255)    NOT NULL PRIMARY KEY,
     `name`              VARCHAR(255)    NOT NULL,
-    `image`             VARCHAR(255)    NOT NULL
+    `image`             VARCHAR(255)    NOT NULL,
+    `locale`            VARCHAR(255)    NULL
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------
@@ -551,7 +552,8 @@ create TABLE IF NOT EXISTS `gift_categories`
     `name`              VARCHAR(255)    NULL,
     `image`             VARCHAR(255)    NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `locale`            VARCHAR(255)    NULL
 
 ) ENGINE = InnoDB;
 
@@ -579,6 +581,7 @@ create TABLE IF NOT EXISTS `gifts`
     `is_today_offer`    TINYINT(1)      NOT NULL DEFAULT 0,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `locale`            VARCHAR(255)    NULL,
 
     FOREIGN KEY (brand_id) REFERENCES gift_brands(id) ON delete CASCADE
 ) ENGINE = InnoDB;

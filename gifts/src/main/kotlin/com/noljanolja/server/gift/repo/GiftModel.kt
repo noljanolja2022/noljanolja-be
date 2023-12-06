@@ -63,6 +63,9 @@ data class GiftModel(
     @Column("updated_at")
     @LastModifiedDate
     val updatedAt: Instant = Instant.now(),
+
+    @Column("locale")
+    val locale: String?
 ) : Persistable<String> {
     @Transient
     var isNewRecord = false
@@ -71,7 +74,7 @@ data class GiftModel(
     override fun isNew() = isNewRecord
 
     companion object {
-        fun fromGift(eg: GiftModel?, e: Gift): GiftModel {
+        fun fromGift(eg: GiftModel?, e: Gift, locale: String?): GiftModel {
             return GiftModel(
                 _id = e.id,
                 giftNo = e.giftNo,
@@ -86,7 +89,8 @@ data class GiftModel(
                 createdAt = eg?.createdAt ?: Instant.now(),
                 limitDay = e.limitDay,
                 isFeatured = eg?.isFeatured ?: false,
-                isTodayOffer = eg?.isTodayOffer ?: false
+                isTodayOffer = eg?.isTodayOffer ?: false,
+                locale = locale
             ).apply {
                 isNewRecord = eg == null
             }

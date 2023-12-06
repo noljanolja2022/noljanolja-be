@@ -1,6 +1,7 @@
 package com.noljanolja.server.core.scheduler
 
 import com.nolgobuljia.server.giftbiz.service.GiftBizApi
+import com.noljanolja.server.core.model.Locale
 import com.noljanolja.server.core.model.toGiftBrand
 import com.noljanolja.server.gift.repo.GiftBrandModel
 import com.noljanolja.server.gift.repo.GiftBrandRepo
@@ -17,9 +18,9 @@ class BrandListJob (
 ) {
     private val logger = LoggerFactory.getLogger(BrandListJob::class.java)
 
-    @Scheduled(cron = "0 */2 * * * *")
-    fun syncBrands() = runBlocking {
-        logger.info("Start sync brand list!")
+    @Scheduled(cron = "0 0 22 * * *")
+    fun syncFromKorea() = runBlocking {
+        logger.info("Start sync Korea brand list!")
 
         val res = giftBizApi.getBrandsList()
         val newBrands = res.result?.brandList?.map { it.toGiftBrand() } ?: emptyList()
@@ -28,22 +29,22 @@ class BrandListJob (
         if (newBrands.isEmpty()) return@runBlocking
 
         if (existedBrands.isEmpty()) {
-            giftBrandRepo.saveAll(GiftBrandModel.fromGiftBrandList(newBrands))
+            giftBrandRepo.saveAll(GiftBrandModel.fromGiftBrandList(newBrands, Locale.KOREA.countryCode))
         }
 
         val existedBrandMap = existedBrands.associateBy { it.id }
 
         newBrands.forEach { newBrand ->
-            existedBrandMap[newBrand.id] ?.let { existingBrand ->
+            existedBrandMap[newBrand.id] ?.let { existedBrand ->
                 //update existed brand
-                val updatedBrand = existingBrand.copy(name = newBrand.name, image = newBrand.image)
+                val updatedBrand = existedBrand.copy(name = newBrand.name, image = newBrand.image, locale = Locale.KOREA.countryCode)
                 giftBrandRepo.save(updatedBrand)
             } ?:run {
                 //create new brand
-                giftBrandRepo.save(GiftBrandModel.fromGiftBrand(newBrand))
+                giftBrandRepo.save(GiftBrandModel.fromGiftBrand(newBrand, Locale.KOREA.countryCode))
             }
         }
 
-        logger.info("End sync brand list!")
+        logger.info("End sync Korea brand list!")
     }
 }

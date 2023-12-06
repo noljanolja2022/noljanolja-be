@@ -18,6 +18,9 @@ data class GiftBrandModel(
 
     @Column("image")
     var image: String = "",
+
+    @Column("locale")
+    val locale: String?,
 ) : Persistable<String> {
     @Transient
     var isNewRecord = false
@@ -25,18 +28,19 @@ data class GiftBrandModel(
 
     override fun isNew() = isNewRecord
     companion object {
-        fun fromGiftBrand(e: GiftBrand): GiftBrandModel {
+        fun fromGiftBrand(e: GiftBrand, locale: String?): GiftBrandModel {
             return GiftBrandModel(
                 _id = e.id,
                 name = e.name,
-                image = e.image
+                image = e.image,
+                locale = locale
             ).apply {
                 isNewRecord = true
             }
         }
 
-        fun fromGiftBrandList(giftBrands: List<GiftBrand>): List<GiftBrandModel> {
-            return giftBrands.map { fromGiftBrand(it) }
+        fun fromGiftBrandList(giftBrands: List<GiftBrand>, locale: String?): List<GiftBrandModel> {
+            return giftBrands.map { fromGiftBrand(it, locale) }
         }
     }
 

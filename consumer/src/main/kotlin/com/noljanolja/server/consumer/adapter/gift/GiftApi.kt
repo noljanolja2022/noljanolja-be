@@ -50,7 +50,8 @@ class GiftApi(
         query: String?,
         isFeatured: Boolean?,
         isTodayOffer: Boolean?,
-        isRecommended: Boolean?
+        isRecommended: Boolean?,
+        locale: String?
     ) = webClient.get()
         .uri { builder ->
             builder.path(ENDPOINT)
@@ -64,6 +65,7 @@ class GiftApi(
                 .queryParamIfPresent("isFeatured", Optional.ofNullable(isFeatured))
                 .queryParamIfPresent("isTodayOffer", Optional.ofNullable(isTodayOffer))
                 .queryParamIfPresent("isRecommended", Optional.ofNullable(isRecommended))
+                .queryParamIfPresent("locale", Optional.ofNullable(locale))
                 .build()
         }
         .retrieve()
@@ -146,12 +148,14 @@ class GiftApi(
     suspend fun getCategories (
         page: Int,
         pageSize: Int,
-        query: String? = null
+        query: String? = null,
+        locale: String?
     ) = webClient.get()
         .uri { builder -> builder.path("$ENDPOINT/categories")
             .queryParam("page", page)
             .queryParam("pageSize", pageSize)
             .queryParamIfPresent("query", Optional.ofNullable(query))
+            .queryParamIfPresent("locale", Optional.ofNullable(locale))
             .build()
         }
         .retrieve()
@@ -170,8 +174,14 @@ class GiftApi(
     suspend fun getBrands(
         page: Int,
         pageSize: Int,
+        locale: String?
     ) = webClient.get()
-        .uri { builder -> builder.path("$ENDPOINT/brands").build() }
+        .uri { builder -> builder.path("$ENDPOINT/brands")
+            .queryParam("page", page)
+            .queryParam("pageSize", pageSize)
+            .queryParamIfPresent("locale", Optional.ofNullable(locale))
+            .build()
+        }
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->

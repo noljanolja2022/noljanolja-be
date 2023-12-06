@@ -5,6 +5,7 @@ import com.noljanolja.server.coin_exchange.service.CoinExchangeService
 import com.noljanolja.server.common.exception.CustomBadRequestException
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.utils.REASON_PURCHASE_GIFT
+import com.noljanolja.server.core.model.Locale
 import com.noljanolja.server.core.model.dto.PurchasedGift
 import com.noljanolja.server.core.model.toGift
 import com.noljanolja.server.gift.exception.Error
@@ -45,13 +46,13 @@ class GiftService(
             if (existedBrands.size < brands.size) {
                 val existedBrandIds = existedBrands.map { it._id }
                 val newBrands = brands.filter { !existedBrandIds.contains(it.id) }
-                giftBrandRepo.saveAll(newBrands.map { GiftBrandModel.fromGiftBrand(it) }).toList()
+                giftBrandRepo.saveAll(newBrands.map { GiftBrandModel.fromGiftBrand(it, Locale.KOREA.countryCode) }).toList()
             }
 
             val existedGifts = giftRepo.findAllById(newGifts.map { it.id }).toList()
             val payload = newGifts.map { newGift ->
                 val existedGift = existedGifts.firstOrNull { it.id == newGift.id }
-                GiftModel.fromGift(existedGift, newGift)
+                GiftModel.fromGift(existedGift, newGift, Locale.KOREA.countryCode)
             }
             giftRepo.saveAll(payload).toList()
             val total = res.result?.listNum ?: 0
@@ -185,7 +186,8 @@ class GiftService(
         forConsumer: Boolean = false,
         isFeatured: Boolean? = null,
         isTodayOffer: Boolean? = null,
-        isRecommended: Boolean? = null
+        isRecommended: Boolean? = null,
+        locale: String?
     ): Pair<List<Gift>, Long> {
         var isActiveFilter : Boolean? = null
         if (forConsumer) {
@@ -200,7 +202,8 @@ class GiftService(
             offset = (page - 1) * pageSize,
             query = query,
             isTodayOffer = isTodayOffer,
-            isRecommended = isRecommended
+            isRecommended = isRecommended,
+            locale = locale
         ).toList()
 
         val brands = giftBrandRepo.findAllById(gifts.map { it.brandId }.toMutableSet()).toList()
@@ -219,7 +222,8 @@ class GiftService(
                 isFeatured = isFeatured,
                 query = query,
                 isTodayOffer = isTodayOffer,
-                isRecommended = isRecommended
+                isRecommended = isRecommended,
+                locale = locale
             )
         )
     }
@@ -238,46 +242,44 @@ class GiftService(
         query: String? = null,
         page: Int,
         pageSize: Int,
+        locale: String? = null
     ): Pair<List<GiftBrand>, Long> {
-        val pageable = PageRequest.of(page - 1, pageSize)
-        if (query != null) {
-            val res =
-                giftBrandRepo.findAllByNameContains(
-                    query,
-                    pageable = pageable
-                ).toList().map { it.toGiftBrand() }
-            val count = giftBrandRepo.countByNameContains(query)
-            return Pair(res, count)
-        }
-        return Pair(
-            giftBrandRepo.findAllBy(
-                pageable = pageable
-            ).toList().map { it.toGiftBrand() },
-            giftBrandRepo.count(),
+        val res = giftBrandRepo.findByNameContainsAndLocale(
+            query = query,
+            locale = locale,
+            limit = pageSize,
+            offset = (page - 1) * pageSize
         )
+            .toList()
+            .map { it.toGiftBrand() }
+
+        val count = giftBrandRepo.countByNameContainsAndLocale(
+            query = query,
+            locale = locale
+        )
+        return Pair(res, count)
     }
 
     suspend fun getCategories(
         query: String? = null,
         page: Int,
         pageSize: Int,
+        locale: String?
     ): Pair<List<GiftCategory>, Long> {
-        val pageable = PageRequest.of(page - 1, pageSize)
-        if (query != null) {
-            val res =
-                giftCategoryRepo.findAllByNameContains(
-                    query,
-                    pageable = pageable
-                ).toList().map { it.toGiftCategory() }
-            val count = giftCategoryRepo.countByNameContains(query)
-            return Pair(res, count)
-        }
-        return Pair(
-            giftCategoryRepo.findAllBy(
-                pageable = pageable
-            ).toList().map { it.toGiftCategory() },
-            giftCategoryRepo.count(),
+        val res = giftCategoryRepo.findByNameContainsAndLocale(
+            query = query,
+            locale = locale,
+            limit = pageSize,
+            offset = (page - 1) * pageSize
         )
+            .toList()
+            .map { it.toGiftCategory() }
+
+        val count = giftCategoryRepo.countByNameContainsAndLocale(
+            query = query,
+            locale = locale
+        )
+        return Pair(res, count)
     }
 
     suspend fun updateCategory(id: Long, payload: UpdateGiftCategoryReq) {

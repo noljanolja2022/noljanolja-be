@@ -46,7 +46,8 @@ class GiftService(
         query: String?,
         isFeatured: Boolean?,
         isTodayOffer: Boolean?,
-        isRecommended: Boolean?
+        isRecommended: Boolean?,
+        locale: String?
     ): Pair<List<Gift>, Pagination> {
         return giftApi.getAllGifts(
             userId = userId,
@@ -57,7 +58,8 @@ class GiftService(
             query = query,
             isFeatured = isFeatured,
             isTodayOffer = isTodayOffer,
-            isRecommended = isRecommended
+            isRecommended = isRecommended,
+            locale = locale
         ).let { (gifts, pagination) -> Pair(gifts.map { it.toGift() }, pagination) }
     }
 
@@ -74,18 +76,22 @@ class GiftService(
     suspend fun getCategories(
         page: Int,
         pageSize: Int,
-        query: String? = null
+        query: String? = null,
+        locale: String?
     ) = giftApi.getCategories(
         page = page,
         pageSize = pageSize,
-        query = query
+        query = query,
+        locale = locale
     ).let { (categories, pagination) -> Pair(categories.map { it.toCategory() }, pagination) }
 
     suspend fun getBrands(
         page: Int,
         pageSize: Int,
+        locale: String?
     ) = giftApi.getBrands(
         page = page,
         pageSize = pageSize,
+        locale = locale
     ).let { (brands, pagination) -> Pair(brands.map { it.toGiftBrand() }, pagination) }
 }

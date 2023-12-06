@@ -25,7 +25,8 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
         IF(:isRecommended IS TRUE, 
             id IN (SELECT gift_id FROM gift_transactions GROUP BY gift_id ORDER BY COUNT(gift_id) DESC),            
             TRUE
-        )
+        ) AND
+        IF(:locale IS NOT NULL, locale = :locale, FALSE)
         ORDER BY created_at DESC
         LIMIT :limit  OFFSET :offset
     """
@@ -39,7 +40,8 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
         limit: Int,
         offset: Int,
         query: String?,
-        isRecommended: Boolean?
+        isRecommended: Boolean?,
+        locale: String?
     ): Flow<GiftModel>
 
     @Query(
@@ -59,7 +61,8 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
         IF(:isRecommended IS TRUE, 
             id IN (SELECT gift_id FROM gift_transactions GROUP BY gift_id ORDER BY COUNT(gift_id) DESC),            
             TRUE
-        )
+        ) AND
+        IF(:locale IS NOT NULL, locale = :locale, FALSE)
     """
     )
     suspend fun countAllBy(
@@ -69,6 +72,7 @@ interface GiftRepo : CoroutineCrudRepository<GiftModel, String> {
         isFeatured: Boolean?,
         query: String?,
         isTodayOffer: Boolean?,
-        isRecommended: Boolean?
+        isRecommended: Boolean?,
+        locale: String?
     ): Long
 }
