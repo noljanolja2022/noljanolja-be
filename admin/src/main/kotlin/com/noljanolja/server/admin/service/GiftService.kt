@@ -28,9 +28,18 @@ class GiftService(
         pageSize: Int,
         isFeatured: Boolean?,
         isTodayOffer: Boolean?,
-        isRecommended: Boolean?
+        isRecommended: Boolean?,
+        locale: String?
     ): Response<List<Gift>> {
-        return giftApi.getGifts(query, page, pageSize, isFeatured, isTodayOffer, isRecommended)
+        return giftApi.getGifts(
+            query,
+            page,
+            pageSize,
+            isFeatured,
+            isTodayOffer,
+            isRecommended,
+            locale
+        )
     }
 
     suspend fun getGiftDetail(giftId: String): Gift {
@@ -38,12 +47,12 @@ class GiftService(
     }
 
 
-    suspend fun getBrands(page: Int, pageSize: Int, query : String? = null): Response<List<GiftBrand>> {
-        return giftApi.getBrands(page, pageSize, query)
+    suspend fun getBrands(page: Int, pageSize: Int, query : String? = null, locale : String? = null): Response<List<GiftBrand>> {
+        return giftApi.getBrands(page, pageSize, query, locale)
     }
 
-    suspend fun getCategories(page: Int, pageSize: Int, query : String? = null): Response<List<GiftCategory>> {
-        return giftApi.getCategories(page, pageSize, query)
+    suspend fun getCategories(page: Int, pageSize: Int, query : String? = null, locale: String?  = null): Response<List<GiftCategory>> {
+        return giftApi.getCategories(page, pageSize, query, locale)
     }
 
     suspend fun updateCategory(payload: UpdateGiftCategoryReq): GiftCategory? {
