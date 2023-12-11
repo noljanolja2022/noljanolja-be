@@ -46,7 +46,8 @@ class GiftApi(
         pageSize: Int = 10,
         isFeatured: Boolean?,
         isTodayOffer: Boolean?,
-        isRecommended: Boolean?
+        isRecommended: Boolean?,
+        locale: String?,
     ) = webClient.get()
         .uri { builder ->
             builder.path(ROUTE)
@@ -56,6 +57,7 @@ class GiftApi(
                 .queryParamIfPresent("isFeatured", Optional.ofNullable(isFeatured))
                 .queryParamIfPresent("isTodayOffer", Optional.ofNullable(isTodayOffer))
                 .queryParamIfPresent("isRecommended", Optional.ofNullable(isRecommended))
+                .queryParamIfPresent("locale", Optional.ofNullable(locale))
                 .build()
         }
         .retrieve()
@@ -106,13 +108,14 @@ class GiftApi(
         .awaitBody<Response<Gift>>().data!!
 
     suspend fun getBrands(
-        page: Int, pageSize: Int, query: String?
+        page: Int, pageSize: Int, query: String?, locale : String? = null
     ) = webClient.get()
         .uri { builder ->
             builder.path("${ROUTE}/brands")
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
                 .queryParamIfPresent("query", Optional.ofNullable(query))
+                .queryParamIfPresent("locale", Optional.ofNullable(locale))
                 .build()
         }
         .retrieve()
@@ -127,13 +130,14 @@ class GiftApi(
         .awaitBody<Response<List<GiftBrand>>>()
 
     suspend fun getCategories(
-        page: Int, pageSize: Int, query: String?
+        page: Int, pageSize: Int, query: String?, locale : String?
     ) = webClient.get()
         .uri { builder ->
             builder.path("${ROUTE}/categories")
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
                 .queryParamIfPresent("query", Optional.ofNullable(query))
+                .queryParamIfPresent("locale", Optional.ofNullable(locale))
                 .build()
         }
         .retrieve()

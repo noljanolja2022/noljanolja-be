@@ -38,13 +38,15 @@ class GiftHandler(
         val isFeatured = request.queryParamOrNull("isFeatured")?.toBooleanStrictOrNull()
         val isTodayOffer = request.queryParamOrNull("isTodayOffer")?.toBooleanStrictOrNull()
         val isRecommended = request.queryParamOrNull("isRecommended")?.toBooleanStrictOrNull()
+        val locale = request.queryParamOrNull("locale");
         val res = giftService.getGifts(
             query = query,
             page = page,
             pageSize = pageSize,
             isFeatured = isFeatured,
             isTodayOffer = isTodayOffer,
-            isRecommended = isRecommended
+            isRecommended = isRecommended,
+            locale = locale
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -82,10 +84,12 @@ class GiftHandler(
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
         val query = request.queryParamOrNull("query")
+        val locale = request.queryParamOrNull("locale")
         val res = giftService.getBrands(
             page = page,
             pageSize = pageSize,
-            query = query
+            query = query,
+            locale = locale
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -100,10 +104,12 @@ class GiftHandler(
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
         val query = request.queryParamOrNull("query")
+        val locale = request.queryParamOrNull("locale")
         val res = giftService.getCategories(
             page = page,
             pageSize = pageSize,
-            query = query
+            query = query,
+            locale = locale
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
