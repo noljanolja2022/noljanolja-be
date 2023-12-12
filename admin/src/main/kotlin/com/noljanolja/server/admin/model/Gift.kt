@@ -14,7 +14,9 @@ data class Gift(
     val limitDay: Int,
     val price: Long,
     val retailPrice: Long,
-    val isActive: Boolean = false
+    val isActive: Boolean = false,
+    val isFeatured: Boolean = false,
+    val isTodayOffer: Boolean = false
 )
 
 data class GiftBrand(
