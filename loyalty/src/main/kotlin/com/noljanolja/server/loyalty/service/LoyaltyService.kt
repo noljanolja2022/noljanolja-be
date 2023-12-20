@@ -93,21 +93,22 @@ class LoyaltyService(
         year: Int? = null,
         pageSize: Int = 20,
     ): List<Transaction> {
-        val transactions = if (listOfNotNull(lastOffsetDate, month, year).isEmpty() || lastOffsetDate != null) {
-            transactionRepo.findAllByMemberIdAndCreatedAtIsBeforeOrderByCreatedAtDesc(
-                memberId = memberId,
-                timestamp = lastOffsetDate ?: JavaInstant.now(),
-                pageable = Pageable.ofSize(pageSize)
-            ).toList()
-        } else if (month != null && year != null) {
+        val transactions = if (month != null && year != null) {
             transactionRepo.findAllByMemberIdAndMonthYear(
                 memberId = memberId,
                 month = month,
-                year = year,
+                year = year
+            ).toList()
+        } else if (month == null && year == null) {
+            transactionRepo.findAllByMemberIdAndCreatedAtIsBeforeOrderByCreatedAtDesc(
+                memberId = memberId,
+                timestamp = lastOffsetDate ?: JavaInstant.now(),
+                limit = pageSize
             ).toList()
         } else {
             emptyList()
         }
+
         return transactions.filter {
             type == null ||
                     (type == Transaction.Type.RECEIVED && it.amount > 0) ||

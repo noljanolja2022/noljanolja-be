@@ -4,12 +4,18 @@ import java.time.Instant
 
 data class LoyaltyPoint(
     val id: Long,
+    val type: Type,
     val reason: String,
     val amount: Long,
     val status: Status,
-    val createdAt: Instant,
+    val createdAt: Instant
 ) {
     enum class Status {
         COMPLETED,
+    }
+
+    enum class Type {
+        RECEIVED,
+        PAY
     }
 }

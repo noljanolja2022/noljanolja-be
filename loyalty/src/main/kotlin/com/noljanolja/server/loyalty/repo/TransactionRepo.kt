@@ -9,24 +9,49 @@ import java.time.Instant
 
 @Repository
 interface TransactionRepo : CoroutineCrudRepository<TransactionModel, Long> {
+    @Query(
+        """
+            SELECT * 
+            FROM (
+                SELECT CT.id, UB.user_id AS member_id, CT.amount, CT.reason, CT.created_at
+                FROM coin_transactions CT
+                INNER JOIN user_balances UB ON CT.balance_id = UB.id
+                WHERE CT.reason = 'REASON_PURCHASE_GIFT'
+                UNION 
+                SELECT *
+                FROM transactions T
+            ) AS TMP
+            WHERE TMP.member_id = :memberId AND TMP.created_at < :timestamp
+            ORDER BY TMP.created_at DESC
+            LIMIT :limit
+        """
+    )
     fun findAllByMemberIdAndCreatedAtIsBeforeOrderByCreatedAtDesc(
         memberId: String,
-        timestamp: Instant,
-        pageable: Pageable,
+        timestamp: Instant?,
+        limit: Int
     ): Flow<TransactionModel>
 
     @Query(
         """
-            SELECT * FROM transactions WHERE member_id = :memberId 
-            AND MONTH(created_at) = :month
-            AND YEAR(created_at) = :year
-            ORDER BY created_at DESC;
+            SELECT * 
+            FROM (
+                SELECT CT.id, UB.user_id AS member_id, CT.amount, CT.reason, CT.created_at
+                FROM coin_transactions CT
+                INNER JOIN user_balances UB ON CT.balance_id = UB.id
+                WHERE CT.reason = 'REASON_PURCHASE_GIFT'
+                UNION 
+                SELECT *
+                FROM transactions T
+            ) AS TMP
+            WHERE TMP.member_id = :memberId AND MONTH(TMP.created_at) = :month AND YEAR(TMP.created_at) = :year
+            ORDER BY TMP.created_at DESC
         """
     )
     fun findAllByMemberIdAndMonthYear(
         memberId: String,
         month: Int,
-        year: Int,
+        year: Int
     ): Flow<TransactionModel>
 
     fun findAllByMemberIdAndCreatedAtIsAfterOrderByCreatedAtAsc(
