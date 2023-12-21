@@ -17,7 +17,7 @@ data class LoyaltyPoint(
 
     enum class Type {
         RECEIVED,
-        PAY
+        SPENT
     }
 
     enum class Unit {

@@ -21,7 +21,7 @@ suspend fun CoreLoyaltyPoint.toConsumerLoyaltyPoint(
     translator: Translator,
 ) = LoyaltyPoint(
     id = id,
-    type = if (amount >= 0) LoyaltyPoint.Type.RECEIVED else LoyaltyPoint.Type.PAY,
+    type = if (amount >= 0) LoyaltyPoint.Type.RECEIVED else LoyaltyPoint.Type.SPENT,
     unit = if (reason == REASON_PURCHASE_GIFT) LoyaltyPoint.Unit.COIN else LoyaltyPoint.Unit.POINT,
     reason = translator.localize(reason),
     amount = amount,
