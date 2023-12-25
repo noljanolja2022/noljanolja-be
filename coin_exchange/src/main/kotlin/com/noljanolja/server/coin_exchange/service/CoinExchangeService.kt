@@ -63,6 +63,7 @@ class CoinExchangeService(
         userId: String,
         amount: Long,
         reason: String,
+        log: String? = null
     ): CoinTransaction {
         val userBalance = userBalanceRepo.findByUserId(userId) ?: UserBalanceModel(userId = userId)
         if (userBalance.balance + amount < 0) throw CustomBadRequestException("Insufficient fund")
@@ -73,6 +74,7 @@ class CoinExchangeService(
                 balanceId = savedBalance.id,
                 amount = amount,
                 reason = reason,
+                log = log
             )
         ).toCoinTransaction()
     }

@@ -1,6 +1,7 @@
 package com.noljanolja.server.core.repo.media
 
 import com.noljanolja.server.core.model.Video
+import com.noljanolja.server.core.model.VideoLogTransaction
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
@@ -98,3 +99,11 @@ fun VideoModel.toVideo() = Video(
     comments = comments.map { it.toVideoComment() },
 )
 
+fun VideoModel.toVideoLogTransaction(progressPercentage: Double) = VideoLogTransaction (
+    id = id,
+    url = url,
+    title = title,
+    thumbnail = thumbnail,
+    progressPercentage = progressPercentage,
+    durationMs = durationMs
+)

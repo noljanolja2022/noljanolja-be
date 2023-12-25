@@ -420,6 +420,7 @@ create TABLE IF NOT EXISTS `transactions`
     `amount`          BIGINT       NOT NULL,
     `reason`          VARCHAR(255) NOT NULL,
     `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `log`             TEXT         NULL,
 
     FOREIGN KEY (member_id) REFERENCES member_info(id) ON delete CASCADE
 ) ENGINE = InnoDB;
@@ -811,6 +812,7 @@ create TABLE IF NOT EXISTS `coin_transactions`
     `amount`        BIGINT          NOT NULL,
     `reason`        VARCHAR(255)    NOT NULL,
     `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `log`           TEXT            NULL,
 
     FOREIGN KEY (balance_id) REFERENCES user_balances(id) ON delete CASCADE
 ) ENGINE = InnoDB;

@@ -704,6 +704,27 @@ class CoreApi(
         }
         .awaitBody<Response<List<CoreLoyaltyPoint>>>().data!!
 
+    suspend fun getLoyaltyPointDetails(
+        memberId: String,
+        transactionId: Long,
+        reason: String
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$LOYALTY_ENDPOINT/member/{memberId}/points/{transactionId}")
+                .queryParam("reason", reason)
+                .build(memberId, transactionId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreLoyaltyPoint>>().data!!
+
     suspend fun getMemberInfo(
         userId: String,
     ) = webClient.get()

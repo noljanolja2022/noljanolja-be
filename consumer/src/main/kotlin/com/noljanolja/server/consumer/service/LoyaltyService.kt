@@ -29,4 +29,14 @@ class LoyaltyService(
         month = month,
         year = year,
     ).map { it.toConsumerLoyaltyPoint(translator) }
+
+    suspend fun getLoyaltyPointDetails(
+        memberId: String,
+        transactionId: Long,
+        reason: String
+    ) = coreApi.getLoyaltyPointDetails(
+        memberId = memberId,
+        transactionId = transactionId,
+        reason = reason
+    ).toConsumerLoyaltyPoint(translator)
 }

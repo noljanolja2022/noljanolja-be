@@ -18,7 +18,12 @@ class LoyaltyRouter(
         (LOYALTY_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             "/me".nest {
                 GET("", loyaltyHandler::getMyMemberInfo)
-                GET("/points", loyaltyHandler::getMyLoyaltyPoints)
+                "/points".nest {
+                    GET("", loyaltyHandler::getMyLoyaltyPoints)
+                    "{transactionId}".nest {
+                        GET("", loyaltyHandler::getLoyaltyPointDetails)
+                    }
+                }
             }
         }
     }

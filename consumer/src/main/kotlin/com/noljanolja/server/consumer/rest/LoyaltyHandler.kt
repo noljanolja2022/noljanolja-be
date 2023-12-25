@@ -1,5 +1,6 @@
 package com.noljanolja.server.consumer.rest
 
+import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.service.LoyaltyService
@@ -47,6 +48,27 @@ class LoyaltyHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = transactions,
+                )
+            )
+    }
+
+    suspend fun getLoyaltyPointDetails(request: ServerRequest): ServerResponse {
+        val transactionId = request.pathVariable("transactionId").toLongOrNull()
+            ?: throw InvalidParamsException("transactionId")
+        val reason = request.queryParamOrNull("reason")
+            ?: throw InvalidParamsException("reason")
+        val memberId = AuthUserHolder.awaitUser().id
+
+        val transactionDetails = loyaltyService.getLoyaltyPointDetails(
+            memberId = memberId,
+            transactionId = transactionId,
+            reason = reason
+        )
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = transactionDetails
                 )
             )
     }

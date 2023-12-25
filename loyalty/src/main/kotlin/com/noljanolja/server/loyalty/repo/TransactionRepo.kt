@@ -13,7 +13,7 @@ interface TransactionRepo : CoroutineCrudRepository<TransactionModel, Long> {
         """
             SELECT * 
             FROM (
-                SELECT CT.id, UB.user_id AS member_id, CT.amount, CT.reason, CT.created_at
+                SELECT CT.id, UB.user_id AS member_id, CT.amount, CT.reason, CT.created_at, CT.log
                 FROM coin_transactions CT
                 INNER JOIN user_balances UB ON CT.balance_id = UB.id
                 WHERE CT.reason = 'REASON_PURCHASE_GIFT'
@@ -36,7 +36,7 @@ interface TransactionRepo : CoroutineCrudRepository<TransactionModel, Long> {
         """
             SELECT * 
             FROM (
-                SELECT CT.id, UB.user_id AS member_id, CT.amount, CT.reason, CT.created_at
+                SELECT CT.id, UB.user_id AS member_id, CT.amount, CT.reason, CT.created_at, CT.log
                 FROM coin_transactions CT
                 INNER JOIN user_balances UB ON CT.balance_id = UB.id
                 WHERE CT.reason = 'REASON_PURCHASE_GIFT'
@@ -58,4 +58,29 @@ interface TransactionRepo : CoroutineCrudRepository<TransactionModel, Long> {
         memberId: String,
         timestamp: Instant,
     ): Flow<TransactionModel>
+
+    @Query(
+        """
+            SELECT * 
+            FROM transactions
+            WHERE id = :transactionId AND member_id = :memberId
+        """
+    )
+    suspend fun findByIdAndMemberId(
+        transactionId: Long,
+        memberId: String
+    ): TransactionModel?
+
+    @Query(
+        """
+            SELECT CT.id, UB.user_id AS member_id, CT.amount, CT.reason, CT.created_at, CT.log
+            FROM coin_transactions CT
+            INNER JOIN user_balances UB ON CT.balance_id = UB.id
+            WHERE CT.id = :coinTransactionId AND UB.user_id = :memberId
+        """
+    )
+    suspend fun findByCoinTransactionIdAndMemberId(
+        coinTransactionId: Long,
+        memberId: String
+    ): TransactionModel?
 }

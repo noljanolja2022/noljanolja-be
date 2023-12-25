@@ -25,11 +25,15 @@ data class TransactionModel(
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
+
+    @Column("log")
+    val log: String? = null
 )
 
-fun TransactionModel.toTransaction() = Transaction(
+fun TransactionModel.toTransaction(isForList: Boolean) = Transaction(
     id = id,
     amount = amount,
     reason = reason,
     createdAt = createdAt,
+    log = if (isForList) null else log
 )

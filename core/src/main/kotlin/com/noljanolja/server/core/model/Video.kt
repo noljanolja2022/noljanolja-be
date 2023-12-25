@@ -25,3 +25,12 @@ data class Video(
         val title: String,
     )
 }
+
+data class VideoLogTransaction(
+    val id: String,
+    val url: String,
+    val title: String,
+    val thumbnail: String,
+    val progressPercentage: Double,
+    val durationMs: Long
+)

@@ -20,6 +20,7 @@ class LoyaltyRouter(
                 GET("/{memberId}", loyaltyHandler::getMemberInfo)
                 PUT("/{memberId}/points", loyaltyHandler::addTransaction)
                 GET("/{memberId}/points", loyaltyHandler::getTransactions)
+                GET("/{memberId}/points/{transactionId}", loyaltyHandler::getTransactionDetails)
                 POST("", loyaltyHandler::updateMemberInfo)
             }
         }

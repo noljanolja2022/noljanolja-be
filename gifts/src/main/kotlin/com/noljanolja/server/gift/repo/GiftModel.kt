@@ -2,6 +2,7 @@ package com.noljanolja.server.gift.repo
 
 import com.noljanolja.server.gift.model.Gift
 import com.noljanolja.server.gift.model.GiftBrand
+import com.noljanolja.server.gift.model.GiftLogTransaction
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
@@ -113,4 +114,13 @@ fun GiftModel.toGift(brandModel: GiftBrandModel? = null, categoryModel: GiftCate
     isActive = isActive,
     isFeatured = isFeatured,
     isTodayOffer = isTodayOffer
+)
+
+fun GiftModel.toGiftLogTransaction(
+    brandModel: GiftBrandModel? = null
+) = GiftLogTransaction (
+    id = _id,
+    name = name,
+    image = image,
+    brand = brandModel?.toGiftBrand() ?: GiftBrand(id = brandId)
 )

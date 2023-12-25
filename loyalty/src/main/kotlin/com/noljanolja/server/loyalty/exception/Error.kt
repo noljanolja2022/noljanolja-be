@@ -10,7 +10,14 @@ sealed class Error(
     companion object {
         const val MEMBER_NOT_FOUND = 404_008
         const val INSUFFICIENT_BALANCE = 400_100
+        const val TRANSACTION_NOT_FOUND = 404_009
     }
+
+    object TransactionNotFound : BaseException (
+        TRANSACTION_NOT_FOUND,
+        "Transaction not found",
+        null
+    )
 
     object MemberNotFound : BaseException(
         MEMBER_NOT_FOUND,

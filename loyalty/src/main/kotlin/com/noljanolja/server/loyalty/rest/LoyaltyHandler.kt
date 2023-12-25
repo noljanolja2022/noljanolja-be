@@ -85,4 +85,25 @@ class LoyaltyHandler(
                 )
             )
     }
+
+    suspend fun getTransactionDetails(request: ServerRequest): ServerResponse {
+        val memberId = request.pathVariable("memberId").takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("memberId")
+        val transactionId = request.pathVariable("transactionId").toLongOrNull()
+            ?: throw InvalidParamsException("transactionId")
+        val reason = request.queryParamOrNull("reason") ?: throw InvalidParamsException("reason")
+
+        val transactionDetails = loyaltyService.getTransactionDetails(
+            memberId = memberId,
+            transactionId = transactionId,
+            reason = reason
+        )
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    data = transactionDetails
+                )
+            )
+    }
 }

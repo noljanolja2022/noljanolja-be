@@ -8,6 +8,7 @@ data class Transaction(
     val amount: Long,
     val status: Status = Status.COMPLETED,
     val createdAt: Instant,
+    val log: String?
 ) {
     enum class Status {
         COMPLETED,

@@ -1,5 +1,6 @@
 package com.noljanolja.server.core.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.nolgobuljia.server.giftbiz.service.GiftBizApi
 import com.noljanolja.server.coin_exchange.service.CoinExchangeService
 import com.noljanolja.server.common.exception.CustomBadRequestException
@@ -16,7 +17,6 @@ import com.noljanolja.server.gift.repo.*
 import com.noljanolja.server.gift.rest.UpdateGiftCategoryReq
 import com.noljanolja.server.gift.rest.UpdateGiftReq
 import kotlinx.coroutines.flow.toList
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -31,7 +31,8 @@ class GiftService(
     private val giftRepo: GiftRepo,
     private val giftBizApi: GiftBizApi,
     private val coinExchangeService: CoinExchangeService,
-    private val giftTransactionRepo: GiftTransactionRepo
+    private val giftTransactionRepo: GiftTransactionRepo,
+    private val objectMapper: ObjectMapper
 ) {
     //TODO: turn this into a cron job instead of API
     suspend fun importProducts() {
@@ -68,11 +69,14 @@ class GiftService(
         giftId: String,
     ): PurchasedGift {
         val gift = giftRepo.findById(giftId) ?: throw Error.GiftNotFound
-        val brand = giftBrandRepo.findById(gift.brandId) ?: throw Error.GiftNotFound
+        val brand = giftBrandRepo.findById(gift.brandId) ?: throw Error.BrandNotFound
+        val giftLogTransaction = gift.toGiftLogTransaction(brandModel = brand)
+
         coinExchangeService.addTransaction(
             userId = userId,
             amount = -gift.price,
-            reason = REASON_PURCHASE_GIFT
+            reason = REASON_PURCHASE_GIFT,
+            log = objectMapper.writeValueAsString(giftLogTransaction)
         )
 
         val transactionId = UUID.randomUUID().toString().replace("-", "").substring(0, 20)

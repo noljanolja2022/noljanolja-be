@@ -6,7 +6,6 @@ import com.noljanolja.server.loyalty.model.Transaction
 import com.noljanolja.server.loyalty.repo.*
 import kotlinx.coroutines.flow.toList
 import kotlinx.datetime.*
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant as JavaInstant
@@ -66,6 +65,7 @@ class LoyaltyService(
         memberId: String,
         points: Long,
         reason: String,
+        log: String? = null
     ): Transaction {
         val member = memberInfoRepo.findByMemberIdForUpdate(memberId) ?: createNewMember(memberId)
         if (member.availablePoints + points < 0) throw Error.InsufficientPointBalance
@@ -81,8 +81,9 @@ class LoyaltyService(
                 memberId = memberId,
                 amount = points,
                 reason = reason,
+                log = log
             )
-        ).toTransaction()
+        ).toTransaction(true)
     }
 
     suspend fun getTransactions(
@@ -113,6 +114,26 @@ class LoyaltyService(
             type == null ||
                     (type == Transaction.Type.RECEIVED && it.amount > 0) ||
                     (type == Transaction.Type.SPENT && it.amount < 0)
-        }.map { it.toTransaction() }
+        }.map { it.toTransaction(true) }
+    }
+
+    suspend fun getTransactionDetails(
+        memberId: String,
+        transactionId: Long,
+        reason: String
+    ) : Transaction {
+        val transaction = if (reason == "REASON_PURCHASE_GIFT") {
+            transactionRepo.findByCoinTransactionIdAndMemberId(
+                coinTransactionId = transactionId,
+                memberId = memberId
+            )
+        } else {
+            transactionRepo.findByIdAndMemberId(
+                transactionId = transactionId,
+                memberId = memberId
+            )
+        } ?: throw Error.TransactionNotFound
+
+        return transaction.toTransaction(false)
     }
 }

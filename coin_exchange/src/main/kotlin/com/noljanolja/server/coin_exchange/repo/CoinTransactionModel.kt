@@ -25,6 +25,9 @@ data class CoinTransactionModel(
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
+
+    @Column("log")
+    val log: String? = null
 )
 
 fun CoinTransactionModel.toCoinTransaction() = CoinTransaction(

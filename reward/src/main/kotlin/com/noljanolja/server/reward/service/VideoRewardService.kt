@@ -28,6 +28,7 @@ class VideoRewardService(
         progressPercentage: Double,
         userId: String,
         videoId: String,
+        log: String? = null
     ) {
         // find config for video if existed else use config of default video else throw err
         val configForVideo = videoRewardConfigRepo.findByVideoIdForUpdate(videoId)?.takeIf { it.isActive }
@@ -73,6 +74,7 @@ class VideoRewardService(
                 memberId = userId,
                 points = totalReceivedPoints,
                 reason = REASON_WATCH_VIDEO,
+                log = log
             )
         }
     }

@@ -11,6 +11,7 @@ data class CoreLoyaltyPoint(
     val amount: Long,
     val status: Status,
     val createdAt: Instant,
+    val log: String?
 ) {
     enum class Status {
         COMPLETED
@@ -23,8 +24,10 @@ suspend fun CoreLoyaltyPoint.toConsumerLoyaltyPoint(
     id = id,
     type = if (amount >= 0) LoyaltyPoint.Type.RECEIVED else LoyaltyPoint.Type.SPENT,
     unit = if (reason == REASON_PURCHASE_GIFT) LoyaltyPoint.Unit.COIN else LoyaltyPoint.Unit.POINT,
-    reason = translator.localize(reason),
+    reasonLocale = translator.localize(reason),
+    reason = reason,
     amount = amount,
     createdAt = createdAt,
     status = LoyaltyPoint.Status.valueOf(status.name),
+    log = log
 )

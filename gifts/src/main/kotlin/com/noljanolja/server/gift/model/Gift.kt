@@ -18,3 +18,10 @@ data class Gift(
     val isFeatured: Boolean = false,
     val isTodayOffer: Boolean = false
 )
+
+data class GiftLogTransaction(
+    val id: String,
+    val name: String,
+    val image: String,
+    val brand: GiftBrand
+)
