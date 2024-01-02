@@ -553,9 +553,7 @@ create TABLE IF NOT EXISTS `gift_categories`
     `name`              VARCHAR(255)    NULL,
     `image`             VARCHAR(255)    NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `locale`            VARCHAR(255)    NULL
-
+    `updated_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------

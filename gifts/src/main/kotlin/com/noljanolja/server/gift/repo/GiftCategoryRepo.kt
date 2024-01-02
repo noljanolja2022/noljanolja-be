@@ -15,28 +15,24 @@ interface GiftCategoryRepo : CoroutineCrudRepository<GiftCategoryModel, Long> {
 
     @Query(
         """
-            SELECT * FROM gift_categories WHERE
-            IF(:query IS NOT NULL, name LIKE CONCAT('%',:query,'%'), TRUE) AND
-            IF(:locale IS NOT NULL, locale = :locale, FALSE)
+            SELECT * FROM gift_categories 
+            WHERE IF(:query IS NOT NULL, name LIKE CONCAT('%',:query,'%'), TRUE)
             LIMIT :limit  OFFSET :offset
         """
     )
     fun findByNameContainsAndLocale(
         query: String?,
-        locale: String?,
         limit: Int,
         offset: Int
     ): Flow<GiftCategoryModel>
 
     @Query(
         """
-            SELECT COUNT(*) FROM gift_categories WHERE
-            IF(:query IS NOT NULL, name LIKE CONCAT('%',:query,'%'), TRUE) AND
-            IF(:locale IS NOT NULL, locale = :locale, FALSE)
+            SELECT COUNT(*) FROM gift_categories 
+            WHERE IF(:query IS NOT NULL, name LIKE CONCAT('%',:query,'%'), TRUE)
         """
     )
     suspend fun countByNameContainsAndLocale(
-        query: String?,
-        locale: String?,
+        query: String?
     ): Long
 }

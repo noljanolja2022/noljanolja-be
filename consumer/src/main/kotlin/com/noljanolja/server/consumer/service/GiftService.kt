@@ -76,13 +76,11 @@ class GiftService(
     suspend fun getCategories(
         page: Int,
         pageSize: Int,
-        query: String? = null,
-        locale: String?
+        query: String? = null
     ) = giftApi.getCategories(
         page = page,
         pageSize = pageSize,
-        query = query,
-        locale = locale
+        query = query
     ).let { (categories, pagination) -> Pair(categories.map { it.toCategory() }, pagination) }
 
     suspend fun getBrands(

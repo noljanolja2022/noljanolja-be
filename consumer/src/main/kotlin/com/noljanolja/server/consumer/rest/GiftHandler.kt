@@ -100,12 +100,10 @@ class GiftHandler(
         val page = request.queryParamOrNull("page")?.toIntOrNull() ?: DEFAULT_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: DEFAULT_PAGE_SIZE
         val query = request.queryParamOrNull("query")
-        val locale = request.queryParamOrNull("locale")
         val (categories, pagination) = giftService.getCategories(
             page = page,
             pageSize = pageSize,
-            query = query,
-            locale = locale
+            query = query
         )
 
         return ServerResponse.ok()

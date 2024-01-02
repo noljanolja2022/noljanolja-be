@@ -148,14 +148,12 @@ class GiftApi(
     suspend fun getCategories (
         page: Int,
         pageSize: Int,
-        query: String? = null,
-        locale: String?
+        query: String? = null
     ) = webClient.get()
         .uri { builder -> builder.path("$ENDPOINT/categories")
             .queryParam("page", page)
             .queryParam("pageSize", pageSize)
             .queryParamIfPresent("query", Optional.ofNullable(query))
-            .queryParamIfPresent("locale", Optional.ofNullable(locale))
             .build()
         }
         .retrieve()

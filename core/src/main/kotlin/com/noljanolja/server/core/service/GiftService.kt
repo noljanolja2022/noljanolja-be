@@ -267,12 +267,10 @@ class GiftService(
     suspend fun getCategories(
         query: String? = null,
         page: Int,
-        pageSize: Int,
-        locale: String?
+        pageSize: Int
     ): Pair<List<GiftCategory>, Long> {
         val res = giftCategoryRepo.findByNameContainsAndLocale(
             query = query,
-            locale = locale,
             limit = pageSize,
             offset = (page - 1) * pageSize
         )
@@ -280,8 +278,7 @@ class GiftService(
             .map { it.toGiftCategory() }
 
         val count = giftCategoryRepo.countByNameContainsAndLocale(
-            query = query,
-            locale = locale
+            query = query
         )
         return Pair(res, count)
     }
