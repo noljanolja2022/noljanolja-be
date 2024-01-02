@@ -862,3 +862,23 @@ create TABLE IF NOT EXISTS `video_generated_comments`
 
     FOREIGN KEY (video_id) REFERENCES videos(id) ON delete CASCADE
 ) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `user_transfer_points`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `user_transfer_points`;
+
+CREATE TABLE IF NOT EXISTS `user_transfer_points`
+(
+    `id`            BIGINT                     NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `from_user_id`  VARCHAR(36)                NOT NULL,
+    `to_user_id`    VARCHAR(36)                NOT NULL,
+    `points`        BIGINT                     NOT NULL,
+    `type`          ENUM('REQUEST', 'SEND')    NOT NULL,
+    `created_at`    DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (from_user_id) REFERENCES users(id) ON delete CASCADE,
+    FOREIGN KEY (to_user_id) REFERENCES users(id) ON delete CASCADE
+) ENGINE = InnoDB;

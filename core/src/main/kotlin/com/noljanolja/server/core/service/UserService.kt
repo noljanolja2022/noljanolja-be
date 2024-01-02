@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.noljanolja.server.common.exception.UserNotFound
 import com.noljanolja.server.common.utils.REASON_REFERRAL_REWARD
 import com.noljanolja.server.core.exception.Error
-import com.noljanolja.server.core.model.User
-import com.noljanolja.server.core.model.UserContact
-import com.noljanolja.server.core.model.UserDevice
+import com.noljanolja.server.core.model.*
+import com.noljanolja.server.core.repo.pointtransfer.TransferPointRepo
+import com.noljanolja.server.core.repo.pointtransfer.toUserTransferPoint
 import com.noljanolja.server.core.repo.user.*
 import com.noljanolja.server.core.repo.user.UserDeviceModel.Companion.toUserDeviceModel
 import com.noljanolja.server.core.repo.user.UserModel.Companion.toUserModel
 import com.noljanolja.server.core.utils.parsePhoneNumber
+import com.noljanolja.server.loyalty.repo.MemberInfoRepo
 import com.noljanolja.server.loyalty.service.LoyaltyService
 import com.noljanolja.server.reward.repo.ReferralRewardConfigRepo
 import kotlinx.coroutines.coroutineScope
@@ -30,6 +31,8 @@ class UserService(
     private val referralRewardConfigRepo: ReferralRewardConfigRepo,
     private val loyaltyService: LoyaltyService,
     private val objectMapper: ObjectMapper,
+    private val transferPointRepo: TransferPointRepo,
+    private val memberInfoRepo: MemberInfoRepo
 ) {
 
     suspend fun getUsersByIds(
@@ -172,6 +175,21 @@ class UserService(
     suspend fun getUser(
         userId: String,
     ): User? = userRepo.findById(userId)?.toUser(objectMapper)
+
+    suspend fun getUserContactDetail(
+        userId: String,
+        currentLoggedInUserId: String
+    ): UserContactDetail {
+        val user = userRepo.findById(currentLoggedInUserId) ?: throw UserNotFound
+        val memberInfo = memberInfoRepo.findById(currentLoggedInUserId) ?: throw Error.MemberNotFound
+        val latestRequestPoint = transferPointRepo.findLatestRequestPoint(
+            fromUserId = userId,
+            toUserId = currentLoggedInUserId,
+            type = UserTransferPoint.Type.REQUEST
+        )?.toUserTransferPoint()
+
+        return user.toUserContactDetail(latestRequestPoint, memberInfo.availablePoints)
+    }
 
     suspend fun upsertUser(user: User, isNewUser: Boolean = false): User {
         return userRepo.save(

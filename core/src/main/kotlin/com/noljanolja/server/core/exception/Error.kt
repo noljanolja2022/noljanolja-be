@@ -19,6 +19,7 @@ sealed class Error(
         const val REACTION_NOT_FOUND = 404_013
         const val BANNER_NOT_FOUND = 404_014
         const val REFERRAL_REWARD_CONFIG_NOT_FOUND = 404_015
+        const val MEMBER_NOT_FOUND = 404_016
 
         const val USER_NOT_PARTICIPATE_IN_CONVERSATION = 400_001
         const val INVALID_PARTICIPANTS_SIZE = 400_002
@@ -38,6 +39,12 @@ sealed class Error(
     object ConversationNotFound : Error(
         CONVERSATION_NOT_FOUND,
         "Conversation not found",
+        null,
+    )
+
+    object MemberNotFound : Error(
+        MEMBER_NOT_FOUND,
+        "Member not found",
         null,
     )
 

@@ -24,6 +24,7 @@ class UserRouter(
                 PUT("/referral", userHandler::assignReferral)
                 POST("/contacts", userHandler::syncCurrentUserContact)
                 GET("/contacts", userHandler::getCurrentUserContacts)
+                GET("/contacts/{userId}", userHandler::getCurrentUserContactDetail)
                 POST("/contacts/invite", userHandler::sendFriendRequest)
                 GET("/black-list", userHandler::getBlackList)
                 PUT("/block", userHandler::blockUser)

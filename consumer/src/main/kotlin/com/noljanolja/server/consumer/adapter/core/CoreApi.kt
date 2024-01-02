@@ -41,6 +41,7 @@ class CoreApi(
         const val BANNER_ENDPOINT = "/api/v1/banners"
         const val COIN_EXCHANGE_ENDPOINT = "/api/v1/coin-exchange"
         const val SHOP_PRODUCT_ENDPOINT = "/api/v1/shop/product"
+        const val TRANSFER_POINT_ENDPOINT = "/api/v1/transfer-point"
 
         val coreErrorsMapping = mapOf(
             404_001 to CoreServiceError.UserNotFound
@@ -76,6 +77,26 @@ class CoreApi(
         .awaitBody<Response<List<SimpleUser>>>().let {
             Pair(it.data!!, it.pagination!!)
         }
+
+    suspend fun getUserContactDetail(
+        userId: String,
+        currentLoggedInUserId: String
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$USERS_ENDPOINT/{userId}/contact-detail")
+                .queryParam("currentLoggedInUserId", currentLoggedInUserId)
+                .build(userId)
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreUserContactDetail>>().data!!
 
     suspend fun getUserDetails(
         userId: String,
@@ -1160,4 +1181,50 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<List<CoreCoinTransaction>>>().data!!
+
+    suspend fun requestPoint(
+        fromUserId: String,
+        toUserId: String,
+        points: Long
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$TRANSFER_POINT_ENDPOINT/request")
+                .queryParam("fromUserId", fromUserId)
+                .queryParam("toUserId", toUserId)
+                .queryParam("points", points)
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreUserTransferPoint>>().data!!
+
+    suspend fun sendPoint(
+        fromUserId: String,
+        toUserId: String,
+        points: Long
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("$TRANSFER_POINT_ENDPOINT/send")
+                .queryParam("fromUserId", fromUserId)
+                .queryParam("toUserId", toUserId)
+                .queryParam("points", points)
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<CoreUserTransferPoint>>().data!!
 }

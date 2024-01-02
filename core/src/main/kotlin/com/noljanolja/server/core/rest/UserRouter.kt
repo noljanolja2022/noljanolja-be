@@ -21,6 +21,7 @@ class UserRouter(
 
             "/{userId}".nest {
                 GET("", userHandler::getUserDetails)
+                GET("/contact-detail", userHandler::getUserContactDetail)
                 PATCH("", userHandler::updateUser)
                 DELETE("", userHandler::deleteUser)
                 GET("/black-list", userHandler::getBlackListOfUser)

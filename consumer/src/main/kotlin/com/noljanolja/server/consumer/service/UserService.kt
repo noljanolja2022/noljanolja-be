@@ -8,6 +8,7 @@ import com.noljanolja.server.consumer.exception.CoreServiceError
 import com.noljanolja.server.consumer.model.LocalContact
 import com.noljanolja.server.consumer.model.SimpleUser
 import com.noljanolja.server.consumer.model.User
+import com.noljanolja.server.consumer.model.UserContactDetail
 import com.noljanolja.server.consumer.rest.request.AddFriendRequest
 import com.noljanolja.server.consumer.rest.request.AssignReferralRequest
 import com.noljanolja.server.consumer.rest.request.BlockUserRequest
@@ -86,6 +87,16 @@ class UserService(
     ): List<User> {
         val updatedContacts = coreApi.upsertUserContacts(userId, localContacts.map { it.toCoreLocalContact() })
         return updatedContacts.map { it.toConsumerUser() }
+    }
+
+    suspend fun getUserContactDetail(
+        userId: String,
+        currentLoggedInUserId: String
+    ): UserContactDetail {
+        return coreApi.getUserContactDetail(
+            userId = userId,
+            currentLoggedInUserId = currentLoggedInUserId
+        ).toUserContactDetail()
     }
 
     suspend fun findUsers(

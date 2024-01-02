@@ -13,6 +13,7 @@ import com.noljanolja.server.consumer.service.UserService
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.codec.multipart.FormFieldPart
 import org.springframework.stereotype.Component
@@ -109,6 +110,24 @@ class UserHandler(
             .ok()
             .bodyValueAndAwait(
                 Response(data = contacts)
+            )
+    }
+
+    suspend fun getCurrentUserContactDetail(request: ServerRequest): ServerResponse {
+        val userId = request.pathVariable("userId")
+        val currentLoggedInUserId = AuthUserHolder.awaitUser().id
+
+        val userContactDetail = userService.getUserContactDetail(
+            userId = userId,
+            currentLoggedInUserId = currentLoggedInUserId
+        )
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    code = HttpStatus.OK.value(),
+                    data = userContactDetail
+                )
             )
     }
 

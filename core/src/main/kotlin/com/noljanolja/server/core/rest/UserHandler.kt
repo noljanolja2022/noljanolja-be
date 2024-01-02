@@ -12,6 +12,7 @@ import com.noljanolja.server.core.rest.request.*
 import com.noljanolja.server.core.service.UserService
 import com.noljanolja.server.core.utils.genReferralCode
 import com.noljanolja.server.loyalty.service.LoyaltyService
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.util.UriUtils
@@ -68,6 +69,25 @@ class UserHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = user,
+                )
+            )
+    }
+
+    suspend fun getUserContactDetail(request: ServerRequest): ServerResponse {
+        val userId = request.pathVariable("userId")
+            .ifBlank { throw InvalidParamsException("userId") }
+        val currentLoggedInUserId = request.queryParamOrNull("currentLoggedInUserId")
+            ?: throw InvalidParamsException("currentLoggedInUserId")
+
+        val userContactDetail = userService.getUserContactDetail(
+            userId = userId,
+            currentLoggedInUserId = currentLoggedInUserId
+        )
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    code = HttpStatus.OK.value(),
+                    data = userContactDetail
                 )
             )
     }

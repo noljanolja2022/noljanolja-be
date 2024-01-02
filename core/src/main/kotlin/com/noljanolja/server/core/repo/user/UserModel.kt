@@ -2,9 +2,7 @@ package com.noljanolja.server.core.repo.user
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.noljanolja.server.core.exception.Error
-import com.noljanolja.server.core.model.Gender
-import com.noljanolja.server.core.model.User
-import com.noljanolja.server.core.model.UserPreferences
+import com.noljanolja.server.core.model.*
 import com.noljanolja.server.core.utils.parsePhoneNumber
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
@@ -126,4 +124,13 @@ fun UserModel.toUser(objectMapper: ObjectMapper) = User(
     updatedAt = updatedAt,
     referralCode = referralCode,
     referredBy = referredBy,
+)
+
+fun UserModel.toUserContactDetail(userTransferPoint: UserTransferPoint?, availablePoints: Long) = UserContactDetail(
+    id = id,
+    name = name,
+    avatar = avatar,
+    phone = phoneNumber,
+    availablePoints = availablePoints,
+    userTransferPoint = userTransferPoint
 )
