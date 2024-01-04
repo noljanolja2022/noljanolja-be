@@ -1227,4 +1227,19 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<CoreUserTransferPoint>>().data!!
+
+    suspend fun getReferralConfig() =
+        webClient.get().uri { builder ->
+            builder.path("$REWARD_ENDPOINT/referral/configs").build()
+        }
+            .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError) {
+                it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                    CoreServiceError.CoreServiceBadRequest(response.message)
+                }
+            }
+            .onStatus(HttpStatusCode::is5xxServerError) {
+                Mono.just(CoreServiceError.CoreServiceInternalError)
+            }
+            .awaitBody<Response<CoreReferralConfig>>()
 }
