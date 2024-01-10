@@ -1,7 +1,9 @@
 package com.noljanolja.server.core.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
+import com.noljanolja.server.common.exception.UserNotFound
 import com.noljanolja.server.common.rest.Response
+import com.noljanolja.server.core.service.NotificationService
 import com.noljanolja.server.core.service.TransferPointService
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
@@ -12,7 +14,8 @@ import org.springframework.web.reactive.function.server.queryParamOrNull
 
 @Component
 class TransferPointHandler(
-    private val transferPointService: TransferPointService
+    private val transferPointService: TransferPointService,
+    private val notificationService: NotificationService
 ) {
     suspend fun requestPoint(request: ServerRequest): ServerResponse {
         val fromUserId = request.queryParamOrNull("fromUserId")

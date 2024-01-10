@@ -55,7 +55,35 @@ class NotificationService(
             try {
                 fcm.send(fcmMessage)
             } catch (error: FirebaseMessagingException) {
+                logger.error("Failed to push noti to user $userId with token $pushToken. Firebase Msg Error: ${error.message}")
+            } catch (error: Exception) {
+                logger.error("Notification Exception: ${error.message}")
+            }
+        }
+    }
 
+    suspend fun pushNotification(
+        userId: String,
+        title: String,
+        body: String,
+        image: String?,
+        data: Map<String, String>?,
+    ) {
+        coreApi.getPushToken(userId).forEach { pushToken ->
+            val fcmMessage = Message.builder()
+                .setNotification(
+                    Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .setImage(image)
+                        .build()
+                )
+                .setToken(pushToken)
+                .putAllData(data)
+                .build()
+            try {
+                fcm.send(fcmMessage)
+            } catch (error: FirebaseMessagingException) {
                 logger.error("Failed to push noti to user $userId with token $pushToken. Firebase Msg Error: ${error.message}")
             } catch (error: Exception) {
                 logger.error("Notification Exception: ${error.message}")

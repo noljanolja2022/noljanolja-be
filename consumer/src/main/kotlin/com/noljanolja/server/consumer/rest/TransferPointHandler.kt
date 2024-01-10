@@ -2,7 +2,9 @@ package com.noljanolja.server.consumer.rest
 
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.rest.Response
+import com.noljanolja.server.consumer.adapter.core.CoreApi
 import com.noljanolja.server.consumer.filter.AuthUserHolder
+import com.noljanolja.server.consumer.service.NotificationService
 import com.noljanolja.server.consumer.service.TransferPointService
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
@@ -13,7 +15,9 @@ import org.springframework.web.reactive.function.server.queryParamOrNull
 
 @Component
 class TransferPointHandler(
-    private val transferPointService: TransferPointService
+    private val transferPointService: TransferPointService,
+    private val notificationService: NotificationService,
+    private val coreApi: CoreApi,
 ) {
     suspend fun requestPoint(request: ServerRequest): ServerResponse {
         val fromUserId = AuthUserHolder.awaitUser().id
@@ -27,6 +31,18 @@ class TransferPointHandler(
             fromUserId = fromUserId,
             toUserId = toUserId,
             points = points
+        )
+
+        notificationService.pushNotification(
+            userId = toUserId,
+            title = "${AuthUserHolder.awaitUser().name} requests you for $points points",
+            body = "${AuthUserHolder.awaitUser().name} requests you for $points points",
+            image = AuthUserHolder.awaitUser().avatar,
+            data = mapOf(
+                "user_id" to fromUserId,
+                "name" to "${AuthUserHolder.awaitUser().name}",
+                "points" to "$points"
+            )
         )
 
         return ServerResponse.ok()
@@ -50,6 +66,18 @@ class TransferPointHandler(
             fromUserId = fromUserId,
             toUserId = toUserId,
             points = points
+        )
+
+        notificationService.pushNotification(
+            userId = toUserId,
+            title = "${AuthUserHolder.awaitUser().name} sends you $points points",
+            body = "${AuthUserHolder.awaitUser().name} sends you $points points",
+            image = AuthUserHolder.awaitUser().avatar,
+            data = mapOf(
+                "user_id" to fromUserId,
+                "name" to "${AuthUserHolder.awaitUser().name}",
+                "points" to "$points"
+            )
         )
 
         return ServerResponse.ok()

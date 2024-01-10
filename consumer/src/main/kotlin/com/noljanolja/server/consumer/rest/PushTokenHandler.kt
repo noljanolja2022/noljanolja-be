@@ -6,6 +6,7 @@ import com.noljanolja.server.common.filter.ClientInfoHolder
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.consumer.filter.AuthUserHolder
 import com.noljanolja.server.consumer.rest.request.UpdatePushTokenRequest
+import com.noljanolja.server.consumer.rest.request.UpdatePushTokenLegacyRequest
 import com.noljanolja.server.consumer.service.NotificationService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest

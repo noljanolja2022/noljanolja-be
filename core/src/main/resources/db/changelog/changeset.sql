@@ -880,3 +880,25 @@ CREATE TABLE IF NOT EXISTS `user_transfer_points`
     FOREIGN KEY (from_user_id) REFERENCES users(id) ON delete CASCADE,
     FOREIGN KEY (to_user_id) REFERENCES users(id) ON delete CASCADE
 ) ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `notifications`
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `notifications`;
+
+CREATE TABLE IF NOT EXISTS `notifications`
+(
+    `id`            BIGINT                     NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `user_id`       VARCHAR(36)                NOT NULL,
+    `title`         VARCHAR(255)               NOT NULL,
+    `body`          TEXT                       NOT NULL,
+    `image`         VARCHAR(255)               NULL,
+    `data`          TEXT                       NULL,
+    `type`          VARCHAR(255)               NOT NULL,
+    `is_read`       TINYINT(1)                 NOT NULL DEFAULT 0,
+    `created_at`    DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON delete CASCADE
+) ENGINE = InnoDB;
