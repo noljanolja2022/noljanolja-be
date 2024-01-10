@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.nolgobuljia.server.giftbiz.service.GiftBizApi
 import com.noljanolja.server.coin_exchange.service.CoinExchangeService
 import com.noljanolja.server.common.exception.CustomBadRequestException
+import com.noljanolja.server.common.exception.DefaultInternalErrorException
+import com.noljanolja.server.common.exception.ExternalServiceException
 import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.common.utils.REASON_PURCHASE_GIFT
 import com.noljanolja.server.core.model.Locale
@@ -17,6 +19,7 @@ import com.noljanolja.server.gift.repo.*
 import com.noljanolja.server.gift.rest.UpdateGiftCategoryReq
 import com.noljanolja.server.gift.rest.UpdateGiftReq
 import kotlinx.coroutines.flow.toList
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -34,6 +37,24 @@ class GiftService(
     private val giftTransactionRepo: GiftTransactionRepo,
     private val objectMapper: ObjectMapper
 ) {
+    @Value("\${core.env.management}")
+    private val env: String = ""
+
+    companion object {
+        const val STAGING_REQUEST_TOKEN_URI = "https://sso.sbx.edenred.io/connect/token"
+        const val STAGING_CLIENT_ID = "0bd23d3b8bbe4044b5b424b16bbd637d"
+        const val STAGING_CLIENT_SECRET = "aReba6hQbHam1MMVkCA1OPkTemoBMdBdBvUE7Jn1"
+        const val STAGING_GRANT_TYPE = "client_credentials"
+        const val STAGING_SCOPE = "edg-apac-xp-voucher-mgt-api"
+        const val STAGING_PRODUCT_ASSETS = "202107148936"
+        const val STAGING_X_CLIENT_ID = "6bd1b18274fd46fea88b52eaddf26906"
+        const val STAGING_X_CLIENT_SECRET = "5C3ee9FF01254DceA4b8c529c4aCE7D6"
+        const val STAGING_X_CORRELATION_ID = "870a411e038541b2b8fbfc10b5793f67"
+    }
+
+
+
+
     //TODO: turn this into a cron job instead of API
     suspend fun importProducts() {
         var pageNum = 1
@@ -67,10 +88,11 @@ class GiftService(
     suspend fun buyGift(
         userId: String,
         giftId: String,
-    ): PurchasedGift {
+    ): PurchasedGift? {
         val gift = giftRepo.findById(giftId) ?: throw Error.GiftNotFound
+        val locale = gift.locale ?: throw Error.GiftLocaleIsNull
         val brand = giftBrandRepo.findById(gift.brandId) ?: throw Error.BrandNotFound
-        val giftLogTransaction = gift.toGiftLogTransaction(brandModel = brand)
+        val giftLogTransaction = gift.toGiftLogTransaction(brand = brand)
 
         coinExchangeService.addTransaction(
             userId = userId,
@@ -81,56 +103,128 @@ class GiftService(
 
         val transactionId = UUID.randomUUID().toString().replace("-", "").substring(0, 20)
         // Temporary used for development. Should switch to ENV dependent soon
-        if (true) {
-            val fakeTransaction = GiftTransactionModel(
-                _id = transactionId,
-                userId = userId,
-                price = gift.price.toDouble(),
-                giftCode = gift._id,
-                barCode = "https://imgs.giftishow.co.kr/Resource2/mms/20231115/16/mms_64fc3df5e55ab267c683824b0e4d4222_01.jpg",
-                orderNo = "fake Order number",
-                pinNumber = "123456"
-            ).apply {
-                isNewRecord = true
+        when(env) {
+            "dev" -> {
+                when(locale) {
+                    "KR" -> {
+                        val fakeTransaction = GiftTransactionModel(
+                            _id = transactionId,
+                            userId = userId,
+                            price = gift.price.toDouble(),
+                            giftCode = gift._id,
+                            barCode = "https://imgs.giftishow.co.kr/Resource2/mms/20231115/16/mms_64fc3df5e55ab267c683824b0e4d4222_01.jpg",
+                            orderNo = "fake Order number",
+                            pinNumber = "123456"
+                        ).apply {
+                            isNewRecord = true
+                        }
+
+                        giftTransactionRepo.save(fakeTransaction)
+                        return PurchasedGift(
+                            id = transactionId,
+                            qrCode = "https://imgs.giftishow.co.kr/Resource2/mms/20231115/16/mms_64fc3df5e55ab267c683824b0e4d4222_01.jpg",
+                            description = gift.description,
+                            image = gift.image,
+                            brand = brand.toGiftBrand(),
+                            name = gift.name,
+                            giftId = gift.id
+                        )
+                    }
+                    "IN" -> {
+                        val tokenResp = giftBizApi.getRequestToken(
+                            clientId = STAGING_CLIENT_ID,
+                            clientSecret = STAGING_CLIENT_SECRET,
+                            grantType = STAGING_GRANT_TYPE,
+                            scope = STAGING_SCOPE,
+                            requestTokenURI = STAGING_REQUEST_TOKEN_URI
+                        )
+
+                        if (tokenResp.error != null) throw ExternalServiceException(null)
+
+                        val couponRequestURI = "https://xp-voucher-mgt-stg-sg-v1.sg-s1.cloudhub.io/api/catalogs/ETX_001/product_assets/${STAGING_PRODUCT_ASSETS}/products/${giftId}/vouchers/actions/request"
+                        val orderNumber = giftBizApi.generateUniqueOrderNumber(userId)
+                        val couponResp = giftBizApi.buyIndianCoupon(
+                            goodsCode = giftId,
+                            userId = userId,
+                            transactionId = transactionId,
+                            requestToken = tokenResp.access_token ?: throw ExternalServiceException(null),
+                            clientId = STAGING_X_CLIENT_ID,
+                            clientSecret = STAGING_X_CLIENT_SECRET,
+                            correlationId = STAGING_X_CORRELATION_ID,
+                            couponRequestURI = couponRequestURI,
+                            orderNumber = orderNumber
+                        )
+
+                        if (couponResp.meta.status == "failed") throw ExternalServiceException(null)
+                        val newTransaction = GiftTransactionModel(
+                            _id = transactionId,
+                            userId = userId,
+                            price = gift.price.toDouble(),
+                            giftCode = giftId,
+                            orderNo = orderNumber,
+                            log = objectMapper.writeValueAsString(couponResp.data)
+                        ).apply {
+                            isNewRecord = true
+                        }
+
+                        val createdTransaction = giftTransactionRepo.save(newTransaction)
+                        return PurchasedGift(
+                            id = createdTransaction.orderNo,
+                            qrCode = createdTransaction.barCode ?: "",
+                            description = gift.description,
+                            image = gift.image,
+                            brand = brand.toGiftBrand(),
+                            name = gift.name,
+                            giftId = gift.id
+                        )
+                    }
+                    else -> throw DefaultInternalErrorException(null)
+                }
+
             }
-            giftTransactionRepo.save(fakeTransaction)
-            return PurchasedGift(
-                id = transactionId,
-                qrCode = "https://imgs.giftishow.co.kr/Resource2/mms/20231115/16/mms_64fc3df5e55ab267c683824b0e4d4222_01.jpg",
-                description = gift.description,
-                image = gift.image,
-                brand = brand.toGiftBrand(),
-                name = gift.name,
-                giftId = gift.id
-            )
+            "prod" -> {
+                when(locale) {
+                    "KR" -> {
+                        val res = giftBizApi.buyKoreanCoupon(
+                            goodsCode = gift._id,
+                            transactionId = transactionId
+                        )
+
+                        val couponRes = res.result
+                        val orderRes = couponRes?.result ?: throw CustomBadRequestException("Unable to create order")
+                        val newTransaction = GiftTransactionModel(
+                            _id = transactionId,
+                            userId = userId,
+                            price = gift.price.toDouble(),
+                            giftCode = gift._id,
+                            barCode = orderRes.couponImgUrl,
+                            orderNo = orderRes.orderNo,
+                            pinNumber = orderRes.pinNo
+                        ).apply {
+                            isNewRecord = true
+                        }
+
+                        val createdTransaction = giftTransactionRepo.save(newTransaction)
+                        return PurchasedGift(
+                            id = createdTransaction.orderNo,
+                            qrCode = createdTransaction.barCode!!,
+                            description = gift.description,
+                            image = gift.image,
+                            brand = brand.toGiftBrand(),
+                            name = gift.name,
+                            giftId = gift.id
+                        )
+                    }
+                    "IN" -> {
+
+                    }
+                    else -> throw DefaultInternalErrorException(null)
+                }
+            }
+            else -> throw DefaultInternalErrorException(null)
         }
-        val res = giftBizApi.buyCoupon(
-            goodsCode = gift._id,
-            transactionId = transactionId
-        )
-        val couponRes = res.result
-        val orderRes = couponRes?.result ?: throw CustomBadRequestException("Unable to create order")
-        val newTransaction = GiftTransactionModel(
-            _id = transactionId,
-            userId = userId,
-            price = gift.price.toDouble(),
-            giftCode = gift._id,
-            barCode = orderRes.couponImgUrl,
-            orderNo = orderRes.orderNo,
-            pinNumber = orderRes.pinNo
-        ).apply {
-            isNewRecord = true
-        }
-        val createdTransaction = giftTransactionRepo.save(newTransaction)
-        return PurchasedGift(
-            id = createdTransaction.orderNo,
-            qrCode = createdTransaction.barCode!!,
-            description = gift.description,
-            image = gift.image,
-            brand = brand.toGiftBrand(),
-            name = gift.name,
-            giftId = gift.id
-        )
+
+        return null
     }
 
     suspend fun updateGift(giftId: String, payload: UpdateGiftReq): Gift {

@@ -40,6 +40,7 @@ data class CorePurchasedGift(
     val description: String,
     val image: String,
     val brand: GiftBrand,
+    val log: String?
 ) {
     fun toPurchasedGift() =
         PurchasedGift(
@@ -50,6 +51,7 @@ data class CorePurchasedGift(
             image = image,
             brand = brand,
             qrCode = qrCode,
+            log = log
         )
 }
 

@@ -116,11 +116,9 @@ fun GiftModel.toGift(brandModel: GiftBrandModel? = null, categoryModel: GiftCate
     isTodayOffer = isTodayOffer
 )
 
-fun GiftModel.toGiftLogTransaction(
-    brandModel: GiftBrandModel? = null
-) = GiftLogTransaction (
+fun GiftModel.toGiftLogTransaction(brand: GiftBrandModel) = GiftLogTransaction (
     id = _id,
     name = name,
     image = image,
-    brand = brandModel?.toGiftBrand() ?: GiftBrand(id = brandId)
+    brand = brand.toGiftBrand()
 )

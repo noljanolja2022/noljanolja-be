@@ -6,3 +6,7 @@ spring:
     name: noljanolja-core
   profiles:
     include: database, management, rsocket
+
+core:
+  env:
+    management: dev

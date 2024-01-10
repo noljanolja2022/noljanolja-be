@@ -31,6 +31,9 @@ data class GiftTransactionModel(
     @Column("price")
     var price: Double,
 
+    @Column("log")
+    val log: String? = null,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),

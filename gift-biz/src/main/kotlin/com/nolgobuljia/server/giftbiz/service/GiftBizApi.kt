@@ -1,11 +1,9 @@
 package com.nolgobuljia.server.giftbiz.service
 
 import com.nolgobuljia.server.giftbiz.GiftBizServiceConfig
-import com.nolgobuljia.server.giftbiz.model.GiftBizBrandListResponse
-import com.nolgobuljia.server.giftbiz.model.GiftBizGoodsListResponse
-import com.nolgobuljia.server.giftbiz.model.GiftBizResponse
-import com.nolgobuljia.server.giftbiz.model.ShowBizCouponResponse
+import com.nolgobuljia.server.giftbiz.model.*
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.util.LinkedMultiValueMap
@@ -69,7 +67,65 @@ class GiftBizApi(
             .awaitBody<GiftBizResponse<GiftBizBrandListResponse>>()
     }
 
-    suspend fun buyCoupon(
+    suspend fun getRequestToken(
+        clientId: String,
+        clientSecret: String,
+        grantType: String,
+        scope: String,
+        requestTokenURI: String
+    ): IndianTokenResponse {
+        val formData = LinkedMultiValueMap<String, String>().apply {
+            add("client_id", clientId)
+            add("client_secret", clientSecret)
+            add("grant_type", grantType)
+            add("scope", scope)
+        }
+
+        return webClient.post()
+            .uri(requestTokenURI)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .body(BodyInserters.fromFormData(formData))
+            .retrieve()
+            .awaitBody<IndianTokenResponse>()
+    }
+
+    suspend fun generateUniqueOrderNumber(userId: String): String {
+        val uniquePart = System.currentTimeMillis().toString()
+        return "${userId}_${uniquePart}"
+    }
+
+    suspend fun buyIndianCoupon(
+        goodsCode: String,
+        userId: String,
+        transactionId: String,
+        requestToken: String,
+        clientId: String,
+        clientSecret: String,
+        correlationId: String,
+        couponRequestURI: String,
+        orderNumber: String
+    ): IndianCouponResponse {
+        val requestData = ManualRequestData(
+            manual_quantity = 1,
+            distribution_mode = "manual",
+            order_details = OrderDetail(
+                order_number = orderNumber
+            )
+        )
+
+        return webClient.post()
+            .uri(couponRequestURI)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .header("X-Client-Id", clientId)
+            .header("X-Client-Secret", clientSecret)
+            .header("X-Correlation-Id", correlationId)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $requestToken")
+            .body(BodyInserters.fromValue(requestData))
+            .retrieve()
+            .awaitBody<IndianCouponResponse>()
+    }
+
+    suspend fun buyKoreanCoupon(
         goodsCode: String,
         phoneNumber: String = "01031475811",
         transactionId: String,

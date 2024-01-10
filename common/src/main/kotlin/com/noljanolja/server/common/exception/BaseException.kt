@@ -154,6 +154,6 @@ class ExternalServiceException(
     cause: Throwable?,
 ) : BaseException(
     code = 500_001,
-    message = "Internal Server Error",
+    message = "External Server Error",
     cause = cause,
 )

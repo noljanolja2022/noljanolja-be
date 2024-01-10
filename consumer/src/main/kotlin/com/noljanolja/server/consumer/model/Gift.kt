@@ -35,5 +35,6 @@ data class PurchasedGift(
     val description: String,
     val image: String,
     val brand: GiftBrand,
-    val category: GiftCategory? = null
+    val category: GiftCategory? = null,
+    val log: String?
 )

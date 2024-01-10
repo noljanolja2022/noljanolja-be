@@ -597,6 +597,7 @@ create TABLE IF NOT EXISTS `gift_transactions`
     `pin_no`            VARCHAR(64)     NULL,
     `bar_code`          VARCHAR(128)    NULL,
     `created_at`        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `log`               TEXT            NULL,
 
     FOREIGN KEY (gift_id) REFERENCES gifts(id) ON delete CASCADE
 ) ENGINE = InnoDB;

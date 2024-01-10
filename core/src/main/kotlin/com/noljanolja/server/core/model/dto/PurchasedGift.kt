@@ -15,7 +15,8 @@ data class PurchasedGift(
     val description: String,
     val image: String,
     val brand: GiftBrand,
-    val category: GiftCategory? = null
+    val category: GiftCategory? = null,
+    val log: String? = null
 ) {
     companion object {
         fun fromGiftModel(e: GiftModel, b: GiftBrandModel, c: GiftCategoryModel?, t: GiftTransactionModel) =
@@ -27,7 +28,8 @@ data class PurchasedGift(
                 description = e.description,
                 image = e.image,
                 brand = b.toGiftBrand(),
-                category = c?.toGiftCategory()
+                category = c?.toGiftCategory(),
+                log = t.log
             )
     }
 }
