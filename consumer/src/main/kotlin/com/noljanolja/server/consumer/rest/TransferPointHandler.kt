@@ -27,6 +27,8 @@ class TransferPointHandler(
             ?.toLongOrNull() ?.takeIf { it > 0 }
             ?: throw InvalidParamsException("points")
 
+        val fromUser = coreApi.getUserDetails(fromUserId)
+
         val userTransferPoint = transferPointService.requestPoint(
             fromUserId = fromUserId,
             toUserId = toUserId,
@@ -35,12 +37,12 @@ class TransferPointHandler(
 
         notificationService.pushNotification(
             userId = toUserId,
-            title = "${AuthUserHolder.awaitUser().name} requests you for $points points",
-            body = "${AuthUserHolder.awaitUser().name} requests you for $points points",
-            image = AuthUserHolder.awaitUser().avatar,
+            title = "${fromUser.name} requests you for $points points",
+            body = "${fromUser.name} requests you for $points points",
+            image = fromUser.avatar,
             data = mapOf(
                 "user_id" to fromUserId,
-                "name" to "${AuthUserHolder.awaitUser().name}",
+                "name" to "${fromUser.name}",
                 "points" to "$points"
             )
         )
@@ -62,6 +64,8 @@ class TransferPointHandler(
             ?.toLongOrNull() ?.takeIf { it > 0 }
             ?: throw InvalidParamsException("points")
 
+        val fromUser = coreApi.getUserDetails(fromUserId)
+
         val userTransferPoint = transferPointService.sendPoint(
             fromUserId = fromUserId,
             toUserId = toUserId,
@@ -70,12 +74,12 @@ class TransferPointHandler(
 
         notificationService.pushNotification(
             userId = toUserId,
-            title = "${AuthUserHolder.awaitUser().name} sends you $points points",
-            body = "${AuthUserHolder.awaitUser().name} sends you $points points",
-            image = AuthUserHolder.awaitUser().avatar,
+            title = "${fromUser.name} sends you $points points",
+            body = "${fromUser.name} sends you $points points",
+            image = fromUser.avatar,
             data = mapOf(
                 "user_id" to fromUserId,
-                "name" to "${AuthUserHolder.awaitUser().name}",
+                "name" to "${fromUser.name}",
                 "points" to "$points"
             )
         )
