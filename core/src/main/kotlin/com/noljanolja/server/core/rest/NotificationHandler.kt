@@ -34,4 +34,19 @@ class NotificationHandler (
                 )
             )
     }
+
+    suspend fun getNotifications(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull() ?: GiftHandler.DEFAULT_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull() ?: GiftHandler.DEFAULT_PAGE_SIZE
+        val userId = request.queryParam("userId").orElseThrow { InvalidParamsException("userId") }
+        val notifications = notificationService.getNotifications(userId, page, pageSize)
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    code = HttpStatus.OK.value(),
+                    data = notifications
+                )
+            )
+    }
 }

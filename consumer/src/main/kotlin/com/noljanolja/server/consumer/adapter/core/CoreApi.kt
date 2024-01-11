@@ -42,6 +42,7 @@ class CoreApi(
         const val COIN_EXCHANGE_ENDPOINT = "/api/v1/coin-exchange"
         const val SHOP_PRODUCT_ENDPOINT = "/api/v1/shop/product"
         const val TRANSFER_POINT_ENDPOINT = "/api/v1/transfer-point"
+        const val NOTIFICATION_ENDPOINT = "/api/v1/notification"
 
         val coreErrorsMapping = mapOf(
             404_001 to CoreServiceError.UserNotFound
@@ -1242,4 +1243,27 @@ class CoreApi(
                 Mono.just(CoreServiceError.CoreServiceInternalError)
             }
             .awaitBody<Response<CoreReferralConfig>>()
+
+    suspend fun getNotifications(
+        userId: String,
+        page: Int,
+        pageSize: Int,
+    ) =
+        webClient.get().uri { builder ->
+            builder.path(NOTIFICATION_ENDPOINT)
+                .queryParam("userId", userId)
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .build()
+        }
+            .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError) {
+                it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                    CoreServiceError.CoreServiceBadRequest(response.message)
+                }
+            }
+            .onStatus(HttpStatusCode::is5xxServerError) {
+                Mono.just(CoreServiceError.CoreServiceInternalError)
+            }
+            .awaitBody<Response<List<CoreNotification>>>().data!!
 }

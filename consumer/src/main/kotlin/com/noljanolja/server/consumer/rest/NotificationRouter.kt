@@ -1,4 +1,4 @@
-package com.noljanolja.server.core.rest
+package com.noljanolja.server.consumer.rest
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,7 +16,6 @@ class NotificationRouter (
     @Bean
     fun notificationRoutes() = coRouter {
         (NOTIFICATION_ROUTES and accept(MediaType.APPLICATION_JSON)).nest {
-            POST("", notificationHandler::create)
             GET("", notificationHandler::getNotifications)
         }
     }

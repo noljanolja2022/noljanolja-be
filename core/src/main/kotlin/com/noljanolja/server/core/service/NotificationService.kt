@@ -2,6 +2,7 @@ package com.noljanolja.server.core.service
 
 import com.noljanolja.server.core.repo.notification.NotificationModel
 import com.noljanolja.server.core.repo.notification.NotificationRepo
+import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -30,5 +31,9 @@ class NotificationService (
                 isRead = isRead
             )
         )
+    }
+
+    suspend fun getNotifications(userId: String, page: Int, pageSize: Int): List<NotificationModel> {
+        return notificationRepo.findAllByUserId(userId, page, pageSize).toList()
     }
 }
