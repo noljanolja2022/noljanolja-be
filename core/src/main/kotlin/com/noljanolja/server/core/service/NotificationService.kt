@@ -34,6 +34,8 @@ class NotificationService (
     }
 
     suspend fun getNotifications(userId: String, page: Int, pageSize: Int): List<NotificationModel> {
-        return notificationRepo.findAllByUserId(userId, page, pageSize).toList()
+        val offset = (page - 1) * pageSize
+        val limit = pageSize
+        return notificationRepo.findAllByUserId(userId, offset, limit).toList()
     }
 }
