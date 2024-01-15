@@ -313,6 +313,7 @@ create TABLE IF NOT EXISTS `videos`
     `category_id`     VARCHAR(255) NOT NULL,
     `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `deleted_at`      DATETIME     NULL,
 
     FOREIGN KEY (channel_id) REFERENCES video_channels(id) ON delete CASCADE,
     FOREIGN KEY (category_id) REFERENCES video_categories(id) ON delete CASCADE

@@ -9,11 +9,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
-    fun findAllByIdNotIn(
-        ids: List<String>,
-        pageable: Pageable,
-    ): Flow<VideoModel>
-
     @Query(
         """
             SELECT * FROM videos WHERE 
@@ -22,7 +17,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE)
+                TRUE) AND
+            deleted_at IS NULL
             ORDER BY created_at DESC
             LIMIT :limit OFFSET :offset
         """
@@ -43,7 +39,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             (COALESCE(:ids) IS NULL OR id NOT IN (:ids)) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE)
+                TRUE) AND
+            deleted_at IS NULL
             LIMIT :limit
         """
     )
@@ -56,13 +53,16 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
 
     @Query(
         """
-            SELECT COUNT(*) FROM videos WHERE 
+            SELECT COUNT(*) 
+            FROM videos 
+            WHERE 
             IF(:isHighlighted IS NOT NULL, is_highlighted = :isHighlighted, TRUE) AND
             IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
             IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE)
+                TRUE) AND
+            deleted_at IS NULL
         """
     )
     suspend fun countAllBy(
@@ -79,7 +79,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             id IN (:ids) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE)
+                TRUE) AND
+            deleted_at IS NULL
         """
     )
     fun findByIds(
@@ -129,4 +130,14 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         """
     )
     suspend fun deductLikeCount(videoId: String)
+
+    @Modifying
+    @Query(
+        """
+            UPDATE `videos`
+            SET deleted_at = NOW()
+            WHERE id = :videoId;
+        """
+    )
+    suspend fun softDeleteById(videoId: String)
 }

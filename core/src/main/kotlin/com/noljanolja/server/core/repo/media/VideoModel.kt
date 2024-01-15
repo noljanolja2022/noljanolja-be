@@ -63,6 +63,9 @@ data class VideoModel(
     @Column("updated_at")
     @LastModifiedDate
     val updatedAt: Instant = Instant.now(),
+
+    @Column("deleted_at")
+    var deletedAt: Instant? = null,
 ) : Persistable<String> {
     @Transient
     var isNewRecord: Boolean = false

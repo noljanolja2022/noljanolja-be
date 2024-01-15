@@ -112,8 +112,7 @@ class VideoService(
     suspend fun deleteVideo(
         id: String,
     ) {
-        videoRepo.findById(id) ?: throw Error.VideoNotFound
-        videoRepo.deleteById(id)
+        videoRepo.softDeleteById(id)
     }
 
     suspend fun upsertVideo(
