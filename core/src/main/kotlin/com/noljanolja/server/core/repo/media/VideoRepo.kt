@@ -17,8 +17,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE) AND
-            deleted_at IS NULL
+                TRUE)
             ORDER BY created_at DESC
             LIMIT :limit OFFSET :offset
         """
@@ -39,8 +38,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             (COALESCE(:ids) IS NULL OR id NOT IN (:ids)) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE) AND
-            deleted_at IS NULL
+                TRUE)
             LIMIT :limit
         """
     )
@@ -61,8 +59,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE) AND
-            deleted_at IS NULL
+                TRUE)
         """
     )
     suspend fun countAllBy(
@@ -79,8 +76,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             id IN (:ids) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE) AND
-            deleted_at IS NULL
+                TRUE)
         """
     )
     fun findByIds(
