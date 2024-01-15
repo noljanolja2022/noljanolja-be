@@ -18,6 +18,8 @@ class NotificationRouter (
         (NOTIFICATION_ROUTES and accept(MediaType.APPLICATION_JSON)).nest {
             POST("", notificationHandler::create)
             GET("", notificationHandler::getNotifications)
+            POST("/{notification-id}/read", notificationHandler::readNotification)
+            POST("/readAll", notificationHandler::readAllNotifications)
         }
     }
 }

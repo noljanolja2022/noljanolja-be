@@ -2,6 +2,7 @@ package com.noljanolja.server.core.service
 
 import com.noljanolja.server.core.repo.notification.NotificationModel
 import com.noljanolja.server.core.repo.notification.NotificationRepo
+import com.noljanolja.server.core.exception.Error
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -37,5 +38,13 @@ class NotificationService (
         val offset = (page - 1) * pageSize
         val limit = pageSize
         return notificationRepo.findAllByUserId(userId, offset, limit).toList()
+    }
+
+    suspend fun readNotification(userId: String, id : Long) {
+        notificationRepo.updateIsReadByUserIdAndId(userId, id)
+    }
+
+    suspend fun readAllNotifications(userId: String) {
+       notificationRepo.updateIsReadByUserId(userId)
     }
 }

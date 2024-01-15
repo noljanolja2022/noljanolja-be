@@ -33,7 +33,7 @@ data class NotificationModel (
     val data: String,
 
     @Column("is_read")
-    val isRead: Boolean,
+    var isRead: Boolean,
 
     @Column("created_at")
     @CreatedDate

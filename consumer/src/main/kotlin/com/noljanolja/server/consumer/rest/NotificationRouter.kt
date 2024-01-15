@@ -17,6 +17,8 @@ class NotificationRouter (
     fun notificationRoutes() = coRouter {
         (NOTIFICATION_ROUTES and accept(MediaType.APPLICATION_JSON)).nest {
             GET("", notificationHandler::getNotifications)
+            POST("/{notification-id}/read", notificationHandler::readNotification)
+            POST("/readAll", notificationHandler::readAllNotifications)
         }
     }
 }

@@ -49,4 +49,33 @@ class NotificationHandler (
                 )
             )
     }
+
+    suspend fun readNotification(request: ServerRequest): ServerResponse {
+        val userId = request.queryParam("userId").orElseThrow { InvalidParamsException("userId") }
+        val id = request.pathVariable("notification-id").toLongOrNull() ?: throw InvalidParamsException("notification-id")
+
+        notificationService.readNotification(userId, id)
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    code = HttpStatus.OK.value(),
+                    data = null
+                )
+            )
+    }
+
+    suspend fun readAllNotifications(request: ServerRequest): ServerResponse {
+        val userId = request.queryParam("userId").orElseThrow { InvalidParamsException("userId") }
+
+        notificationService.readAllNotifications(userId)
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    code = HttpStatus.OK.value(),
+                    data = null
+                )
+            )
+    }
 }

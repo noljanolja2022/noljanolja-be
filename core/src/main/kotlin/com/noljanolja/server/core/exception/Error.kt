@@ -20,6 +20,7 @@ sealed class Error(
         const val BANNER_NOT_FOUND = 404_014
         const val REFERRAL_REWARD_CONFIG_NOT_FOUND = 404_015
         const val MEMBER_NOT_FOUND = 404_016
+        const val NOTIFICATION_NOT_FOUND = 404_017
 
         const val USER_NOT_PARTICIPATE_IN_CONVERSATION = 400_001
         const val INVALID_PARTICIPANTS_SIZE = 400_002
