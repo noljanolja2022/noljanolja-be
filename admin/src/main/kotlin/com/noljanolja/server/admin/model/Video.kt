@@ -24,6 +24,9 @@ data class Video(
     val comments: List<VideoComment> = listOf(),
     val channel: Channel,
     val category: Category,
+    val createdAt: Instant,
+    val updatedAt: Instant,
+    val deletedAt: Instant?,
 ) {
     data class Channel(
         val id: String,

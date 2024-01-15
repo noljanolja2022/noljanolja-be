@@ -100,6 +100,9 @@ fun VideoModel.toVideo() = Video(
     channel = channel.toVideoChannel(),
     category = category.toVideoCategory(),
     comments = comments.map { it.toVideoComment() },
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+    deletedAt = deletedAt,
 )
 
 fun VideoModel.toVideoLogTransaction(progressPercentage: Double) = VideoLogTransaction (
