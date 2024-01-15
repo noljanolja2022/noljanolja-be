@@ -1266,4 +1266,43 @@ class CoreApi(
                 Mono.just(CoreServiceError.CoreServiceInternalError)
             }
             .awaitBody<Response<List<CoreNotification>>>().data!!
+
+    suspend fun readNotification(
+        userId: String,
+        notificationId: Long,
+    ) =
+        webClient.post().uri { builder ->
+            builder.path("$NOTIFICATION_ENDPOINT/{notificationId}/read")
+                .queryParam("userId", userId)
+                .build(notificationId)
+        }
+            .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError) {
+                it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                    CoreServiceError.CoreServiceBadRequest(response.message)
+                }
+            }
+            .onStatus(HttpStatusCode::is5xxServerError) {
+                Mono.just(CoreServiceError.CoreServiceInternalError)
+            }
+            .awaitBody<Response<Nothing>>()
+
+    suspend fun readAllNotifications(
+        userId: String,
+    ) =
+        webClient.post().uri { builder ->
+            builder.path("$NOTIFICATION_ENDPOINT/readAll")
+                .queryParam("userId", userId)
+                .build()
+        }
+            .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError) {
+                it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                    CoreServiceError.CoreServiceBadRequest(response.message)
+                }
+            }
+            .onStatus(HttpStatusCode::is5xxServerError) {
+                Mono.just(CoreServiceError.CoreServiceInternalError)
+            }
+            .awaitBody<Response<Nothing>>()
 }
