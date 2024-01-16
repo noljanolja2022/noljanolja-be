@@ -320,6 +320,7 @@ class VideoService(
         includeDeleted: Boolean? = null
     ): Pair<List<PromotedVideoConfig>, Long> {
         val configs = promotedVideoRepo.findAllBy(
+            includeDeleted,
             pageable = Pageable.ofSize(pageSize).withPage(page - 1)
         ).toList()
         val res = promotedVideoRepo.findAllBy(
@@ -381,6 +382,7 @@ class VideoService(
         videoId: String, youtubeToken: String, userId: String
     ) {
         val configs = promotedVideoRepo.findAllBy(
+            includeDeleted = false,
             pageable = Pageable.ofSize(10).withPage(0)
         ).toList()
         if (configs.isEmpty()) throw CustomBadRequestException("Invalid promoted videoId")

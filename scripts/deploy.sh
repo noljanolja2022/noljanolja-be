@@ -26,6 +26,7 @@ docker build \
   --progress=plain \
   --tag "$IMG_NAME" \
   --file "./docker/server/Dockerfile" \
+  --platform linux/amd64 \
   --build-arg "SERVICE=$service" \
   .
 
