@@ -34,6 +34,7 @@ class MediaRouter(
                     POST("ignores", mediaHandler::ignoreVideo)
                     GET("comments", mediaHandler::getVideoComments)
                     POST("react-promote", mediaHandler::reactToPromotedVideo)
+                    DELETE("clear-redis", mediaHandler::clearRedis)
                 }
             }
             "channels".nest {

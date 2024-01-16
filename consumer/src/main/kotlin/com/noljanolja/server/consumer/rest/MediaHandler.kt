@@ -332,4 +332,18 @@ class MediaHandler(
                 Response<Nothing>()
             )
     }
+
+    suspend fun clearRedis(serverRequest: ServerRequest): ServerResponse {
+        val videoId = serverRequest.pathVariable("videoId").takeIf { it.isNotBlank() }
+            ?: throw InvalidParamsException("videoId")
+        val userId = serverRequest.queryParamOrNull("userId")
+            ?: throw InvalidParamsException("userId")
+
+        videoPubSubService.clearVideoProgress(userId, videoId)
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                Response<Nothing>()
+            )
+
+    }
 }

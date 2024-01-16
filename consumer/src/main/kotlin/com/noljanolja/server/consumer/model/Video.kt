@@ -43,7 +43,7 @@ data class Video(
  */
 data class VideoWatchRecordDetail(
     val videoId: String,
-    val lastAction: VideoProgressEvent,
+    val lastAction: VideoProgressEvent = VideoProgressEvent.PLAY,
     var lastServerTime: Long = 0,
     var durationMs: Long = 0,
     var accumulatedTimeMs : Long = 0

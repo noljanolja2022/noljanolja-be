@@ -32,8 +32,25 @@ class VideoPubSubService(
         val totalVideoTime = videoDetail.durationMs
         val cachedRecord = videoRedisTemplate.opsForValue().getAndAwait(getProgressKey(userId, videoId))
         val now = Instant.now()
+        println("------------------------------------")
         // If this is watching old video
         if (cachedRecord != null) {
+            println(
+                "cacheRecord:" +
+                " videoId: ${cachedRecord.videoId}," +
+                " lastAction: ${cachedRecord.lastAction}, " +
+                " lastServerTime: ${cachedRecord.lastServerTime}, " +
+                " durationMs: ${cachedRecord.durationMs}, " +
+                " accumulatedTimeMs: ${cachedRecord.accumulatedTimeMs}"
+            )
+
+            println(
+                "payload:" +
+                " videoId: ${payload.videoId}," +
+                " event: ${payload.event}, " +
+                " durationMs: ${payload.durationMs}, " +
+                " trackIntervalMs: ${payload.trackIntervalMs}"
+            )
             val serverElapsedTime = now.epochSecond - cachedRecord.lastServerTime
             val userElapsedTime = (payload.durationMs - cachedRecord.durationMs) / 1000
             if (payload.event == VideoProgressEvent.PLAY) {
@@ -109,4 +126,8 @@ class VideoPubSubService(
     }
 
     private fun getProgressKey(userId: String, videoId: String) = "$userId-$videoId"
+
+    suspend fun clearVideoProgress(userId: String, videoId: String) {
+        videoRedisTemplate.opsForValue().deleteAndAwait(getProgressKey(userId, videoId))
+    }
 }
