@@ -27,12 +27,20 @@ interface VideoViewCountRepo : CoroutineCrudRepository<VideoViewCountModel, Long
 
     @Query(
         """
-            SELECT videos.* FROM videos INNER JOIN 
-            (SELECT video_id, SUM(view_count) as total_view_count FROM video_view_counts WHERE created_at >= (CURRENT_DATE() - INTERVAL :days DAY) GROUP BY video_id LIMIT :limit) as v
+            SELECT videos.* 
+            FROM videos 
+            INNER JOIN 
+                (
+                    SELECT video_id, SUM(view_count) as total_view_count 
+                    FROM video_view_counts 
+                    WHERE 
+                        created_at >= (CURRENT_DATE() - INTERVAL :days DAY) 
+                    GROUP BY video_id LIMIT :limit
+                ) as v
             ON videos.id = v.video_id 
-            WHERE IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
-                videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE)
+            WHERE 
+                IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), TRUE) AND
+                IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, videos.deleted_at IS NULL, TRUE)
             ORDER BY v.total_view_count DESC
         """
     )
@@ -40,6 +48,7 @@ interface VideoViewCountRepo : CoroutineCrudRepository<VideoViewCountModel, Long
         days: Int,
         limit: Int,
         userId: String? = null,
-        isExcludeIgnoredVideos: Boolean? = null
+        isExcludeIgnoredVideos: Boolean? = null,
+        includeDeleted: Boolean? = null,
     ): Flow<VideoModel>
 }

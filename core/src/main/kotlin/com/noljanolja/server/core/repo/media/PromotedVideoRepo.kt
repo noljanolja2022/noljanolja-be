@@ -11,11 +11,13 @@ interface PromotedVideoRepo : CoroutineCrudRepository<PromotedVideoModel, Long> 
 
     @Query(
     """
-        SELECT videos.* FROM promoted_videos inner join videos ON promoted_videos.video_id = videos.id WHERE
-        IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
-                videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE
-            )
+        SELECT videos.* 
+        FROM promoted_videos 
+        INNER JOIN videos 
+        ON promoted_videos.video_id = videos.id 
+        WHERE
+            IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), TRUE) AND
+            IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, videos.deleted_at IS NULL, TRUE)
         LIMIT :limit OFFSET :offset
     """
     )
@@ -23,7 +25,8 @@ interface PromotedVideoRepo : CoroutineCrudRepository<PromotedVideoModel, Long> 
         offset: Int,
         limit: Int,
         userId: String? = null,
-        isExcludeIgnoredVideos: Boolean? = null
+        isExcludeIgnoredVideos: Boolean? = null,
+        includeDeleted: Boolean? = null,
     ): Flow<VideoModel>
 
     @Query(
@@ -35,15 +38,18 @@ interface PromotedVideoRepo : CoroutineCrudRepository<PromotedVideoModel, Long> 
 
     @Query(
         """
-            SELECT COUNT(*) FROM promoted_videos inner join videos ON promoted_videos.video_id = videos.id WHERE
-            IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
-                videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE
-                )
+            SELECT COUNT(*) 
+            FROM promoted_videos 
+            INNER JOIN videos 
+            ON promoted_videos.video_id = videos.id 
+            WHERE
+                IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), TRUE) AND
+                IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, videos.deleted_at IS NULL, TRUE
         """
     )
     suspend fun countAllBy(
         userId: String? = null,
-        isExcludeIgnoredVideos: Boolean? = null
+        isExcludeIgnoredVideos: Boolean? = null,
+        includeDeleted: Boolean? = null,
     ): Long
 }

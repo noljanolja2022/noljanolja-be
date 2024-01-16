@@ -166,6 +166,7 @@ class CoreApi(
                 .queryParamIfPresent("query", Optional.ofNullable(query))
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
+                .queryParam("includeDeleted", true)
                 .build()
         }
         .retrieve()
@@ -184,6 +185,7 @@ class CoreApi(
     ) = webClient.get()
         .uri { builder ->
             builder.path("$VIDEO_ENDPOINT/$videoId")
+                .queryParam("includeDeleted", true)
                 .build()
         }
         .retrieve()
@@ -232,6 +234,7 @@ class CoreApi(
     suspend fun getPromotedVideos() = webClient.get()
         .uri { builder ->
             builder.path("$VIDEO_ENDPOINT/promoted")
+                .queryParam("includeDeleted", true)
                 .build()
         }
         .retrieve()

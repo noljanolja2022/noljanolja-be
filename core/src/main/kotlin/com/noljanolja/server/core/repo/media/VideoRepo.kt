@@ -11,13 +11,24 @@ import org.springframework.stereotype.Repository
 interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
     @Query(
         """
+            SELECT * 
+            FROM videos 
+            WHERE id = :id AND 
+                IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE)
+        """
+    )
+    fun findByIdAndIncludeDeleted(id: String, includeDeleted: Boolean? = null): Flow<VideoModel>
+
+    @Query(
+        """
             SELECT * FROM videos WHERE 
             IF(:isHighlighted IS NOT NULL, is_highlighted = :isHighlighted, TRUE) AND
             IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
             IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE)
+                TRUE) AND
+            IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE)
             ORDER BY created_at DESC
             LIMIT :limit OFFSET :offset
         """
@@ -28,17 +39,20 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         query: String? = null,
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
+        includeDeleted: Boolean? = null,
         offset: Int,
         limit: Int,
     ): Flow<VideoModel>
 
     @Query(
         """
-            SELECT * FROM videos WHERE
-            (COALESCE(:ids) IS NULL OR id NOT IN (:ids)) AND
-            IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
-                id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE)
+            SELECT * 
+            FROM videos 
+            WHERE
+                (COALESCE(:ids) IS NULL OR 
+                id NOT IN (:ids)) AND
+                IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), TRUE) AND
+                IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE)
             LIMIT :limit
         """
     )
@@ -46,7 +60,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         ids: List<String>?,
         limit: Int,
         userId: String? = null,
-        isExcludeIgnoredVideos: Boolean? = null
+        isExcludeIgnoredVideos: Boolean? = null,
+        includeDeleted: Boolean? = null,
     ): Flow<VideoModel>
 
     @Query(
@@ -59,7 +74,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE)
+                TRUE) AND
+            IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE)
         """
     )
     suspend fun countAllBy(
@@ -67,7 +83,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         categoryId: String? = null,
         query: String? = null,
         userId: String? = null,
-        isExcludeIgnoredVideos: Boolean? = null
+        isExcludeIgnoredVideos: Boolean? = null,
+        includeDeleted: Boolean? = null,
     ): Long
 
     @Query(
@@ -76,13 +93,15 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             id IN (:ids) AND
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
                 id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE)
+                TRUE) AND
+            IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE)
         """
     )
     fun findByIds(
         ids: List<String>,
         userId: String? = null,
-        isExcludeIgnoredVideos: Boolean? = null
+        isExcludeIgnoredVideos: Boolean? = null,
+        includeDeleted: Boolean? = null
     ): Flow<VideoModel>
 
     @Modifying
