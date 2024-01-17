@@ -119,8 +119,9 @@ class UserHandler(
         val upsertUser = existingUser?.copy(
             // TODO only upsert non null / blank value from upsertUserRequest:
             name = upsertUserRequest.name?.takeIf { it.isNotBlank() } ?: existingUser.name,
-            phone = upsertUserRequest.phone?.takeIf { it.isNotBlank() } ?: existingUser.phone,
             avatar = upsertUserRequest.avatar?.takeIf { it.isNotBlank() } ?: existingUser.avatar,
+            phone = upsertUserRequest.phone?.takeIf { it.isNotBlank() } ?: existingUser.phone,
+            email = upsertUserRequest.email?.takeIf { it.isNotBlank() } ?: existingUser.email,
             dob = upsertUserRequest.dob ?: existingUser.dob,
             gender = upsertUserRequest.gender ?: existingUser.gender,
             preferences = upsertUserRequest.preferences ?: existingUser.preferences
