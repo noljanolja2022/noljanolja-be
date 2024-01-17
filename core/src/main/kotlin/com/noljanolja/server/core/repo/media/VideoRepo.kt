@@ -14,21 +14,29 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             SELECT * 
             FROM videos 
             WHERE id = :id AND 
-                IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE)
+                IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
         """
     )
-    fun findByIdAndIncludeDeleted(id: String, includeDeleted: Boolean? = null): Flow<VideoModel>
+    fun findByIdAndIncludeDeletedAndIncludeUnavailableVideo(
+        id: String,
+        includeDeleted: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
+    ): Flow<VideoModel>
 
     @Query(
         """
-            SELECT * FROM videos WHERE 
-            IF(:isHighlighted IS NOT NULL, is_highlighted = :isHighlighted, TRUE) AND
-            IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
-            IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE) AND
-            IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
-                id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE) AND
-            IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE)
+            SELECT * 
+            FROM videos 
+            WHERE 
+                IF(:isHighlighted IS NOT NULL, is_highlighted = :isHighlighted, TRUE) AND
+                IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
+                IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE) AND
+                IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
+                    id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
+                    TRUE) AND
+                IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
             ORDER BY created_at DESC
             LIMIT :limit OFFSET :offset
         """
@@ -40,6 +48,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
         includeDeleted: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
         offset: Int,
         limit: Int,
     ): Flow<VideoModel>
@@ -52,7 +61,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
                 (COALESCE(:ids) IS NULL OR 
                 id NOT IN (:ids)) AND
                 IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), TRUE) AND
-                IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE)
+                IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
             LIMIT :limit
         """
     )
@@ -62,6 +72,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
         includeDeleted: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
     ): Flow<VideoModel>
 
     @Query(
@@ -69,13 +80,14 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             SELECT COUNT(*) 
             FROM videos 
             WHERE 
-            IF(:isHighlighted IS NOT NULL, is_highlighted = :isHighlighted, TRUE) AND
-            IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
-            IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE) AND
-            IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
-                id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE) AND
-            IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE)
+                IF(:isHighlighted IS NOT NULL, is_highlighted = :isHighlighted, TRUE) AND
+                IF(:categoryId IS NOT NULL, category_id = :categoryId, TRUE) AND
+                IF(:query IS NOT NULL AND :query <> '', title LIKE CONCAT('%',:query,'%'), TRUE) AND
+                IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
+                    id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
+                    TRUE) AND
+                IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
         """
     )
     suspend fun countAllBy(
@@ -85,23 +97,28 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
         includeDeleted: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
     ): Long
 
     @Query(
         """
-            SELECT * FROM videos WHERE
-            id IN (:ids) AND
-            IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
-                id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
-                TRUE) AND
-            IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE)
+            SELECT * 
+            FROM videos 
+            WHERE
+                id IN (:ids) AND
+                IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, 
+                    id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
+                    TRUE) AND
+                IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
         """
     )
     fun findByIds(
         ids: List<String>,
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
-        includeDeleted: Boolean? = null
+        includeDeleted: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
     ): Flow<VideoModel>
 
     @Modifying

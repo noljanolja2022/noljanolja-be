@@ -70,6 +70,7 @@ class VideoHandler(
         val userId = request.queryParamOrNull("userId")
         val isExcludeIgnoredVideos = request.queryParamOrNull("isExcludeIgnoredVideos")?.toBoolean()
         val includeDeleted = request.queryParamOrNull("includeDeleted")?.toBoolean()
+        val includeUnavailableVideos = request.queryParamOrNull("includeUnavailableVideos")?.toBoolean()
 
         val (videos, total) = videoService.getVideos(
             isHighlighted = isHighlighted,
@@ -79,7 +80,8 @@ class VideoHandler(
             categoryId = categoryId,
             userId = userId,
             isExcludeIgnoredVideos = isExcludeIgnoredVideos,
-            includeDeleted = includeDeleted
+            includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -99,12 +101,14 @@ class VideoHandler(
         val userId = request.queryParamOrNull("userId")
         val isExcludeIgnoredVideos = request.queryParamOrNull("isExcludeIgnoredVideos")?.toBoolean()
         val includeDeleted = request.queryParamOrNull("includeDeleted")?.toBoolean()
+        val includeUnavailableVideos = request.queryParamOrNull("includeUnavailableVideos")?.toBoolean()
 
         val data = videoService.getVideosByIds(
             ids = videoIds.split(","),
             userId = userId,
             isExcludeIgnoredVideos = isExcludeIgnoredVideos,
-            includeDeleted = includeDeleted
+            includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos,
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -118,8 +122,9 @@ class VideoHandler(
         val videoId = request.pathVariable("videoId").takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("videoId")
         val includeDeleted = request.queryParamOrNull("includeDeleted")?.toBoolean()
+        val includeUnavailableVideos = request.queryParamOrNull("includeUnavailableVideos")?.toBoolean()
 
-        val video = videoService.getVideoDetails(videoId, includeDeleted)
+        val video = videoService.getVideoDetails(videoId, includeDeleted, includeUnavailableVideos)
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(
@@ -145,13 +150,15 @@ class VideoHandler(
         val userId = request.queryParamOrNull("userId")
         val isExcludeIgnoredVideos = request.queryParamOrNull("isExcludeIgnoredVideos")?.toBoolean()
         val includeDeleted = request.queryParamOrNull("includeDeleted")?.toBoolean()
+        val includeUnavailableVideos = request.queryParamOrNull("includeUnavailableVideos")?.toBoolean()
 
         val videos = videoService.getTrendingVideos(
             days = days,
             limit = limit,
             userId = userId,
             isExcludeIgnoredVideos = isExcludeIgnoredVideos,
-            includeDeleted = includeDeleted
+            includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(
@@ -241,13 +248,15 @@ class VideoHandler(
         val userId = request.queryParamOrNull("userId")
         val isExcludeIgnoredVideos = request.queryParamOrNull("isExcludeIgnoredVideos")?.toBoolean()
         val includeDeleted = request.queryParamOrNull("includeDeleted")?.toBoolean()
+        val includeUnavailableVideos = request.queryParamOrNull("includeUnavailableVideos")?.toBoolean()
 
         val (videos, total) = videoService.getPromotedVideos(
             page = page,
             pageSize = pageSize,
             userId = userId,
             isExcludeIgnoredVideos = isExcludeIgnoredVideos,
-            includeDeleted = includeDeleted
+            includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos
         )
         return ServerResponse.ok()
             .bodyValueAndAwait(

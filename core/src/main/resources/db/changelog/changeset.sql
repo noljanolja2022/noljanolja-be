@@ -311,6 +311,7 @@ create TABLE IF NOT EXISTS `videos`
     `is_highlighted`  TINYINT      NOT NULL,
     `channel_id`      VARCHAR(255) NOT NULL,
     `category_id`     VARCHAR(255) NOT NULL,
+    `available_from`  DATETIME     NULL,
     `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `deleted_at`      DATETIME     NULL,

@@ -15,6 +15,7 @@ data class Video(
     val favoriteCount: Long,
     val commentCount: Long,
     val isHighlighted: Boolean,
+    val availableFrom: Instant?,
     val comments: List<VideoComment> = listOf(),
     val channel: Channel,
     val category: Category,
