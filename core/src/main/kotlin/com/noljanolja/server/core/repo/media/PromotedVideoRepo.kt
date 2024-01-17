@@ -15,7 +15,7 @@ interface PromotedVideoRepo : CoroutineCrudRepository<PromotedVideoModel, Long> 
         ON promoted_videos.video_id = videos.id 
         WHERE 
             IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, videos.deleted_at IS NULL, TRUE) AND
-            IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, videos.available_from IS NOT NULL AND videos.available_from <= NOW(), TRUE)
+            IF(:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
     """
     )
     fun findAllBy(
@@ -32,7 +32,7 @@ interface PromotedVideoRepo : CoroutineCrudRepository<PromotedVideoModel, Long> 
         WHERE
             IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), TRUE) AND
             IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, videos.deleted_at IS NULL, TRUE) AND 
-            IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, videos.available_from IS NOT NULL AND videos.available_from <= NOW(), TRUE)
+            IF(:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
         LIMIT :limit OFFSET :offset
     """
     )
@@ -61,7 +61,7 @@ interface PromotedVideoRepo : CoroutineCrudRepository<PromotedVideoModel, Long> 
             WHERE
                 IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), TRUE) AND
                 IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, videos.deleted_at IS NULL, TRUE) AND
-                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, videos.available_from IS NOT NULL AND videos.available_from <= NOW(), TRUE)
+                IF(:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
         """
     )
     suspend fun countAllBy(
