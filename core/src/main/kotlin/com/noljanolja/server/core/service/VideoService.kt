@@ -41,9 +41,10 @@ class VideoService(
 ) {
     suspend fun getVideoDetails(
         videoId: String,
-        includeDeleted: Boolean? = null
+        includeDeleted: Boolean? = null,
+        includeUnavailableVideos:Boolean? = null,
     ): Video {
-        val video = videoRepo.findByIdAndIncludeDeleted(videoId, includeDeleted)
+        val video = videoRepo.findByIdAndIncludeDeletedAndIncludeUnavailableVideo(videoId, includeDeleted, includeUnavailableVideos)
             .onEmpty { throw Error.VideoNotFound }
             .first()
         val comments = videoCommentRepo.findAllByVideoIdOrderByIdDesc(videoId, Pageable.ofSize(10)).toList()
@@ -69,7 +70,8 @@ class VideoService(
         categoryId: String? = null,
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
-        includeDeleted: Boolean? = null
+        includeDeleted: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
     ): Pair<List<Video>, Long> {
         val videos = videoRepo.findAllBy(
             isHighlighted = isHighlighted,
@@ -78,6 +80,7 @@ class VideoService(
             userId = userId,
             isExcludeIgnoredVideos = isExcludeIgnoredVideos,
             includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos,
             offset = (page - 1) * pageSize,
             limit = pageSize,
         ).toList()
@@ -87,7 +90,8 @@ class VideoService(
             query = query,
             userId = userId,
             isExcludeIgnoredVideos = isExcludeIgnoredVideos,
-            includeDeleted = includeDeleted
+            includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos,
         )
         val channels = videoChannelRepo.findAllById(videos.map { it.channelId }.toSet()).toList()
         val categories = videoCategoryRepo.findAllById(videos.map { it.categoryId }.toSet()).toList()
@@ -102,13 +106,15 @@ class VideoService(
         ids: List<String>,
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
-        includeDeleted: Boolean? = null
+        includeDeleted: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
     ): List<Video> {
         val videos = videoRepo.findByIds(
             ids = ids,
             userId = userId,
             isExcludeIgnoredVideos = isExcludeIgnoredVideos,
             includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos,
         ).toList()
         val channels = videoChannelRepo.findAllById(videos.map { it.channelId }.toSet()).toList()
         val categories = videoCategoryRepo.findAllById(videos.map { it.categoryId }.toSet()).toList()
@@ -204,14 +210,16 @@ class VideoService(
         limit: Int = 10,
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
-        includeDeleted: Boolean? = null
+        includeDeleted: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
     ): List<Video> {
         val trendingVideos = videoViewCountRepo.findTopTrendingVideos(
             days = days,
             limit = limit,
             userId = userId,
             isExcludeIgnoredVideos = isExcludeIgnoredVideos,
-            includeDeleted = includeDeleted
+            includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos,
         ).toList().toMutableList()
         if (trendingVideos.size < limit) {
             trendingVideos.addAll(
@@ -220,7 +228,8 @@ class VideoService(
                     limit = limit - trendingVideos.size,
                     userId = userId,
                     isExcludeIgnoredVideos = isExcludeIgnoredVideos,
-                    includeDeleted = includeDeleted
+                    includeDeleted = includeDeleted,
+                    includeUnavailableVideos = includeUnavailableVideos,
                 ).toList()
             )
         }
@@ -317,10 +326,12 @@ class VideoService(
         pageSize: Int,
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
-        includeDeleted: Boolean? = null
+        includeDeleted: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
     ): Pair<List<PromotedVideoConfig>, Long> {
         val configs = promotedVideoRepo.findAllBy(
             includeDeleted,
+            includeUnavailableVideos,
             pageable = Pageable.ofSize(pageSize).withPage(page - 1)
         ).toList()
         val res = promotedVideoRepo.findAllBy(
@@ -328,7 +339,8 @@ class VideoService(
             limit = pageSize,
             userId = userId,
             isExcludeIgnoredVideos = isExcludeIgnoredVideos,
-            includeDeleted = includeDeleted
+            includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos,
         ).toList().map {
             it.channel = videoChannelRepo.findById(it.channelId)!!
             it.category = videoCategoryRepo.findById(it.categoryId)!!
@@ -337,7 +349,8 @@ class VideoService(
         val count = promotedVideoRepo.countAllBy(
             userId = userId,
             isExcludeIgnoredVideos = isExcludeIgnoredVideos,
-            includeDeleted = includeDeleted
+            includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos,
         )
 
         return Pair(configs.map { config -> config.toPromotedVideo(res.firstOrNull() { it.id == config.videoId }) }, count)

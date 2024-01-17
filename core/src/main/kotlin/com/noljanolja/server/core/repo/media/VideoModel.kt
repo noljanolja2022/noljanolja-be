@@ -56,6 +56,9 @@ data class VideoModel(
     @Column("comment_count")
     var commentCount: Long = 0,
 
+    @Column("available_from")
+    var availableFrom: Instant? = null,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -97,6 +100,7 @@ fun VideoModel.toVideo() = Video(
     favoriteCount = favoriteCount,
     commentCount = commentCount,
     isHighlighted = isHighlighted,
+    availableFrom = availableFrom,
     channel = channel.toVideoChannel(),
     category = category.toVideoCategory(),
     comments = comments.map { it.toVideoComment() },
