@@ -90,7 +90,8 @@ class VideoPubSubService(
             cachedRecord.lastServerTime = now.epochSecond
             videoRedisTemplate.opsForValue().setAndAwait(
                 getProgressKey(userId, payload.videoId),
-                cachedRecord
+                cachedRecord,
+                java.time.Duration.ofDays(30)
             )
             println(
                 "Elapsed server: $serverElapsedTime, " +
@@ -109,7 +110,8 @@ class VideoPubSubService(
                         durationMs = payload.durationMs,
                         lastAction = payload.event,
                         lastServerTime = now.epochSecond
-                    )
+                    ),
+                    java.time.Duration.ofDays(30)
                 )
             }
         }
