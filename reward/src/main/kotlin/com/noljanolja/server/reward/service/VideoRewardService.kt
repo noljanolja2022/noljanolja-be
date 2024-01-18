@@ -1,10 +1,13 @@
 package com.noljanolja.server.reward.service
 
-import com.noljanolja.server.loyalty.service.LoyaltyService
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.noljanolja.server.common.utils.REASON_COMMENT_VIDEO
 import com.noljanolja.server.common.utils.REASON_LIKE_VIDEO
 import com.noljanolja.server.common.utils.REASON_WATCH_VIDEO
+import com.noljanolja.server.loyalty.service.LoyaltyService
 import com.noljanolja.server.reward.exception.Error
+import com.noljanolja.server.reward.model.PercentageAccumulation
 import com.noljanolja.server.reward.model.UserVideoRewardRecord
 import com.noljanolja.server.reward.model.VideoRewardConfig
 import com.noljanolja.server.reward.repo.*
@@ -13,6 +16,8 @@ import kotlinx.coroutines.flow.toList
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
+import java.util.*
 
 @Component
 @Transactional
@@ -23,6 +28,7 @@ class VideoRewardService(
     private val videoCommentRewardRecordRepo: VideoCommentRewardRecordRepo,
     private val videoLikeRewardRecordRepo: VideoLikeRewardRecordRepo,
     private val loyaltyService: LoyaltyService,
+    private val objectMapper: ObjectMapper
 ) {
     suspend fun handleRewardUserWatchVideo(
         progressPercentage: Double,
@@ -33,6 +39,17 @@ class VideoRewardService(
         // find config for video if existed else use config of default video else throw err
         val configForVideo = videoRewardConfigRepo.findByVideoIdForUpdate(videoId)?.takeIf { it.isActive }
             ?: return
+        val accumulationConfigLog = configForVideo.accumulationConfigLog
+
+        val percentage = if (accumulationConfigLog == null) {
+            100
+        } else {
+            val accumulationConfig: List<PercentageAccumulation> = objectMapper.readValue(accumulationConfigLog, object : TypeReference<List<PercentageAccumulation>>(){})
+            val accumulationMap: TreeMap<LocalDateTime, Long> = TreeMap(accumulationConfig.associate { it.startTime to it.percentage })
+            val matchingStartTime = accumulationMap.floorKey(LocalDateTime.now()) ?: return
+            accumulationMap[matchingStartTime] ?: return
+        }
+
         // find progress configs of the video
         val progressConfigsForVideo = videoRewardProgressConfigRepo.findAllByConfigId(configForVideo.id)
             .toList()
@@ -58,8 +75,10 @@ class VideoRewardService(
                 (rewardMapCounts[progressConfig.progress]?.toDouble() ?: 0.0) < configForVideo.maxApplyTimes &&
                 configForVideo.totalPoints?.let { it >= configForVideo.rewardedPoints + progressConfig.rewardPoint } != false
             ) {
-                configForVideo.rewardedPoints += progressConfig.rewardPoint
-                totalReceivedPoints += progressConfig.rewardPoint
+                val rewardPoint = (percentage * (progressConfig.rewardPoint)) / 100
+
+                configForVideo.rewardedPoints += rewardPoint
+                totalReceivedPoints += rewardPoint
                 VideoRewardRecordModel(
                     userId = userId,
                     configId = configForVideo.id,
