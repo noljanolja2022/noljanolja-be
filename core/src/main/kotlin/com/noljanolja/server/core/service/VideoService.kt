@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 
 @Component
@@ -134,6 +135,7 @@ class VideoService(
     suspend fun upsertVideo(
         youtubeUrl: String,
         isHighlight: Boolean,
+        availableFromArg: Instant? = null,
         youtubeVideo: YoutubeVideo,
         youtubeChannel: YoutubeChannel,
         youtubeCategory: YoutubeVideoCategory
@@ -172,6 +174,7 @@ class VideoService(
                 duration = parsedDuration.toString()
                 durationMs = parsedDuration.toMillis()
                 isHighlighted = isHighlight
+                availableFrom = availableFromArg
             })
         )
             .also {

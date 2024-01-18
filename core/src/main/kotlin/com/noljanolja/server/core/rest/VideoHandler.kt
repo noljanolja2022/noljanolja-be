@@ -39,6 +39,7 @@ class VideoHandler(
         val res = videoService.upsertVideo(
             payload.youtubeUrl,
             payload.isHighlighted,
+            payload.availableFrom,
             youtubeVideo,
             youtubeChannel,
             youtubeCategory

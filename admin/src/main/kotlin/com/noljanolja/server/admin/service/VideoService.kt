@@ -17,6 +17,7 @@ import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.net.URL
+import java.time.Instant
 
 @Component
 class VideoService(
@@ -40,11 +41,11 @@ class VideoService(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    suspend fun createVideo(youtubeUrl: String, isHighlighted: Boolean): Video? {
+    suspend fun createVideo(youtubeUrl: String, isHighlighted: Boolean, availableFrom: Instant? = null): Video? {
         val queries = parseYoutubeUrlQuery(youtubeUrl)
         val videoId = queries.firstOrNull { it.first == "v" }?.second
             ?: throw DefaultBadRequestException(Exception("Not a valid youtube url"))
-        val video = coreApi.importVideo(videoId, youtubeUrl, isHighlighted)
+        val video = coreApi.importVideo(videoId, youtubeUrl, isHighlighted, availableFrom)
         GlobalScope.launch {
             generateComments(videoId)
         }

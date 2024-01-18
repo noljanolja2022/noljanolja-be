@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.util.UriUtils
 import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
+import java.time.Instant
 import java.util.*
 
 @Component
@@ -201,9 +202,14 @@ class CoreApi(
         }
         .awaitBody<Response<Video>>().data!!
 
-    suspend fun importVideo(videoId: String, youtubeUrl: String, isHighlighted: Boolean) = webClient.post()
+    suspend fun importVideo(
+        videoId: String,
+        youtubeUrl: String,
+        isHighlighted: Boolean,
+        availableFrom: Instant? = null,
+    ) = webClient.post()
         .uri { builder -> builder.path(VIDEO_ENDPOINT).build() }
-        .bodyValue(CoreCreateVideoRequest(videoId, youtubeUrl, isHighlighted))
+        .bodyValue(CoreCreateVideoRequest(videoId, youtubeUrl, isHighlighted, availableFrom))
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->

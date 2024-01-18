@@ -123,7 +123,7 @@ class MediaHandler(
 
     suspend fun createVideo(request: ServerRequest): ServerResponse {
         val reqBody = request.awaitBodyOrNull<VideoCreationReq>() ?: throw RequestBodyRequired
-        val res = videoService.createVideo(reqBody.youtubeUrl, reqBody.isHighlighted)
+        val res = videoService.createVideo(reqBody.youtubeUrl, reqBody.isHighlighted, reqBody.availableFrom)
         return ServerResponse.ok().bodyValueAndAwait(Response(data = res))
     }
 
