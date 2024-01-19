@@ -76,7 +76,6 @@ class VideoRewardService(
                 configForVideo.totalPoints?.let { it >= configForVideo.rewardedPoints + progressConfig.rewardPoint } != false
             ) {
                 val rewardPoint = (percentage * (progressConfig.rewardPoint)) / 100
-
                 configForVideo.rewardedPoints += rewardPoint
                 totalReceivedPoints += rewardPoint
                 VideoRewardRecordModel(
@@ -261,6 +260,7 @@ class VideoRewardService(
                 commentRewardPoints = newConfig.commentRewardPoints
                 likeRewardPoints = newConfig.likeRewardPoints
                 likeMaxApplyTimes = newConfig.likeMaxApplyTimes
+                accumulationConfigLog = newConfig.accumulationConfigLog
             }
         )
         val progresses = newConfig.rewardProgresses.map {

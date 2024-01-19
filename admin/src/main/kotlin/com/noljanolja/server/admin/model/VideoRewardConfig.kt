@@ -12,6 +12,7 @@ data class VideoRewardConfig(
     val commentRewardPoints: Long = 0,
     val likeMaxApplyTimes: Int = 0,
     val likeRewardPoints: Long = 0,
+    val accumulationConfigLog: String? = null
 ) {
     data class RewardProgress(
         val progress: Double,
