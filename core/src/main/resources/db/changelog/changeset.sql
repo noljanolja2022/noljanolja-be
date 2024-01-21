@@ -470,7 +470,8 @@ create TABLE IF NOT EXISTS `video_reward_configs`
     `like_max_apply_times`          INT             NOT NULL,
     `like_reward_points`            BIGINT          NOT NULL,
     `created_at`                    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at`                    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `updated_at`                    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    'accumulation_config_log'       TEXT            NULL
 ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------

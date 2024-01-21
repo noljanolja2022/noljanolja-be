@@ -11,6 +11,7 @@ data class UpsertVideoConfigRequest(
     val commentRewardPoints: Long = 0,
     val likeMaxApplyTimes: Int = 0,
     val likeRewardPoints: Long = 0,
+    val accumulationConfigLog: String? = null
 ) {
     data class VideoConfigProgress(
         val progress: Double,

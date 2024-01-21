@@ -14,6 +14,7 @@ data class CoreVideoRewardConfig(
     val commentRewardPoints: Long = 0,
     val likeMaxApplyTimes: Int = 0,
     val likeRewardPoints: Long = 0,
+    val accumulationConfigLog: String? = null
 ) {
     data class RewardProgress(
         val progress: Double,
@@ -43,4 +44,5 @@ fun CoreVideoRewardConfig.toVideoRewardConfig() = VideoRewardConfig(
     commentRewardPoints = commentRewardPoints,
     likeMaxApplyTimes = likeMaxApplyTimes,
     likeRewardPoints = likeRewardPoints,
+    accumulationConfigLog = accumulationConfigLog
 )

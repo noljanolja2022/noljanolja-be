@@ -67,6 +67,7 @@ class RewardService(
             commentRewardPoints = request.commentRewardPoints,
             likeRewardPoints = request.likeRewardPoints,
             likeMaxApplyTimes = request.likeMaxApplyTimes,
+            accumulationConfigLog = request.accumulationConfigLog
         )
     ).toVideoRewardConfig()
 

@@ -58,6 +58,9 @@ data class VideoRewardConfigModel(
     @Column("updated_at")
     @LastModifiedDate
     val updatedAt: Instant = Instant.now(),
+
+    @Column("accumulation_config_log")
+    var accumulationConfigLog: String? = null
 ) {
     @Transient
     var rewardProgresses: List<VideoRewardProgressConfigModel> = listOf()
@@ -80,4 +83,5 @@ fun VideoRewardConfigModel.toVideoRewardConfig() = VideoRewardConfig(
     minCommentLength = minCommentLength,
     likeMaxApplyTimes = likeMaxApplyTimes,
     likeRewardPoints = likeRewardPoints,
+    accumulationConfigLog = accumulationConfigLog
 )
