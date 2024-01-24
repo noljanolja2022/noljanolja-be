@@ -19,6 +19,7 @@ class GiftRouter(
         (GIFT_ROUTES and accept(MediaType.APPLICATION_JSON)).nest {
             GET("", giftHandler::getAllGifts)
             GET("import", giftHandler::importGifts)
+            POST("indian/import", giftHandler::importIndianGift)
             "/brands".nest {
                 GET("", giftHandler::getBrands)
             }

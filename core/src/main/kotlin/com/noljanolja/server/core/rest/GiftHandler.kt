@@ -5,8 +5,10 @@ import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.model.Pagination
 import com.noljanolja.server.common.rest.Response
 import com.noljanolja.server.core.service.GiftService
+import com.noljanolja.server.gift.rest.IndianGiftReq
 import com.noljanolja.server.gift.rest.UpdateGiftCategoryReq
 import com.noljanolja.server.gift.rest.UpdateGiftReq
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
@@ -25,6 +27,19 @@ class GiftHandler(
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response<Nothing>()
+            )
+    }
+
+    suspend fun importIndianGift(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<IndianGiftReq>() ?: throw RequestBodyRequired
+        val gift = giftService.importIndianGift(payload)
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    code = HttpStatus.CREATED.value(),
+                    data = gift
+                )
             )
     }
 

@@ -4,6 +4,7 @@ import com.noljanolja.server.admin.model.CoreServiceError
 import com.noljanolja.server.admin.model.Gift
 import com.noljanolja.server.admin.model.GiftBrand
 import com.noljanolja.server.admin.model.GiftCategory
+import com.noljanolja.server.admin.rest.request.IndianGiftRequest
 import com.noljanolja.server.admin.rest.request.UpdateGiftCategoryReq
 import com.noljanolja.server.admin.rest.request.UpdateGiftRequest
 import com.noljanolja.server.common.rest.Response
@@ -169,4 +170,23 @@ class GiftApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<GiftCategory>>().data
+
+    suspend fun importIndianGift(
+        payload: IndianGiftRequest
+    ) = webClient.post()
+        .uri { builder ->
+            builder.path("${ROUTE}/indian/import")
+                .build()
+        }
+        .bodyValue(payload)
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<Gift>>().data!!
 }

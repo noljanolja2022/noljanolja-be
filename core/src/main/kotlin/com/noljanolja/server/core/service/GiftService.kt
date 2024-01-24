@@ -16,6 +16,7 @@ import com.noljanolja.server.gift.model.Gift
 import com.noljanolja.server.gift.model.GiftBrand
 import com.noljanolja.server.gift.model.GiftCategory
 import com.noljanolja.server.gift.repo.*
+import com.noljanolja.server.gift.rest.IndianGiftReq
 import com.noljanolja.server.gift.rest.UpdateGiftCategoryReq
 import com.noljanolja.server.gift.rest.UpdateGiftReq
 import kotlinx.coroutines.flow.toList
@@ -24,6 +25,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Component
@@ -225,6 +229,55 @@ class GiftService(
         }
 
         return null
+    }
+
+    suspend fun importIndianGift(payload: IndianGiftReq): Gift {
+        val giftBrand = giftBrandRepo.findById(payload.brandId)!!
+        val giftCategory = giftCategoryRepo.findById(payload.categoryId)!!
+
+        val existingGift = giftRepo.findById(payload.voucherCode)
+        if (existingGift != null) throw Error.GiftExisted
+        return createNewGift(
+            payload = payload,
+            giftBrand = giftBrand,
+            giftCategory = giftCategory
+        )
+    }
+
+    private suspend fun createNewGift(
+        payload: IndianGiftReq,
+        giftBrand: GiftBrandModel,
+        giftCategory: GiftCategoryModel
+    ): Gift {
+        val defaultEndTime = "2999-12-30 15:00:00"
+
+        val newGift = GiftModel(
+            _id = payload.voucherCode,
+            giftNo = -1,
+            name = payload.name,
+            description = payload.description,
+            image = payload.image,
+            endTime = parseDateTimeToInstant(defaultEndTime),
+            brandId = payload.brandId,
+            categoryId = payload.categoryId,
+            limitDay = -1,
+            price = payload.price,
+            retailPrice = payload.price,
+            isActive = payload.isActive,
+            isFeatured = false,
+            isTodayOffer = false,
+            locale = "IN"
+        ).apply {
+            isNewRecord = true
+        }
+
+        return giftRepo.save(newGift).toGift(giftBrand, giftCategory)
+    }
+
+    private fun parseDateTimeToInstant(dateTimeString: String): Instant {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val localDateTime = LocalDateTime.parse(dateTimeString, formatter)
+        return localDateTime.toInstant(ZoneOffset.UTC)
     }
 
     suspend fun updateGift(giftId: String, payload: UpdateGiftReq): Gift {

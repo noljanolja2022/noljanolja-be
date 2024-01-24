@@ -13,11 +13,18 @@ sealed class Error(
         const val NOT_ENOUGH_GIFT = 400_015
         const val MAXIMUM_BUY_TIMES_REACHED = 400_016
         const val GIFT_LOCALE_IS_NULL = 400_017
+        const val GIFT_EXISTED = 400_018
     }
 
     object GiftNotFound : Error(
         GIFT_NOT_FOUND,
         "Gift not found",
+        null,
+    )
+
+    object GiftExisted : Error(
+        GIFT_EXISTED,
+        "Gift existed",
         null,
     )
 

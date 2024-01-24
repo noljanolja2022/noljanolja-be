@@ -4,6 +4,7 @@ import com.noljanolja.server.admin.adapter.gift.GiftApi
 import com.noljanolja.server.admin.model.Gift
 import com.noljanolja.server.admin.model.GiftBrand
 import com.noljanolja.server.admin.model.GiftCategory
+import com.noljanolja.server.admin.rest.request.IndianGiftRequest
 import com.noljanolja.server.admin.rest.request.UpdateGiftCategoryReq
 import com.noljanolja.server.admin.rest.request.UpdateGiftRequest
 import com.noljanolja.server.common.rest.Response
@@ -16,6 +17,10 @@ class GiftService(
 
     suspend fun importProductManually() {
         giftApi.importProducts()
+    }
+
+    suspend fun importIndianGift(payload: IndianGiftRequest): Gift {
+        return giftApi.importIndianGift(payload)
     }
 
     suspend fun updateGift(giftId: String, data: UpdateGiftRequest): Gift {

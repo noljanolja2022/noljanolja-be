@@ -1,12 +1,14 @@
 package com.noljanolja.server.admin.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.noljanolja.server.admin.rest.request.IndianGiftRequest
 import com.noljanolja.server.admin.rest.request.UpdateGiftCategoryReq
 import com.noljanolja.server.admin.rest.request.UpdateGiftRequest
 import com.noljanolja.server.admin.service.GiftService
 import com.noljanolja.server.admin.service.GoogleStorageService
 import com.noljanolja.server.common.exception.RequestBodyRequired
 import com.noljanolja.server.common.rest.Response
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
@@ -27,6 +29,19 @@ class GiftHandler(
             .bodyValueAndAwait(
                 Response(
                     data = "res",
+                )
+            )
+    }
+
+    suspend fun importIndianGift(request: ServerRequest): ServerResponse {
+        val payload = request.awaitBodyOrNull<IndianGiftRequest>() ?: throw RequestBodyRequired
+        val gift = giftService.importIndianGift(payload)
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                Response(
+                    code = HttpStatus.CREATED.value(),
+                    data = gift
                 )
             )
     }

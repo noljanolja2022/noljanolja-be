@@ -13,3 +13,14 @@ data class UpdateGiftCategoryReq(
     val name: String,
     val image: String? = null
 )
+
+data class IndianGiftRequest(
+    val voucherCode: String,
+    val name: String,
+    val description: String,
+    val image: String,
+    val brandId: String,
+    val categoryId: Long,
+    val price: Long,
+    val isActive: Boolean
+)
