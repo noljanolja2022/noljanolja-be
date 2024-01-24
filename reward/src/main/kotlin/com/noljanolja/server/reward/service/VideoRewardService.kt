@@ -201,6 +201,7 @@ class VideoRewardService(
                     rewardProgresses = rewardProgresses.takeIf { config.isActive }.orEmpty(),
                     completed = rewardProgresses.all { it.completed }.takeIf { config.isActive } ?: false,
                     totalPoints = rewardProgressesConfigs
+                        .filter { it.configId == config.id }
                         .sumOf { it.rewardPoint * config.maxApplyTimes }
                         .takeIf { config.isActive } ?: 0,
                     earnedPoints = rewardProgresses.sumOf { it.point * it.claimedAts.size }
