@@ -21,6 +21,7 @@ data class CoreVideo(
     val comments: List<CoreVideoComment> = listOf(),
     val channel: CoreChannel,
     val category: Category,
+    val isLiked: Boolean? = null
 ) {
 
     data class Category(
@@ -88,5 +89,6 @@ fun CoreVideo.toConsumerVideo(
             claimedAts = it.claimedAts,
             completed = it.completed
         )
-    }
+    },
+    isLiked = isLiked
 )

@@ -122,10 +122,16 @@ class VideoHandler(
     suspend fun getVideoDetails(request: ServerRequest): ServerResponse {
         val videoId = request.pathVariable("videoId").takeIf { it.isNotBlank() }
             ?: throw InvalidParamsException("videoId")
+        val userId = request.queryParamOrNull("userId") ?: throw InvalidParamsException("userId")
         val includeDeleted = request.queryParamOrNull("includeDeleted")?.toBoolean()
         val includeUnavailableVideos = request.queryParamOrNull("includeUnavailableVideos")?.toBoolean()
 
-        val video = videoService.getVideoDetails(videoId, includeDeleted, includeUnavailableVideos)
+        val video = videoService.getVideoDetails(
+            videoId = videoId,
+            includeDeleted = includeDeleted,
+            includeUnavailableVideos = includeUnavailableVideos,
+            userId = userId
+        )
         return ServerResponse.ok()
             .bodyValueAndAwait(
                 body = Response(

@@ -22,6 +22,7 @@ data class Video(
     val createdAt: Instant,
     val updatedAt: Instant,
     val deletedAt: Instant?,
+    val isLiked: Boolean? = null
 ) {
 
     data class Category(

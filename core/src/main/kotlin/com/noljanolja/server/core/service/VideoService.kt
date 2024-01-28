@@ -44,10 +44,12 @@ class VideoService(
         videoId: String,
         includeDeleted: Boolean? = null,
         includeUnavailableVideos:Boolean? = null,
+        userId: String
     ): Video {
         val video = videoRepo.findByIdAndIncludeDeletedAndIncludeUnavailableVideo(videoId, includeDeleted, includeUnavailableVideos)
             .onEmpty { throw Error.VideoNotFound }
             .first()
+
         val comments = videoCommentRepo.findAllByVideoIdOrderByIdDesc(videoId, Pageable.ofSize(10)).toList()
         if (comments.isNotEmpty()) {
             val commenterIds = comments.mapTo(mutableSetOf()) { it.commenterId }
@@ -56,11 +58,19 @@ class VideoService(
                 comment.commenter = commenters.first { it.id == comment.commenterId }
             }
         }
+
+        val videoUser = videoUserRepo.findByVideoIdAndUserId(
+            videoId = videoId,
+            userId = userId
+        )
+        val isLiked: Boolean? = videoUser?.isLiked
+
         return video.apply {
             channel = videoChannelRepo.findById(channelId)!!
             category = videoCategoryRepo.findById(categoryId)!!
             this.comments = comments
-        }.toVideo()
+
+        }.toVideo(isLiked)
     }
 
     suspend fun getVideos(

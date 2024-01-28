@@ -28,7 +28,10 @@ class VideoPubSubService(
     @OptIn(DelicateCoroutinesApi::class)
     suspend fun updateWatchProgress(userId: String, payload: VideoProgress) {
         val videoId = payload.videoId
-        val videoDetail = coreApi.getVideoDetail(videoId).toConsumerVideo()
+        val videoDetail = coreApi.getVideoDetail(
+            videoId = videoId,
+            userId = userId
+        ).toConsumerVideo()
         val totalVideoTime = videoDetail.durationMs
         val cachedRecord = videoRedisTemplate.opsForValue().getAndAwait(getProgressKey(userId, videoId))
         val now = Instant.now()

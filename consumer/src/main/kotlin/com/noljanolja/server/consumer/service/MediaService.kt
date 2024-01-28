@@ -167,7 +167,10 @@ class MediaService(
             userId = userId,
             videoIds = listOf(videoId),
         )
-        return coreApi.getVideoDetail(videoId).toConsumerVideo(rewardProgresses.firstOrNull())
+        return coreApi.getVideoDetail(
+            videoId = videoId,
+            userId = userId
+        ).toConsumerVideo(rewardProgresses.firstOrNull())
     }
 
     suspend fun getVideoComments(

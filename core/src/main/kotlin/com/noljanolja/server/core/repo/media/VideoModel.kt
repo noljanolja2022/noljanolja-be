@@ -87,7 +87,7 @@ data class VideoModel(
     var category: VideoCategoryModel = VideoCategoryModel()
 }
 
-fun VideoModel.toVideo() = Video(
+fun VideoModel.toVideo(isLiked: Boolean? = null) = Video(
     id = id,
     url = url,
     publishedAt = publishedAt,
@@ -107,6 +107,7 @@ fun VideoModel.toVideo() = Video(
     createdAt = createdAt,
     updatedAt = updatedAt,
     deletedAt = deletedAt,
+    isLiked = isLiked
 )
 
 fun VideoModel.toVideoLogTransaction(progressPercentage: Double) = VideoLogTransaction (

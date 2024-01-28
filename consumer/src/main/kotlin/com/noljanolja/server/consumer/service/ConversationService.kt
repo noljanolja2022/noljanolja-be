@@ -235,7 +235,10 @@ class ConversationService(
             }
         }.awaitAll().toMutableList()
         shareVideoId?.let {
-            val video = coreApi.getVideoDetail(it).toConsumerVideo()
+            val video = coreApi.getVideoDetail(
+                videoId = it,
+                userId = userId
+            ).toConsumerVideo()
             uploadedAttachments.add(
                 Message.Attachment(
                     name = video.id,

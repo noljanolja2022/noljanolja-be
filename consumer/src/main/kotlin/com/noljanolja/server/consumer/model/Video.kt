@@ -23,6 +23,7 @@ data class Video(
     val earnedPoints: Long = 0,
     val totalPoints: Long = 0,
     val rewardProgresses: List<RewardProgress> = listOf(),
+    val isLiked: Boolean? = null
 ) {
     data class Category(
         val id: String,

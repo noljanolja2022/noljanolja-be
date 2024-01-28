@@ -637,9 +637,11 @@ class CoreApi(
 
     suspend fun getVideoDetail(
         videoId: String,
+        userId: String
     ) = webClient.get()
         .uri { builder ->
             builder.path("$MEDIA_ENDPOINT/videos/{videoId}")
+                .queryParam("userId", userId)
                 .build(videoId)
         }
         .retrieve()
