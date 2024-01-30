@@ -7,4 +7,5 @@ data class CreateVideoRequest(
     val youtubeUrl: String,
     val isHighlighted: Boolean,
     val availableFrom: Instant? = null,
+    val availableTo: Instant? = null,
 )

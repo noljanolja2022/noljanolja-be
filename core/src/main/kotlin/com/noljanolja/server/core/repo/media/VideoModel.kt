@@ -59,6 +59,12 @@ data class VideoModel(
     @Column("available_from")
     var availableFrom: Instant? = null,
 
+    @Column("available_to")
+    var availableTo: Instant? = null,
+
+    @Column("is_deactivated")
+    var isDeactivated: Boolean = false,
+
     @Column("created_at")
     @CreatedDate
     val createdAt: Instant = Instant.now(),
@@ -101,6 +107,8 @@ fun VideoModel.toVideo(isLiked: Boolean? = null) = Video(
     commentCount = commentCount,
     isHighlighted = isHighlighted,
     availableFrom = availableFrom,
+    availableTo = availableTo,
+    isDeactivated = isDeactivated,
     channel = channel.toVideoChannel(),
     category = category.toVideoCategory(),
     comments = comments.map { it.toVideoComment() },

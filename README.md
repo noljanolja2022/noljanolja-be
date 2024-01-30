@@ -104,10 +104,7 @@ Either use docker or local instance. Prefer docker for lightweight
 
 1. Run
    ```agsl
-   docker run -p 3306:3306 --name nolja-mysql
-    -e MYSQL_ROOT_PASSWORD=password 
-   -d mysql:8 
-   --default-authentication-plugin=mysql_native_password
+   docker run -p 3306:3306 --name nolja-mysql -e MYSQL_ROOT_PASSWORD=password -d mysql:8 --default-authentication-plugin=mysql_native_password
    ```
 
 # Debug dev or prod db
