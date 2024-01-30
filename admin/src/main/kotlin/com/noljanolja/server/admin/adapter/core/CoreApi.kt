@@ -169,6 +169,7 @@ class CoreApi(
                 .queryParam("pageSize", pageSize)
                 .queryParam("includeDeleted", true)
                 .queryParam("includeUnavailableVideos", true)
+                .queryParam("includeDeactivated", true)
                 .build()
         }
         .retrieve()
@@ -189,6 +190,7 @@ class CoreApi(
             builder.path("$VIDEO_ENDPOINT/$videoId")
                 .queryParam("includeDeleted", true)
                 .queryParam("includeUnavailableVideos", true)
+                .queryParam("includeDeactivated", true)
                 .build()
         }
         .retrieve()
@@ -244,6 +246,7 @@ class CoreApi(
             builder.path("$VIDEO_ENDPOINT/promoted")
                 .queryParam("includeDeleted", true)
                 .queryParam("includeUnavailableVideos", true)
+                .queryParam("includeDeactivated", true)
                 .build()
         }
         .retrieve()

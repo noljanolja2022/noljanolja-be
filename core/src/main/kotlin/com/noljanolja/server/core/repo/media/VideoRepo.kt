@@ -15,12 +15,14 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
             FROM videos 
             WHERE id = :id AND 
                 IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE) AND
-                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
+                IF (:includeDeactivated IS NULL OR :includeDeactivated IS FALSE, is_deactivated IS FALSE, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, (available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW())) AND (available_to IS NULL OR (available_to IS NOT NULL AND NOW() <= available_to)), TRUE)
         """
     )
     fun findByIdAndIncludeDeletedAndIncludeUnavailableVideo(
         id: String,
         includeDeleted: Boolean? = null,
+        includeDeactivated: Boolean? = null,
         includeUnavailableVideos: Boolean? = null,
     ): Flow<VideoModel>
 
@@ -36,7 +38,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
                     id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
                     TRUE) AND
                 IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE) AND
-                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
+                IF (:includeDeactivated IS NULL OR :includeDeactivated IS FALSE, is_deactivated IS FALSE, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, (available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW())) AND (available_to IS NULL OR (available_to IS NOT NULL AND NOW() <= available_to)), TRUE)
             ORDER BY created_at DESC
             LIMIT :limit OFFSET :offset
         """
@@ -48,6 +51,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
         includeDeleted: Boolean? = null,
+        includeDeactivated: Boolean? = null,
         includeUnavailableVideos: Boolean? = null,
         offset: Int,
         limit: Int,
@@ -62,7 +66,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
                 id NOT IN (:ids)) AND
                 IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), TRUE) AND
                 IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE) AND
-                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
+                IF (:includeDeactivated IS NULL OR :includeDeactivated IS FALSE, is_deactivated IS FALSE, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, (available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW())) AND (available_to IS NULL OR (available_to IS NOT NULL AND NOW() <= available_to)), TRUE)
             LIMIT :limit
         """
     )
@@ -72,6 +77,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
         includeDeleted: Boolean? = null,
+        includeDeactivated: Boolean? = null,
         includeUnavailableVideos: Boolean? = null,
     ): Flow<VideoModel>
 
@@ -87,7 +93,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
                     id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
                     TRUE) AND
                 IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE) AND
-                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
+                IF (:includeDeactivated IS NULL OR :includeDeactivated IS FALSE, is_deactivated IS FALSE, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, (available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW())) AND (available_to IS NULL OR (available_to IS NOT NULL AND NOW() <= available_to)), TRUE)
         """
     )
     suspend fun countAllBy(
@@ -97,6 +104,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
         includeDeleted: Boolean? = null,
+        includeDeactivated: Boolean? = null,
         includeUnavailableVideos: Boolean? = null,
     ): Long
 
@@ -110,7 +118,8 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
                     id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), 
                     TRUE) AND
                 IF (:includeDeleted IS NULL OR :includeDeleted IS FALSE, deleted_at IS NULL, TRUE) AND
-                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
+                IF (:includeDeactivated IS NULL OR :includeDeactivated IS FALSE, is_deactivated IS FALSE, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, (available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW())) AND (available_to IS NULL OR (available_to IS NOT NULL AND NOW() <= available_to)), TRUE)
         """
     )
     fun findByIds(
@@ -118,6 +127,7 @@ interface VideoRepo : CoroutineCrudRepository<VideoModel, String> {
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
         includeDeleted: Boolean? = null,
+        includeDeactivated: Boolean? = null,
         includeUnavailableVideos: Boolean? = null,
     ): Flow<VideoModel>
 

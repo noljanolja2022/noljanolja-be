@@ -41,7 +41,8 @@ interface VideoViewCountRepo : CoroutineCrudRepository<VideoViewCountModel, Long
             WHERE 
                 IF(:userId IS NOT NULL AND :isExcludeIgnoredVideos IS TRUE, videos.id NOT IN (SELECT video_id FROM video_users WHERE is_ignored = TRUE AND user_id = :userId), TRUE) AND
                 IF(:includeDeleted IS NULL OR :includeDeleted IS FALSE, videos.deleted_at IS NULL, TRUE) AND 
-                IF(:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW()), TRUE)
+                IF (:includeDeactivated IS NULL OR :includeDeactivated IS FALSE, is_deactivated IS FALSE, TRUE) AND
+                IF (:includeUnavailableVideos IS NULL OR :includeUnavailableVideos IS FALSE, (available_from IS NULL OR (available_from IS NOT NULL AND available_from <= NOW())) AND (available_to IS NULL OR (available_to IS NOT NULL AND NOW() <= available_to)), TRUE)
             ORDER BY v.total_view_count DESC
         """
     )
@@ -51,6 +52,7 @@ interface VideoViewCountRepo : CoroutineCrudRepository<VideoViewCountModel, Long
         userId: String? = null,
         isExcludeIgnoredVideos: Boolean? = null,
         includeDeleted: Boolean? = null,
+        includeDeactivated: Boolean? = null,
         includeUnavailableVideos: Boolean? = null,
     ): Flow<VideoModel>
 }
