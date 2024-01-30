@@ -41,11 +41,11 @@ class VideoService(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    suspend fun createVideo(youtubeUrl: String, isHighlighted: Boolean, availableFrom: Instant? = null): Video? {
+    suspend fun createVideo(youtubeUrl: String, isHighlighted: Boolean, availableFrom: Instant? = null, availableTo: Instant? = null): Video? {
         val queries = parseYoutubeUrlQuery(youtubeUrl)
         val videoId = queries.firstOrNull { it.first == "v" }?.second
             ?: throw DefaultBadRequestException(Exception("Not a valid youtube url"))
-        val video = coreApi.importVideo(videoId, youtubeUrl, isHighlighted, availableFrom)
+        val video = coreApi.importVideo(videoId, youtubeUrl, isHighlighted, availableFrom, availableTo)
         GlobalScope.launch {
             generateComments(videoId)
         }
