@@ -3,6 +3,8 @@ package com.noljanolja.server.core.model
 data class TrackInfo(
     val id: String,
     val title: String,
+    val thumbnail: String,
+    val url: String,
     val viewCount: Long,
     val likeCount: Long,
     val favoriteCount: Long,
