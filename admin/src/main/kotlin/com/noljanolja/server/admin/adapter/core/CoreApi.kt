@@ -230,11 +230,12 @@ class CoreApi(
         videoId: String,
         youtubeUrl: String,
         isHighlighted: Boolean,
+        isDeactivated: Boolean,
         availableFrom: Instant? = null,
         availableTo: Instant? = null,
     ) = webClient.post()
         .uri { builder -> builder.path(VIDEO_ENDPOINT).build() }
-        .bodyValue(CoreCreateVideoRequest(videoId, youtubeUrl, isHighlighted, availableFrom, availableTo))
+        .bodyValue(CoreCreateVideoRequest(videoId, youtubeUrl, isHighlighted, isDeactivated, availableFrom, availableTo))
         .retrieve()
         .onStatus(HttpStatusCode::is4xxClientError) {
             it.bodyToMono<Response<Nothing>>().mapNotNull { response ->

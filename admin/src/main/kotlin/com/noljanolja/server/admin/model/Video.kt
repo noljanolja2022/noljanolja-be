@@ -6,6 +6,7 @@ import java.time.LocalDate
 data class VideoCreationReq(
     val youtubeUrl: String,
     val isHighlighted: Boolean = false,
+    val isDeactivated: Boolean = false,
     val availableFrom: Instant? = null,
     val availableTo: Instant? = null,
 )

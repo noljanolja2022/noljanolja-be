@@ -182,6 +182,7 @@ class VideoService(
     suspend fun upsertVideo(
         youtubeUrl: String,
         isHighlight: Boolean,
+        isDeactivate: Boolean,
         availableFromArg: Instant? = null,
         availableToArg: Instant? = null,
         youtubeVideo: YoutubeVideo,
@@ -222,6 +223,7 @@ class VideoService(
                 duration = parsedDuration.toString()
                 durationMs = parsedDuration.toMillis()
                 isHighlighted = isHighlight
+                isDeactivated = isDeactivate
                 availableFrom = availableFromArg
                 availableTo = availableToArg
             })
