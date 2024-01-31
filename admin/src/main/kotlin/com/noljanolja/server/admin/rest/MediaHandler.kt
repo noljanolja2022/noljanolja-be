@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.ContentDisposition
+import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.reactive.function.server.*
 import java.io.File
@@ -37,6 +38,8 @@ class MediaHandler(
         private const val PATH_ID = "id"
         private const val QUERY_PAGE = "page"
         private const val QUERY_PAGE_SIZE = "pageSize"
+        const val DEFAULT_QUERY_PARAM_PAGE = 1
+        const val DEFAULT_QUERY_PARAM_PAGE_SIZE = 10
     }
 
     suspend fun getStickerPacks(request: ServerRequest): ServerResponse {
@@ -138,6 +141,27 @@ class MediaHandler(
                 pagination = res.pagination
             )
         )
+    }
+
+    suspend fun getVideoAnalytics(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")
+            ?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_QUERY_PARAM_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")
+            ?.toIntOrNull()?.takeIf { it > 0 } ?: DEFAULT_QUERY_PARAM_PAGE_SIZE
+
+        val res = videoService.getVideoAnalytics(
+            page = page,
+            pageSize = pageSize
+        )
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    code = HttpStatus.OK.value(),
+                    data = res.data,
+                    pagination = res.pagination
+                )
+            )
     }
 
     suspend fun getVideoDetail(request: ServerRequest): ServerResponse {

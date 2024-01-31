@@ -157,6 +157,28 @@ class CoreApi(
         }
         .awaitBody<Response<Nothing>>()
 
+    suspend fun getVideoAnalytics(
+        page: Int,
+        pageSize: Int
+    ) = webClient.get()
+        .uri { builder ->
+            builder.path("$VIDEO_ENDPOINT/analytics")
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize)
+                .build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<List<TrackInfo>>>()
+
+
     suspend fun getVideo(
         query: String? = null,
         page: Int,

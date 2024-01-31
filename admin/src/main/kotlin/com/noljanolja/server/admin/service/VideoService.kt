@@ -6,6 +6,7 @@ import com.noljanolja.server.admin.adapter.openai.OpenAIApi
 import com.noljanolja.server.admin.adapter.youtube.YoutubeApi
 import com.noljanolja.server.admin.model.PromoteVideoRequest
 import com.noljanolja.server.admin.model.PromotedVideoConfig
+import com.noljanolja.server.admin.model.TrackInfo
 import com.noljanolja.server.admin.model.Video
 import com.noljanolja.server.common.exception.DefaultBadRequestException
 import com.noljanolja.server.common.rest.Response
@@ -58,6 +59,16 @@ class VideoService(
 
     suspend fun getVideo(query: String? = null, page: Int, pageSize: Int): Response<List<Video>> {
         return coreApi.getVideo(query, page, pageSize)
+    }
+
+    suspend fun getVideoAnalytics(
+        page: Int,
+        pageSize: Int
+    ): Response<List<TrackInfo>> {
+        return coreApi.getVideoAnalytics(
+            page = page,
+            pageSize = pageSize
+        )
     }
 
     suspend fun deleteVideo(videoId: String) {

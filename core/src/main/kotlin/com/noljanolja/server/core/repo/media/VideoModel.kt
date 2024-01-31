@@ -1,5 +1,6 @@
 package com.noljanolja.server.core.repo.media
 
+import com.noljanolja.server.core.model.TrackInfo
 import com.noljanolja.server.core.model.Video
 import com.noljanolja.server.core.model.VideoLogTransaction
 import org.springframework.data.annotation.CreatedDate
@@ -125,4 +126,14 @@ fun VideoModel.toVideoLogTransaction(progressPercentage: Double) = VideoLogTrans
     thumbnail = thumbnail,
     progressPercentage = progressPercentage,
     durationMs = durationMs
+)
+
+fun VideoModel.toTrackInfo(rewardedPoints: Long) = TrackInfo(
+    id = id,
+    title = title,
+    viewCount = viewCount,
+    likeCount = likeCount,
+    favoriteCount = favoriteCount,
+    commentCount = commentCount,
+    rewardedPoints = rewardedPoints
 )

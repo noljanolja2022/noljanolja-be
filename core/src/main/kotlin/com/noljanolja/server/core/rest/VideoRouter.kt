@@ -19,6 +19,7 @@ class VideoRouter(
         (VIDEO_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             POST("", videoHandler::upsertVideo)
             GET("", videoHandler::getVideos)
+            GET("analytics", videoHandler::getVideoAnalytics)
             GET("watching", videoHandler::getWatchingVideos)
             GET("trending", videoHandler::getTrendingVideos)
             GET("promoted", videoHandler::getPromotedVideos)

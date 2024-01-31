@@ -26,6 +26,7 @@ class MediaRouter(
                 GET("", mediaHandler::getVideo)
                 POST("", mediaHandler::createVideo)
                 GET("/promoted", mediaHandler::getPromotedVideos)
+                GET("/analytics", mediaHandler::getVideoAnalytics)
                 GET("/{id}", mediaHandler::getVideoDetail)
                 DELETE("/{id}", mediaHandler::deleteVideo)
                 POST("/{id}/promoted", mediaHandler::updatePromotedVideo)

@@ -11,6 +11,7 @@ import com.noljanolja.server.core.service.VideoService
 import com.noljanolja.server.youtube.service.YoutubeCategoryService
 import com.noljanolja.server.youtube.service.YoutubeChannelService
 import com.noljanolja.server.youtube.service.YoutubeVideoService
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
@@ -95,6 +96,31 @@ class VideoHandler(
                         page = page,
                         pageSize = pageSize,
                         total = total,
+                    )
+                )
+            )
+    }
+
+    suspend fun getVideoAnalytics(request: ServerRequest): ServerResponse {
+        val page = request.queryParamOrNull("page")?.toIntOrNull()
+            ?.takeIf { it > 0 } ?: DEFAULT_QUERY_PARAM_PAGE
+        val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()
+            ?.takeIf { it > 0 } ?: DEFAULT_QUERY_PARAM_PAGE_SIZE
+
+        val videoAnalytics = videoService.getVideoAnalytics(
+            page = page,
+            pageSize = pageSize
+        )
+
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    code = HttpStatus.OK.value(),
+                    data = videoAnalytics.trackInfos,
+                    pagination = Pagination(
+                        page = page,
+                        pageSize = pageSize,
+                        total = videoAnalytics.numOfVideos
                     )
                 )
             )

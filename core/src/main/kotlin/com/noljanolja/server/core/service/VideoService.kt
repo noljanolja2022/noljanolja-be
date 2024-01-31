@@ -5,11 +5,13 @@ import com.noljanolja.server.common.exception.UserNotFound
 import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.PromotedVideoConfig
 import com.noljanolja.server.core.model.Video
+import com.noljanolja.server.core.model.VideoAnalytics
 import com.noljanolja.server.core.model.VideoComment
 import com.noljanolja.server.core.repo.media.*
 import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.core.rest.request.PromoteVideoRequest
 import com.noljanolja.server.core.rest.request.RateVideoAction
+import com.noljanolja.server.reward.repo.VideoRewardConfigRepo
 import com.noljanolja.server.youtube.model.YoutubeChannel
 import com.noljanolja.server.youtube.model.YoutubeVideo
 import com.noljanolja.server.youtube.model.YoutubeVideoCategory
@@ -39,6 +41,7 @@ class VideoService(
     private val promotedVideoUserLogRepo: PromotedVideoUserLogRepo,
     private val channelSubscriptionRepo: ChannelSubscriptionRepo,
     private val videoGeneratedCommentRepo: VideoGeneratedCommentRepo,
+    private val videoRewardConfigRepo: VideoRewardConfigRepo,
 ) {
     suspend fun getVideoDetails(
         videoId: String,
@@ -72,6 +75,34 @@ class VideoService(
             this.comments = comments
 
         }.toVideo(isLiked)
+    }
+
+    suspend fun getVideoAnalytics(
+        page: Int,
+        pageSize: Int
+    ): VideoAnalytics {
+        val videos = videoRepo.findAllBy(
+            limit = pageSize,
+            offset = (page - 1) * pageSize
+        ).toList()
+
+        val total = videoRepo.countAllBy()
+
+        //Map<video_id, rewarded_points>
+        val rewardedPointMap: Map<String, Long> =
+            videoRewardConfigRepo.findAllByVideoIdIn(
+                videoIds = videos.map { it.id }.toSet()
+            ).toList().associate { it.videoId to it.rewardedPoints }
+
+        val trackInfos = videos.map { video ->
+            val rewardedPoint = rewardedPointMap[video.id] ?: 0
+            video.toTrackInfo(rewardedPoint)
+        }
+
+        return VideoAnalytics(
+            trackInfos = trackInfos,
+            numOfVideos = total
+        )
     }
 
     suspend fun getVideos(
