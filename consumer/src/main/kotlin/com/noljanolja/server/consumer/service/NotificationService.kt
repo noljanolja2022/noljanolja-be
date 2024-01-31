@@ -33,7 +33,7 @@ class NotificationService(
     ) {
         coreApi.getPushToken(userId).forEach { pushToken ->
             val message = conversation.messages.first()
-            val pushData = mapOf(
+            val data = mapOf(
                 "conversationId" to conversation.id.toString(),
                 "conversationType" to conversation.type.name,
                 "senderIcon" to "",
@@ -50,6 +50,7 @@ class NotificationService(
                         .setBody(message.message)
                         .build()
                 )
+                .putAllData(data)
                 .setToken(pushToken)
                 .build()
             try {
