@@ -79,14 +79,24 @@ class VideoService(
 
     suspend fun getVideoAnalytics(
         page: Int,
-        pageSize: Int
+        pageSize: Int,
+        includeDeleted: Boolean? = null,
+        includeDeactivated: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
     ): VideoAnalytics {
         val videos = videoRepo.findAllBy(
+            includeDeleted = includeDeleted,
+            includeDeactivated = includeDeactivated,
+            includeUnavailableVideos = includeUnavailableVideos,
             limit = pageSize,
             offset = (page - 1) * pageSize
         ).toList()
 
-        val total = videoRepo.countAllBy()
+        val total = videoRepo.countAllBy(
+            includeDeleted = includeDeleted,
+            includeDeactivated = includeDeactivated,
+            includeUnavailableVideos = includeUnavailableVideos
+        )
 
         //Map<video_id, rewarded_points>
         val rewardedPointMap: Map<String, Long> =

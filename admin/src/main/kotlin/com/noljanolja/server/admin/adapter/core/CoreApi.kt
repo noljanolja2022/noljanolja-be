@@ -165,6 +165,9 @@ class CoreApi(
             builder.path("$VIDEO_ENDPOINT/analytics")
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
+                .queryParam("includeDeleted", true)
+                .queryParam("includeUnavailableVideos", true)
+                .queryParam("includeDeactivated", true)
                 .build()
         }
         .retrieve()

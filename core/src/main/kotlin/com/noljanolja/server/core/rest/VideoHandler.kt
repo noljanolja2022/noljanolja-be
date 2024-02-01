@@ -107,10 +107,16 @@ class VideoHandler(
             ?.takeIf { it > 0 } ?: DEFAULT_QUERY_PARAM_PAGE
         val pageSize = request.queryParamOrNull("pageSize")?.toIntOrNull()
             ?.takeIf { it > 0 } ?: DEFAULT_QUERY_PARAM_PAGE_SIZE
+        val includeDeleted = request.queryParamOrNull("includeDeleted")?.toBoolean()
+        val includeDeactivated = request.queryParamOrNull("includeDeactivated")?.toBoolean()
+        val includeUnavailableVideos = request.queryParamOrNull("includeUnavailableVideos")?.toBoolean()
 
         val videoAnalytics = videoService.getVideoAnalytics(
             page = page,
-            pageSize = pageSize
+            pageSize = pageSize,
+            includeDeleted = includeDeleted,
+            includeDeactivated = includeDeactivated,
+            includeUnavailableVideos = includeUnavailableVideos
         )
 
         return ServerResponse.ok()
