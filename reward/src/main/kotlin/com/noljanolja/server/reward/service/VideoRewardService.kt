@@ -41,7 +41,7 @@ class VideoRewardService(
             ?: return
         val accumulationConfigLog = configForVideo.accumulationConfigLog
 
-        val percentage = if (accumulationConfigLog == null) {
+        val percentage = if (accumulationConfigLog.isNullOrEmpty() || accumulationConfigLog == "[]") {
             100
         } else {
             val accumulationConfig: List<PercentageAccumulation> = objectMapper.readValue(accumulationConfigLog, object : TypeReference<List<PercentageAccumulation>>(){})
