@@ -128,14 +128,18 @@ fun VideoModel.toVideoLogTransaction(progressPercentage: Double) = VideoLogTrans
     durationMs = durationMs
 )
 
-fun VideoModel.toTrackInfo(rewardedPoints: Long) = TrackInfo(
+fun VideoModel.toTrackInfo(
+    likeCount: Long,
+    commentCount: Long,
+    viewCount: Long,
+    rewardedPoints: Long
+) = TrackInfo(
     id = id,
     title = title,
     thumbnail = thumbnail,
     url = url,
     viewCount = viewCount,
     likeCount = likeCount,
-    favoriteCount = favoriteCount,
     commentCount = commentCount,
     rewardedPoints = rewardedPoints
 )
