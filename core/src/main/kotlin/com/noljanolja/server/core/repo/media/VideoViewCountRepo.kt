@@ -55,4 +55,6 @@ interface VideoViewCountRepo : CoroutineCrudRepository<VideoViewCountModel, Long
         includeDeactivated: Boolean? = null,
         includeUnavailableVideos: Boolean? = null,
     ): Flow<VideoModel>
+
+    fun findAllByVideoIdIn(videoIds: List<String>): Flow<VideoViewCountModel>
 }

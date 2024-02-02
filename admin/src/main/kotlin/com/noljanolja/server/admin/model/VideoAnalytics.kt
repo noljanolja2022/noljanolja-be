@@ -7,7 +7,6 @@ data class TrackInfo(
     val url: String,
     val viewCount: Long,
     val likeCount: Long,
-    val favoriteCount: Long,
     val commentCount: Long,
     val rewardedPoints: Long
 )

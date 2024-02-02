@@ -79,24 +79,56 @@ class VideoService(
 
     suspend fun getVideoAnalytics(
         page: Int,
-        pageSize: Int
+        pageSize: Int,
+        includeDeleted: Boolean? = null,
+        includeDeactivated: Boolean? = null,
+        includeUnavailableVideos: Boolean? = null,
     ): VideoAnalytics {
         val videos = videoRepo.findAllBy(
+            includeDeleted = includeDeleted,
+            includeDeactivated = includeDeactivated,
+            includeUnavailableVideos = includeUnavailableVideos,
             limit = pageSize,
             offset = (page - 1) * pageSize
         ).toList()
 
-        val total = videoRepo.countAllBy()
+        val total = videoRepo.countAllBy(
+            includeDeleted = includeDeleted,
+            includeDeactivated = includeDeactivated,
+            includeUnavailableVideos = includeUnavailableVideos
+        )
 
-        //Map<video_id, rewarded_points>
-        val rewardedPointMap: Map<String, Long> =
-            videoRewardConfigRepo.findAllByVideoIdIn(
-                videoIds = videos.map { it.id }.toSet()
-            ).toList().associate { it.videoId to it.rewardedPoints }
+        val likeStatisticsMap = videoUserRepo.findLikeStatistics()
+            .toList()
+            .associate { it.videoId to it.likeCount }
+
+        val commentStatisticsMap = videoCommentRepo.findCommentStatistics()
+            .toList()
+            .associate { it.videoId to it.commentCount }
+
+        val viewStatisticsMap = videoViewCountRepo.findAllByVideoIdIn(
+            videoIds = videos.map { it.id }
+        )
+            .toList()
+            .associate { it.videoId to it.viewCount }
+
+        val rewardedPointMap: Map<String, Long> = videoRewardConfigRepo.findAllByVideoIdIn(
+            videoIds = videos.map { it.id }.toSet()
+        )
+            .toList()
+            .associate { it.videoId to it.rewardedPoints }
 
         val trackInfos = videos.map { video ->
-            val rewardedPoint = rewardedPointMap[video.id] ?: 0
-            video.toTrackInfo(rewardedPoint)
+            val likeCount = likeStatisticsMap[video.id] ?: 0
+            val commentCount = commentStatisticsMap[video.id] ?: 0
+            val viewCount = viewStatisticsMap[video.id] ?: 0
+            val rewardedPoints = rewardedPointMap[video.id] ?: 0
+            video.toTrackInfo(
+                likeCount = likeCount,
+                commentCount = commentCount,
+                viewCount = viewCount,
+                rewardedPoints = rewardedPoints
+            )
         }
 
         return VideoAnalytics(
