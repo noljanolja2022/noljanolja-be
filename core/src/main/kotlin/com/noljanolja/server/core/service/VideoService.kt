@@ -106,11 +106,9 @@ class VideoService(
             .toList()
             .associate { it.videoId to it.commentCount }
 
-        val viewStatisticsMap = videoViewCountRepo.findAllByVideoIdIn(
-            videoIds = videos.map { it.id }
-        )
+        val viewStatisticsMap = videoViewCountRepo.findViewStatistics()
             .toList()
-            .associate { it.videoId to it.viewCount }
+            .associate { it.videoId to it.totalViewCount }
 
         val rewardedPointMap: Map<String, Long> = videoRewardConfigRepo.findAllByVideoIdIn(
             videoIds = videos.map { it.id }.toSet()

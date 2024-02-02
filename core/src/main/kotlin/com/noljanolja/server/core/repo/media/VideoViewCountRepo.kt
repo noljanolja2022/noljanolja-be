@@ -1,5 +1,6 @@
 package com.noljanolja.server.core.repo.media
 
+import com.noljanolja.server.core.model.ViewStatistics
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
@@ -57,4 +58,13 @@ interface VideoViewCountRepo : CoroutineCrudRepository<VideoViewCountModel, Long
     ): Flow<VideoModel>
 
     fun findAllByVideoIdIn(videoIds: List<String>): Flow<VideoViewCountModel>
+
+    @Query(
+        """
+            SELECT video_id, SUM(view_count) AS total_view_count
+            FROM video_view_counts
+            GROUP BY video_id;
+        """
+    )
+    fun findViewStatistics(): Flow<ViewStatistics>
 }

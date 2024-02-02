@@ -31,3 +31,10 @@ data class CommentStatistics(
     @JsonProperty("comment_count")
     val commentCount: Long
 )
+
+data class ViewStatistics(
+    @JsonProperty("video_id")
+    val videoId: String,
+    @JsonProperty("total_view_count")
+    val totalViewCount: Long
+)
