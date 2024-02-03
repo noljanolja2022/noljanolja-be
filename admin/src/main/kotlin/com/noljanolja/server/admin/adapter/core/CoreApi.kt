@@ -30,6 +30,7 @@ class CoreApi(
         const val REWARD_ENDPOINT = "/api/v1/reward"
         const val COIN_EXCHANGE_ROUTE = "/api/v1/coin-exchange"
         const val BANNER_ENDPOINT = "/api/v1/banners"
+        const val CONVERSATION_ENDPOINT = "/api/v1/conversations"
     }
 
     suspend fun getUsers(
@@ -618,4 +619,19 @@ class CoreApi(
             Mono.just(CoreServiceError.CoreServiceInternalError)
         }
         .awaitBody<Response<Nothing>>()
+
+    suspend fun getConversationAnalytics() = webClient.get()
+        .uri { builder ->
+            builder.path("$CONVERSATION_ENDPOINT/analytics").build()
+        }
+        .retrieve()
+        .onStatus(HttpStatusCode::is4xxClientError) {
+            it.bodyToMono<Response<Nothing>>().mapNotNull { response ->
+                CoreServiceError.CoreServiceBadRequest(response.message)
+            }
+        }
+        .onStatus(HttpStatusCode::is5xxServerError) {
+            Mono.just(CoreServiceError.CoreServiceInternalError)
+        }
+        .awaitBody<Response<ConversationAnalytics>>().data!!
 }

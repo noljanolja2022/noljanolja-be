@@ -18,4 +18,11 @@ interface ConversationRepo : CoroutineCrudRepository<ConversationModel, Long> {
      fun findAllByUserId(userId: String): Flow<ConversationModel>
 
      fun findAllByCreatorIdAndType(userId: String, type: Conversation.Type) : Flow<ConversationModel>
+     @Query(
+         """
+             SELECT COUNT(*) FROM conversations
+         """
+     )
+     suspend fun countAll(): Long
+     suspend fun countByType(type: Conversation.Type): Long
 }

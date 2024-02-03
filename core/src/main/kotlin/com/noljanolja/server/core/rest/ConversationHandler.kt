@@ -9,6 +9,7 @@ import com.noljanolja.server.core.model.Conversation
 import com.noljanolja.server.core.repo.message.AttachmentType
 import com.noljanolja.server.core.rest.request.*
 import com.noljanolja.server.core.service.ConversationService
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
@@ -61,6 +62,17 @@ class ConversationHandler(
             .bodyValueAndAwait(
                 body = Response(
                     data = conversation,
+                )
+            )
+    }
+
+    suspend fun getConversationAnalytics(request: ServerRequest): ServerResponse {
+        val conversationAnalytics = conversationService.getConversationAnalytics()
+        return ServerResponse.ok()
+            .bodyValueAndAwait(
+                body = Response(
+                    code = HttpStatus.OK.value(),
+                    data = conversationAnalytics
                 )
             )
     }

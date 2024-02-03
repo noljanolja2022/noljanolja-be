@@ -5,6 +5,9 @@ import com.noljanolja.server.common.exception.InvalidParamsException
 import com.noljanolja.server.core.exception.Error
 import com.noljanolja.server.core.model.Attachment
 import com.noljanolja.server.core.model.Conversation
+import com.noljanolja.server.core.model.Conversation.Type.GROUP
+import com.noljanolja.server.core.model.Conversation.Type.SINGLE
+import com.noljanolja.server.core.model.ConversationAnalytics
 import com.noljanolja.server.core.model.Message
 import com.noljanolja.server.core.repo.conversation.*
 import com.noljanolja.server.core.repo.media.VideoCategoryRepo
@@ -12,6 +15,7 @@ import com.noljanolja.server.core.repo.media.VideoChannelRepo
 import com.noljanolja.server.core.repo.media.VideoModel
 import com.noljanolja.server.core.repo.media.VideoRepo
 import com.noljanolja.server.core.repo.message.*
+import com.noljanolja.server.core.repo.sticker.StickerRepo
 import com.noljanolja.server.core.repo.user.UserModel
 import com.noljanolja.server.core.repo.user.UserRepo
 import com.noljanolja.server.core.rest.request.SaveAttachmentsRequest
@@ -37,6 +41,7 @@ class ConversationService(
     private val videoRepo: VideoRepo,
     private val userService: UserService,
     private val objectMapper: ObjectMapper,
+    private val stickerRepo: StickerRepo
 ) {
     suspend fun createMessageInMultipleConversations(
         conversationIds: List<Long>,
@@ -184,6 +189,31 @@ class ConversationService(
             this.creator = userRepo.findById(this.creatorId)!!
             getAdminOfConversationModel(this)
         }?.toConversation(objectMapper) ?: throw Error.ConversationNotFound
+    }
+
+    suspend fun getConversationAnalytics(): ConversationAnalytics {
+        val totalConversations = conversationRepo.countAll()
+        val numOfSingleConversations = conversationRepo.countByType(SINGLE)
+        val numOfGroupConversations = conversationRepo.countByType(GROUP)
+        val totalMessages = messageRepo.countAll()
+        val totalStickers = stickerRepo.countAll()
+        val averageMessagesPerConversation = totalConversations.takeIf { it > 0 }
+            ?. let {
+                val average = totalMessages.toDouble() / it
+                "%.2f".format(average).toDouble()
+            }
+            ?: 0.0
+        val messageRange = messageRepo.findMessageRange()
+
+        return ConversationAnalytics(
+            totalConversations = totalConversations,
+            numOfSingleConversations = numOfSingleConversations,
+            numOfGroupConversations = numOfGroupConversations,
+            totalMessages = totalMessages,
+            totalStickers = totalStickers,
+            averageMessagesPerConversation = averageMessagesPerConversation,
+            messageRange = messageRange
+        )
     }
 
     suspend fun getUserConversations(

@@ -18,6 +18,7 @@ class ConversationRouter(
         (CONVERSATIONS_ROUTE and accept(MediaType.APPLICATION_JSON)).nest {
             GET("", conversationHandler::getConversations)
             POST("", conversationHandler::createConversation)
+            GET("/analytics", conversationHandler::getConversationAnalytics)
             GET("/react-icons", conversationHandler::getAllReactionIcons)
             GET("/details", conversationHandler::getConversationDetails)
             POST("/messages", conversationHandler::createMessageInMultipleConversations)

@@ -1,5 +1,6 @@
 package com.noljanolja.server.core.repo.message
 
+import com.noljanolja.server.core.model.MessageRange
 import kotlinx.coroutines.flow.Flow
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.kotlin.CoroutineCrudRepository
@@ -26,4 +27,29 @@ interface MessageRepo : CoroutineCrudRepository<MessageModel, Long> {
         beforeMessageId: Long? = null,
         blackListedUserIds: List<String> = emptyList(),
     ): Flow<MessageModel>
+
+    @Query(
+        """
+            SELECT COUNT(*) FROM messages
+        """
+    )
+     suspend fun countAll(): Long
+
+     @Query(
+         """
+             WITH MessageCounts AS (
+                SELECT
+                    COUNT(m.id) AS message_count
+                FROM
+                    messages m
+                GROUP BY
+                    m.conversation_id
+            )
+            SELECT
+                COALESCE(MIN(message_count),0) AS min_message_count,
+                COALESCE(MAX(message_count),0) AS max_message_count
+            FROM MessageCounts
+         """
+     )
+     suspend fun findMessageRange(): MessageRange
 }
