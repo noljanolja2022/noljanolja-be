@@ -94,7 +94,7 @@ data class VideoModel(
     var category: VideoCategoryModel = VideoCategoryModel()
 }
 
-fun VideoModel.toVideo(isLiked: Boolean? = null) = Video(
+fun VideoModel.toVideo(isLiked: Boolean? = null, inAppCommentCount: Long? = null) = Video(
     id = id,
     url = url,
     publishedAt = publishedAt,
@@ -106,6 +106,7 @@ fun VideoModel.toVideo(isLiked: Boolean? = null) = Video(
     likeCount = likeCount,
     favoriteCount = favoriteCount,
     commentCount = commentCount,
+    inAppCommentCount = inAppCommentCount,
     isHighlighted = isHighlighted,
     availableFrom = availableFrom,
     availableTo = availableTo,

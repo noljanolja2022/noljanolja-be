@@ -69,12 +69,17 @@ class VideoService(
         )
         val isLiked: Boolean? = videoUser?.isLiked
 
+        val inAppCommentCount = videoCommentRepo.findCommentStatisticsForVideo(videoId)
+
         return video.apply {
             channel = videoChannelRepo.findById(channelId)!!
             category = videoCategoryRepo.findById(categoryId)!!
             this.comments = comments
 
-        }.toVideo(isLiked)
+        }.toVideo(
+            isLiked = isLiked,
+            inAppCommentCount = inAppCommentCount
+        )
     }
 
     suspend fun getVideoAnalytics(

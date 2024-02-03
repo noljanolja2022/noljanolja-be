@@ -28,4 +28,13 @@ interface VideoCommentRepo : CoroutineCrudRepository<VideoCommentModel, Long> {
         """
     )
     fun findCommentStatistics(): Flow<CommentStatistics>
+
+    @Query(
+        """
+            SELECT COUNT(id)
+            FROM video_comments
+            WHERE video_id = :videoId
+        """
+    )
+    suspend fun findCommentStatisticsForVideo(videoId: String): Long
 }

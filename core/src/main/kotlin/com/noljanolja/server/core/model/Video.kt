@@ -14,6 +14,7 @@ data class Video(
     val likeCount: Long,
     val favoriteCount: Long,
     val commentCount: Long,
+    val inAppCommentCount: Long? = null,
     val isHighlighted: Boolean,
     val availableFrom: Instant?,
     val availableTo: Instant?,
