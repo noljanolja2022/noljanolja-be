@@ -17,6 +17,7 @@ data class CoreVideo(
     val likeCount: Long,
     val favoriteCount: Long,
     val commentCount: Long,
+    val inAppCommentCount: Long?,
     val isHighlighted: Boolean,
     val comments: List<CoreVideoComment> = listOf(),
     val channel: CoreChannel,
@@ -68,6 +69,7 @@ fun CoreVideo.toConsumerVideo(
     likeCount = likeCount,
     favoriteCount = favoriteCount,
     commentCount = commentCount,
+    inAppCommentCount = inAppCommentCount,
     isHighlighted = isHighlighted,
     comments = comments.map { it.toConsumerVideoComment() },
     channel = Channel(
